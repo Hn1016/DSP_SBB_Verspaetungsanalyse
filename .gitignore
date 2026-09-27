@@ -1,0 +1,27 @@
+# Python / uv
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+
+# Secrets
+.env
+.env.*
+
+# Data: raw and derived files stay out of git (manifest documents provenance)
+data/raw/*
+!data/raw/.gitkeep
+!data/raw/manifest.csv
+data/processed/*
+!data/processed/.gitkeep
+*.duckdb
+*.duckdb.wal
+*.part
+
+# marimo
+__marimo__/
+
+# OS / editor
+.DS_Store
