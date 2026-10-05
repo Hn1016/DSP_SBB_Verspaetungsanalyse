@@ -9,9 +9,11 @@ Full requirements: `docs/requirements.md` (German). Read it before non-trivial w
 - Code in English, docs (README, log, report) in German.
 - Reusable logic goes in `src/sbb_delays/`; notebooks (marimo, plain `.py`) only explore and present.
 - Paths via `sbb_delays.paths`, never hard-coded.
-- Raw data in `data/raw/` is read-only. Downloads only through `sbb_delays.download.fetch`
+- Raw data in `data/raw/` is read-only. Downloads only through `sbb_delays.download`
   (records URL, date, SHA-256 in `data/raw/manifest.csv`).
 - Derived data as Parquet or DuckDB in `data/processed/`.
+- Analysis reads the rail-only daily Parquet files in `data/processed/istdaten_rail/`
+  (built by `uv run python -m sbb_delays.load`), not the raw CSVs.
 - Before finishing: `uv run pytest` and `uv run ruff check . && uv run ruff format --check .` must pass.
 
 ## Domain rules (from requirements)
