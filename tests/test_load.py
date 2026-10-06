@@ -30,7 +30,7 @@ BUS = (
 def make_archive(tmp_path):
     zip_path = tmp_path / "ist-daten-v2-2026-09.zip"
     with zipfile.ZipFile(zip_path, "w") as archive:
-        archive.writestr("2026-09-01_IstDaten.csv", "\n".join([HEADER, TRAIN_ORIGIN, TRAIN, BUS]))
+        archive.writestr("2026-09-01_IstDaten.csv", "\n".join([HEADER, BUS, TRAIN_ORIGIN, TRAIN]))
     return zip_path
 
 
@@ -41,8 +41,8 @@ def test_zip_to_rail_parquet_keeps_only_trains_and_types_columns(tmp_path):
     assert [p.name for p in written] == ["2026-09-01.parquet"]
     rows = duckdb.sql(
         f"""
-        select PRODUKT_ID, BETRIEBSTAG, ANKUNFTSZEIT, AB_PROGNOSE, FAELLT_AUS_TF, BPUIC
-        from '{written[0]}' order by ABFAHRTSZEIT
+        select PRODUKT_ID, BETRIEBSTAG, ANKUNFTSZEIT, AB_PROGNOSE, FAELLT_AUS_TF, BPUIC, ZEILE
+        from '{written[0]}' order by ZEILE
         """
     ).fetchall()
     assert [r[0] for r in rows] == ["Zug", "Zug"]
@@ -54,6 +54,7 @@ def test_zip_to_rail_parquet_keeps_only_trains_and_types_columns(tmp_path):
         datetime(2026, 9, 1, 8, 8, 31),
         False,
         8507000,
+        3,  # row number in the CSV, counting the bus row that was filtered out
     )
     assert list(out_dir.iterdir()) == written  # no temporary files left behind
 
