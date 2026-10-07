@@ -41,6 +41,7 @@ uv run python -m sbb_delays.load
   wiederverwendet; zum Aktualisieren die Datei löschen und Schritt 1 erneut ausführen.
 - Schritt 2 entpackt jeweils nur einen Tag temporär, filtert auf `PRODUKT_ID = 'Zug'` und schreibt
   typisierte Parquet-Dateien nach `data/processed/istdaten_rail/` (September 2026: 61 MB).
+- Die Spalte `ZEILE` (Zeilennummer in der Tages-CSV) hält die Haltreihenfolge einer Fahrt fest.
 - Bereits vorhandene Dateien werden übersprungen; beide Befehle können beliebig oft ausgeführt werden.
 - Prüfsummen vergleichen: `shasum -a 256 data/raw/istdaten/*.zip` gegen die Spalte `sha256` im Manifest.
 
@@ -51,6 +52,7 @@ uv run python -m sbb_delays.load
 | Rohdaten laden | `uv run python -m sbb_delays.download --from YYYY-MM --to YYYY-MM` |
 | Parquet erzeugen | `uv run python -m sbb_delays.load` |
 | Stichprobe ansehen | `uv run marimo edit notebooks/01_sample.py` |
+| Datenqualität (H1–H5) | `uv run marimo edit notebooks/02_data_quality.py` |
 | Tests | `uv run pytest` |
 | Linting | `uv run ruff check . && uv run ruff format --check .` |
 | Notebook bearbeiten | `uv run marimo edit notebooks/<name>.py` |

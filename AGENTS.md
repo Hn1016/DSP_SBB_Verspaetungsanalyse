@@ -19,8 +19,13 @@ Full requirements: `docs/requirements.md` (German). Read it before non-trivial w
 ## Domain rules (from requirements)
 
 - Only `REAL` in `AN_PROGNOSE_STATUS` / `AB_PROGNOSE_STATUS` counts as measured; treat
-  `PROGNOSE` / `GESCHAETZT` separately.
-- A section = two consecutive stops of the same trip. Pass-throughs have no actual time.
+  `PROGNOSE` / `GESCHAETZT` separately. `UNBEKANNT` is not a measurement (all cancelled rows have it).
+- A trip = (`BETRIEBSTAG`, `FAHRT_BEZEICHNER`). A section = two consecutive stops of the same trip,
+  ordered by `ZEILE` (row number in the daily CSV), never by scheduled time (minute resolution, ties).
+- Analyse Swiss stops only (`BPUIC` 85xxxxx): foreign stops are ~11 % `REAL` and have no coordinates.
+- Drop exact duplicate rows, sections whose scheduled time runs backwards, and delays beyond ±12 h.
+- Stop delay is biased: 73 % of stops have scheduled dwell 0, where it equals the actual dwell time.
+  Never rank raw stop delays without a reference per scheduled dwell (see `docs/log.md`, 2026-10-06).
 - Cancellations (`FAELLT_AUS_TF`) stay in the data; handle explicitly.
 - Timetable change in December: a year contains two timetables.
 - Section delay = arrival delay at B − departure delay at A.
