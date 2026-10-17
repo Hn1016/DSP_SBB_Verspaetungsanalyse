@@ -176,3 +176,13 @@ Datenbasis: September 2026, nur Züge: 5'327'156 Zeilen, 463'995 Fahrten, 52 Bet
 - **Prüfung:** 22 pytest-Tests (davon 7 auf den echten Daten); zwei Fehler in den Abfragen des Agenten wurden beim
   Gegenprüfen gefunden und korrigiert (Duplikatzähler; Sortierung über Soll-Zeit).
 - **Übernommen/verworfen:** _(vom Team auszufüllen)_
+
+## 2026-10-17 — KI-Einsatz: One-Pager
+
+- **Aufgabe:** Claude Code hat `docs/one-pager.md` (Abschnitte Warum, Was, Wie, Nicht-Ziele, Fertig, nach dem
+  Tutorial `vp-82/ds-projekt-2026-tutorial`, Kapitel 1) erstellt.
+- **Reflektion:** Quellen sind nur die Aufgabenstellung und Entscheidungen in diesem Log; nicht Entschiedenes ist als
+  «offen» markiert und nicht vom Agenten ergänzt. Die offenen Entscheidungsregeln (u. a. Richtung, «systematisch»,
+  Hauptkennzahl, Zeitfenster, Stabilitätsschwelle) werden vor der ersten Rangliste festgelegt.
+- **Prüfung:** Jede Aussage gegen `docs/requirements.md` bzw. den zitierten Log-Eintrag gelesen.
+- **Übernommen/verworfen:** _(vom Team auszufüllen)_
