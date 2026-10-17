@@ -4,7 +4,6 @@ Was wahr sein muss, damit die Schritte in «Wie» (`docs/one-pager.md`) die Tabe
 dem One-Pager, ohne die Daten zu öffnen. Wichtigkeit und Evidenz sind die Einschätzungen des Teams (2026-10-17).
 
 Sortiert nach Wichtigkeit (hoch zuerst), dann nach Evidenz (tief zuerst): Wichtiges mit wenig Evidenz steht oben.
-# ist die ursprüngliche Nummer.
 
 | # | Annahme | Wichtigkeit | Evidenz |
 |---|---|---|---|
