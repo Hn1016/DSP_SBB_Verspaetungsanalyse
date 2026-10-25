@@ -162,14 +162,23 @@ def stop_match(con: duckdb.DuckDBPyConnection) -> duckdb.DuckDBPyRelation:
 
 
 def delays(con: duckdb.DuckDBPyConnection) -> duckdb.DuckDBPyRelation:
-    """Measured delays in minutes at Swiss stops; NULL unless the status is REAL."""
+    """Delays in minutes at Swiss stops, measured and forecast kept apart.
+
+    an_delay / ab_delay: only for status REAL; these are the measurements used for ranking.
+    an_delay_prognose / ab_delay_prognose: only for status PROGNOSE (last forecast, not a
+    measurement). Kept to test whether missing measurements are systematic (H6, Annahme 2).
+    """
     return con.sql(
         f"""
         select *,
                case when AN_PROGNOSE_STATUS = 'REAL'
                     then epoch(AN_PROGNOSE - ANKUNFTSZEIT) / 60 end as an_delay,
                case when AB_PROGNOSE_STATUS = 'REAL'
-                    then epoch(AB_PROGNOSE - ABFAHRTSZEIT) / 60 end as ab_delay
+                    then epoch(AB_PROGNOSE - ABFAHRTSZEIT) / 60 end as ab_delay,
+               case when AN_PROGNOSE_STATUS = 'PROGNOSE'
+                    then epoch(AN_PROGNOSE - ANKUNFTSZEIT) / 60 end as an_delay_prognose,
+               case when AB_PROGNOSE_STATUS = 'PROGNOSE'
+                    then epoch(AB_PROGNOSE - ABFAHRTSZEIT) / 60 end as ab_delay_prognose
         from rail
         where {IN_CH} and not FAELLT_AUS_TF
         """
@@ -223,6 +232,99 @@ def dwell_bias(con: duckdb.DuckDBPyConnection) -> duckdb.DuckDBPyRelation:
         where an_delay is not null and ab_delay is not null
           and abs(an_delay) <= {MAX_ABS_DELAY_MIN} and abs(ab_delay) <= {MAX_ABS_DELAY_MIN}
           and ABFAHRTSZEIT >= ANKUNFTSZEIT
+        group by 1
+        order by 1
+        """
+    )
+
+
+def delay_by_status(con: duckdb.DuckDBPyConnection) -> duckdb.DuckDBPyRelation:
+    """H6a: measured (REAL) versus forecast (PROGNOSE) delays at Swiss stops (minutes)."""
+    d = delays(con)  # noqa: F841
+    return con.sql(
+        f"""
+        with long as (
+            select 'Ankunft' as event, 'REAL' as status, an_delay as delay from d
+            union all select 'Ankunft', 'PROGNOSE', an_delay_prognose from d
+            union all select 'Abfahrt', 'REAL', ab_delay from d
+            union all select 'Abfahrt', 'PROGNOSE', ab_delay_prognose from d
+        )
+        select event, status,
+               count(delay) as n,
+               round(median(delay), 2) as median,
+               round(avg(delay) filter (abs(delay) <= {MAX_ABS_DELAY_MIN}), 2) as mean,
+               round(quantile_cont(delay, 0.95), 2) as p95,
+               round(100 * avg((delay >= 3)::int), 1) as pct_late_3min_or_more
+        from long
+        where delay is not null
+        group by event, status
+        order by event desc, status desc
+        """
+    )
+
+
+def real_share_by_previous_delay(con: duckdb.DuckDBPyConnection) -> duckdb.DuckDBPyRelation:
+    """H6b: share of REAL arrivals by the measured departure delay at the previous stop.
+
+    If being late made a measurement less likely, the share would fall with the delay.
+    """
+    return con.sql(
+        f"""
+        with ordered as (
+            select AN_PROGNOSE_STATUS as status, IN_CH, FAELLT_AUS_TF, ANKUNFTSZEIT,
+                   lag(IN_CH) over trip as prev_in_ch,
+                   lag(case when AB_PROGNOSE_STATUS = 'REAL'
+                            then epoch(AB_PROGNOSE - ABFAHRTSZEIT) / 60 end) over trip
+                       as prev_delay
+            from rail
+            window trip as (partition by {TRIP} order by ZEILE)
+        )
+        select case when prev_delay < 0 then 'a) unter 0'
+                    when prev_delay < 1 then 'b) 0 bis 1'
+                    when prev_delay < 3 then 'c) 1 bis 3'
+                    when prev_delay < 6 then 'd) 3 bis 6'
+                    when prev_delay < 15 then 'e) 6 bis 15'
+                    else 'f) 15 und mehr' end as previous_delay_min,
+               count(*) as arrivals,
+               round(100 * avg((status = 'REAL')::int), 2) as pct_real
+        from ordered
+        where IN_CH and prev_in_ch and not FAELLT_AUS_TF and ANKUNFTSZEIT is not null
+          and abs(prev_delay) <= {MAX_ABS_DELAY_MIN}
+        group by 1
+        order by 1
+        """
+    )
+
+
+def stops_by_real_coverage(con: duckdb.DuckDBPyConnection) -> duckdb.DuckDBPyRelation:
+    """H6c: Swiss stops grouped by their share of events without a REAL time.
+
+    Shows whether missing measurements are spread out or concentrated on some stops.
+    """
+    return con.sql(
+        """
+        with events as (
+            select BPUIC, AN_PROGNOSE_STATUS as status from rail
+            where IN_CH and not FAELLT_AUS_TF and ANKUNFTSZEIT is not null
+            union all
+            select BPUIC, AB_PROGNOSE_STATUS from rail
+            where IN_CH and not FAELLT_AUS_TF and ABFAHRTSZEIT is not null
+        ),
+        stops as (
+            select BPUIC, count(*) as n,
+                   count(*) filter (status is distinct from 'REAL') as not_real
+            from events group by BPUIC
+        )
+        select case when not_real = n then 'a) nie REAL'
+                    when not_real >= 0.2 * n then 'b) 20 bis 99 % nicht REAL'
+                    when not_real > 0 then 'c) unter 20 % nicht REAL'
+                    else 'd) immer REAL' end as coverage,
+               count(*) as stops,
+               sum(n) as events,
+               sum(not_real) as events_not_real,
+               round(100 * sum(not_real) / nullif((select sum(not_real) from stops), 0), 1)
+                   as pct_of_all_not_real
+        from stops
         group by 1
         order by 1
         """

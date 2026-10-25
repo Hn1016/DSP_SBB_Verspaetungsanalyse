@@ -93,3 +93,49 @@ def test_dwell_bias_stop_delay_equals_actual_dwell_when_scheduled_dwell_is_zero(
     (row,) = as_dicts(quality.dwell_bias(con))
     assert row["scheduled_dwell_min"] == 0
     assert row["actual_dwell_mean"] == row["stop_delay_mean"] == 1.0
+
+
+def test_delays_keep_forecast_apart_from_measurement(con):
+    # Turn the Olten arrival (+1.0 min) into a forecast
+    con.execute("create table rail_copy as select * from rail")
+    con.execute(
+        """
+        create or replace view rail as
+        select * replace (
+            case when ZEILE = 2 then 'PROGNOSE' else AN_PROGNOSE_STATUS end as AN_PROGNOSE_STATUS
+        ) from rail_copy
+        """
+    )
+    rows = as_dicts(
+        quality.delays(con)
+        .filter("ANKUNFTSZEIT is not null")
+        .order("ZEILE")
+        .select("an_delay, an_delay_prognose")
+    )
+    assert rows == [
+        {"an_delay": None, "an_delay_prognose": 1.0},  # Olten, forecast only
+        {"an_delay": 0.5, "an_delay_prognose": None},  # Bern, measured
+    ]
+    by_status = {(r["event"], r["status"]): r["n"] for r in as_dicts(quality.delay_by_status(con))}
+    assert by_status[("Ankunft", "PROGNOSE")] == 1
+    assert by_status[("Ankunft", "REAL")] == 1
+
+
+def test_stops_by_real_coverage_classifies_every_swiss_stop(con):
+    rows = as_dicts(quality.stops_by_real_coverage(con))
+    # Zürich: departure REAL; Olten: both REAL; Bern: arrival and departure REAL
+    assert rows == [
+        {
+            "coverage": "d) immer REAL",
+            "stops": 3,
+            "events": 5,
+            "events_not_real": 0,
+            "pct_of_all_not_real": None,
+        }
+    ]
+
+
+def test_real_share_by_previous_delay(con):
+    rows = as_dicts(quality.real_share_by_previous_delay(con))
+    # Olten (previous departure +1.0 min) and Bern (previous departure +2.0 min), both REAL
+    assert rows == [{"previous_delay_min": "c) 1 bis 3", "arrivals": 2, "pct_real": 100.0}]
