@@ -193,3 +193,43 @@ Annahme 2 (`docs/assumptions.md`): Ob eine Zeit `REAL` ist, hängt nicht von der
   mit den meisten Nicht-`REAL`-Ereignissen tragen weniger als 20 % davon.
 - *Folge bei Widerlegung:* Annahme 2 gilt nicht; betroffene Abschnitte bzw. Halte werden ausgewiesen oder
   ausgeschlossen, und die Rangliste wird mit und ohne sie verglichen.
+
+## 2026-10-25 — Befund H6 und Antwort auf die Review-Frage zu `PROGNOSE`
+
+**Frage (Review PR #2):** Warum wird die `PROGNOSE`-Verspätung verworfen, wenn Annahme 2 sie braucht?
+
+**Antwort:** Zu Recht kritisiert. `delays()` hat `PROGNOSE` verworfen, weil es keine Messung ist und nicht in die
+Rangliste gehört. Damit fehlte aber die einzige Vergleichsgrösse, um Annahme 2 zu prüfen. Geändert: `delays()`
+liefert die `PROGNOSE`-Verspätung jetzt getrennt (`an_delay_prognose`, `ab_delay_prognose`); für die Rangliste
+zählen weiterhin nur `an_delay`/`ab_delay` aus `REAL`. Neue Prüfungen in `quality.py` und im Notebook (Abschnitt H6).
+
+Befunde, September 2026, Halte in der Schweiz, ohne Ausfälle:
+
+- **H6a — gestützt.** Median `PROGNOSE` gegenüber `REAL`: Ankunft 0.50 zu 0.53 min, Abfahrt 0.98 zu 1.00 min
+  (Differenz unter 0.5 min). Der Mittelwert der Ankunft liegt bei `PROGNOSE` höher (1.17 zu 0.84 min). Für ca. 8'000
+  `PROGNOSE`-Zeilen je Ereignisart fehlt auch die Prognosezeit.
+- **H6b — gestützt.** Der Anteil `REAL` hängt kaum von der Verspätung am vorherigen Halt ab: 98.0 % bis 99.6 % über
+  alle Klassen (Schwelle ±2 Prozentpunkte eingehalten). Leicht tiefer bei 15 min und mehr (98.0 %) und bei zu
+  frühen Zügen (98.6 %).
+- **H6c — formal gestützt, inhaltlich widerlegt.** Die zehn Halte mit den meisten Nicht-`REAL`-Ereignissen tragen
+  17.4 % davon (Schwelle 20 %). Die Schwelle war aber das falsche Mass: Das Fehlen ist an bestimmte Halte gebunden.
+  52 Schweizer Halte haben nie eine `REAL`-Zeit (36.9 % aller Nicht-`REAL`-Ereignisse), 108 Halte haben 20 bis 99 %
+  Nicht-`REAL` (44.1 %). Betroffen sind v. a. Strecken mit deutschen Betreibern auf Schweizer Gebiet (Klettgau
+  Neuhausen–Trasadingen, Basel Bad Bf, Riehen, Herblingen–Thayngen) sowie die BLM (Grütschalp–Mürren).
+- **Folgerung für Annahme 2:** Der Teil «hängt nicht von der Verspätung ab» ist gestützt. Der Teil «hängt nicht vom
+  Abschnitt ab» ist widerlegt.
+
+**Entscheidungen:**
+
+- Die 52 nie gemessenen Halte fehlen in Rangliste und Karte; sie werden im Bericht als Abdeckungslücke genannt,
+  nicht als «unauffällig».
+- Die Abdeckung je Halt bzw. Abschnitt wird bei der Abschnittsbildung als Spalte geführt. Die Rangliste wird mit
+  und ohne Abschnitte unter 80 % `REAL` berechnet und verglichen (Stabilitätsprüfung).
+- `PROGNOSE`-Werte fliessen nicht in die Rangliste ein.
+
+## 2026-10-25 — KI-Einsatz: Antwort auf die Review-Frage
+
+- **Aufgabe:** Claude Code hat H6 formuliert (Commit vor der Analyse), die Abfragen im laufenden Notebook ausgeführt
+  (marimo pair), `quality.py` erweitert und diesen Eintrag geschrieben.
+- **Prüfung:** 25 pytest-Tests, davon einer mit einer künstlichen `PROGNOSE`-Zeile; Notebook läuft.
+- **Offen für das Team:** Ob die Schwelle von 80 % `REAL` für die Rangliste fachlich passt.

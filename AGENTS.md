@@ -20,6 +20,8 @@ Full requirements: `docs/requirements.md` (German). Read it before non-trivial w
 
 - Only `REAL` in `AN_PROGNOSE_STATUS` / `AB_PROGNOSE_STATUS` counts as measured; treat
   `PROGNOSE` / `GESCHAETZT` separately. `UNBEKANNT` is not a measurement (all cancelled rows have it).
+- Missing `REAL` times cluster on certain stops (52 Swiss stops never measured, see `docs/log.md`,
+  2026-10-25). Keep `PROGNOSE` delays in separate columns for checks; never mix them into rankings.
 - A trip = (`BETRIEBSTAG`, `FAHRT_BEZEICHNER`). A section = two consecutive stops of the same trip,
   ordered by `ZEILE` (row number in the daily CSV), never by scheduled time (minute resolution, ties).
 - Analyse Swiss stops only (`BPUIC` 85xxxxx): foreign stops are ~11 % `REAL` and have no coordinates.

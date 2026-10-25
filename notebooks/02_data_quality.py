@@ -134,5 +134,35 @@ def _(con, quality):
     return
 
 
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md("""
+    ## H6 — Fehlende `REAL`-Zeiten sind nicht systematisch (Annahme 2)
+
+    Prüft, ob das Weglassen von Nicht-`REAL`-Zeiten die Werte verschiebt.
+    `PROGNOSE` ist die letzte Prognose, keine Messung, und dient nur als Näherung
+    für die fehlende Ist-Zeit.
+    """)
+    return
+
+
+@app.cell
+def _(con, quality):
+    quality.delay_by_status(con)
+    return
+
+
+@app.cell
+def _(con, quality):
+    quality.real_share_by_previous_delay(con)
+    return
+
+
+@app.cell
+def _(con, quality):
+    quality.stops_by_real_coverage(con)
+    return
+
+
 if __name__ == "__main__":
     app.run()
