@@ -176,3 +176,20 @@ Datenbasis: September 2026, nur Züge: 5'327'156 Zeilen, 463'995 Fahrten, 52 Bet
 - **Prüfung:** 22 pytest-Tests (davon 7 auf den echten Daten); zwei Fehler in den Abfragen des Agenten wurden beim
   Gegenprüfen gefunden und korrigiert (Duplikatzähler; Sortierung über Soll-Zeit).
 - **Übernommen/verworfen:** _(vom Team auszufüllen)_
+
+## 2026-10-25 — Hypothese H6: Fehlende `REAL`-Zeiten sind nicht systematisch (vor der Analyse notiert)
+
+Anlass: Review-Frage zu PR #2, «Warum wird die PROGNOSE-Verspätung verworfen, wenn Annahme 2 sie braucht?».
+Annahme 2 (`docs/assumptions.md`): Ob eine Zeit `REAL` ist, hängt nicht von der Verspätung oder vom Abschnitt ab.
+`quality.delays()` setzt die Verspätung für alle Nicht-`REAL`-Zeilen auf leer; damit lässt sich die Annahme nicht prüfen.
+
+- **H6a — Verteilung:** Die `PROGNOSE`-Verspätung an Schweizer Halten hat einen ähnlichen Median wie die
+  `REAL`-Verspätung (Differenz unter 0.5 min). *Einschränkung:* `PROGNOSE` ist die letzte Prognose, keine Messung;
+  sie dient nur als Näherung für die unbekannte Ist-Zeit.
+- **H6b — Abhängigkeit von der Verspätung:** Der Anteil `REAL` an einem Halt hängt nicht von der gemessenen
+  Abfahrtsverspätung am vorherigen Halt derselben Fahrt ab (Anteil `REAL` in allen Verspätungsklassen innerhalb
+  von ±2 Prozentpunkten).
+- **H6c — Abhängigkeit vom Ort:** Fehlende `REAL`-Zeiten verteilen sich auf viele Halte. *Erwartung:* Die zehn Halte
+  mit den meisten Nicht-`REAL`-Ereignissen tragen weniger als 20 % davon.
+- *Folge bei Widerlegung:* Annahme 2 gilt nicht; betroffene Abschnitte bzw. Halte werden ausgewiesen oder
+  ausgeschlossen, und die Rangliste wird mit und ohne sie verglichen.
