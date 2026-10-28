@@ -139,3 +139,31 @@ def test_real_share_by_previous_delay(con):
     rows = as_dicts(quality.real_share_by_previous_delay(con))
     # Olten (previous departure +1.0 min) and Bern (previous departure +2.0 min), both REAL
     assert rows == [{"previous_delay_min": "c) 1 bis 3", "arrivals": 2, "pct_real": 100.0}]
+
+
+def test_delays_apply_the_cleaning_rules(con):
+    # Add a duplicate of the Olten row and shift the Bern arrival by one day (date error)
+    con.execute("create table rail_copy as select * from rail")
+    con.execute(
+        """
+        create or replace view rail as
+        select * replace (
+            case when ZEILE = 3 then AN_PROGNOSE + interval 1 day else AN_PROGNOSE end
+                as AN_PROGNOSE
+        ) from rail_copy
+        union all
+        select * replace (7 as ZEILE) from rail_copy where ZEILE = 2
+        """
+    )
+    rows = as_dicts(
+        quality.delays(con).order("ZEILE").select("ZEILE, an_delay, an_date_error, ab_delay")
+    )
+    assert rows == [
+        {"ZEILE": 1, "an_delay": None, "an_date_error": False, "ab_delay": 1.0},
+        {"ZEILE": 2, "an_delay": 1.0, "an_date_error": False, "ab_delay": 2.0},  # once only
+        {"ZEILE": 3, "an_delay": None, "an_date_error": True, "ab_delay": None},  # Bern
+        {"ZEILE": 4, "an_delay": None, "an_date_error": False, "ab_delay": 0.0},
+    ]
+    summary = {r["event"]: r for r in as_dicts(quality.delay_summary(con))}
+    assert summary["Ankunft"]["n"] == 1
+    assert summary["Ankunft"]["n_date_errors"] == 1

@@ -162,7 +162,13 @@ def stop_match(con: duckdb.DuckDBPyConnection) -> duckdb.DuckDBPyRelation:
 
 
 def delays(con: duckdb.DuckDBPyConnection) -> duckdb.DuckDBPyRelation:
-    """Delays in minutes at Swiss stops, measured and forecast kept apart.
+    """Cleaned stop events with delays in minutes: the one place where the cleaning rules apply.
+
+    Rules (log 2026-10-06): Swiss stops only, cancelled stops dropped, exact duplicate rows
+    dropped (same trip, stop and scheduled times; the first by ZEILE is kept), actual times
+    more than 12 h off schedule are date errors and get no delay (flagged in an_/ab_date_error).
+    Sections whose scheduled time runs backwards can only be detected per section; section
+    building drops them and must build on this function.
 
     an_delay / ab_delay: only for status REAL; these are the measurements used for ranking.
     an_delay_prognose / ab_delay_prognose: only for status PROGNOSE (last forecast, not a
@@ -170,34 +176,59 @@ def delays(con: duckdb.DuckDBPyConnection) -> duckdb.DuckDBPyRelation:
     """
     return con.sql(
         f"""
-        select *,
-               case when AN_PROGNOSE_STATUS = 'REAL'
-                    then epoch(AN_PROGNOSE - ANKUNFTSZEIT) / 60 end as an_delay,
-               case when AB_PROGNOSE_STATUS = 'REAL'
-                    then epoch(AB_PROGNOSE - ABFAHRTSZEIT) / 60 end as ab_delay,
-               case when AN_PROGNOSE_STATUS = 'PROGNOSE'
-                    then epoch(AN_PROGNOSE - ANKUNFTSZEIT) / 60 end as an_delay_prognose,
-               case when AB_PROGNOSE_STATUS = 'PROGNOSE'
-                    then epoch(AB_PROGNOSE - ABFAHRTSZEIT) / 60 end as ab_delay_prognose
-        from rail
-        where {IN_CH} and not FAELLT_AUS_TF
+        with deduplicated as (
+            select * from rail
+            where {IN_CH} and not FAELLT_AUS_TF
+            qualify row_number() over (
+                partition by {TRIP}, BPUIC, ANKUNFTSZEIT, ABFAHRTSZEIT order by ZEILE
+            ) = 1
+        ),
+        raw as (
+            select *,
+                   epoch(AN_PROGNOSE - ANKUNFTSZEIT) / 60 as an_raw,
+                   epoch(AB_PROGNOSE - ABFAHRTSZEIT) / 60 as ab_raw
+            from deduplicated
+        )
+        select * exclude (an_raw, ab_raw),
+               case when AN_PROGNOSE_STATUS = 'REAL' and abs(an_raw) <= {MAX_ABS_DELAY_MIN}
+                    then an_raw end as an_delay,
+               case when AB_PROGNOSE_STATUS = 'REAL' and abs(ab_raw) <= {MAX_ABS_DELAY_MIN}
+                    then ab_raw end as ab_delay,
+               case when AN_PROGNOSE_STATUS = 'PROGNOSE' and abs(an_raw) <= {MAX_ABS_DELAY_MIN}
+                    then an_raw end as an_delay_prognose,
+               case when AB_PROGNOSE_STATUS = 'PROGNOSE' and abs(ab_raw) <= {MAX_ABS_DELAY_MIN}
+                    then ab_raw end as ab_delay_prognose,
+               coalesce(abs(an_raw) > {MAX_ABS_DELAY_MIN}, false) as an_date_error,
+               coalesce(abs(ab_raw) > {MAX_ABS_DELAY_MIN}, false) as ab_date_error
+        from raw
         """
     )
 
 
 def delay_summary(con: duckdb.DuckDBPyConnection) -> duckdb.DuckDBPyRelation:
-    """H5: distribution of measured arrival and departure delays (minutes)."""
+    """H5: distribution of measured arrival and departure delays (minutes).
+
+    n_date_errors: measured times more than 12 h off schedule, excluded by delays().
+    """
     d = delays(con)  # noqa: F841 (referenced by name in the SQL below)
     return con.sql(
-        f"""
+        """
         with long as (
             select 'Ankunft' as event, an_delay as delay from d where an_delay is not null
             union all
             select 'Abfahrt', ab_delay from d where ab_delay is not null
+        ),
+        date_errors as (
+            select 'Ankunft' as event,
+                   count(*) filter (an_date_error and AN_PROGNOSE_STATUS = 'REAL') as n
+            from d
+            union all
+            select 'Abfahrt', count(*) filter (ab_date_error and AB_PROGNOSE_STATUS = 'REAL')
+            from d
         )
         select event,
                count(*) as n,
-               round(avg(delay) filter (abs(delay) <= {MAX_ABS_DELAY_MIN}), 2) as mean,
+               round(avg(delay), 2) as mean,
                round(quantile_cont(delay, 0.05), 2) as p05,
                round(median(delay), 2) as median,
                round(quantile_cont(delay, 0.95), 2) as p95,
@@ -205,8 +236,8 @@ def delay_summary(con: duckdb.DuckDBPyConnection) -> duckdb.DuckDBPyRelation:
                round(100 * avg((delay < -1)::int), 2) as pct_early_over_1min,
                round(100 * avg((delay >= 3)::int), 2) as pct_late_3min_or_more,
                round(100 * avg((abs(delay) > 60)::int), 3) as pct_beyond_60min,
-               count(*) filter (abs(delay) > {MAX_ABS_DELAY_MIN}) as n_date_errors
-        from long
+               any_value(date_errors.n) as n_date_errors
+        from long join date_errors using (event)
         group by event
         order by event desc
         """
@@ -221,7 +252,7 @@ def dwell_bias(con: duckdb.DuckDBPyConnection) -> duckdb.DuckDBPyRelation:
     """
     d = delays(con)  # noqa: F841
     return con.sql(
-        f"""
+        """
         select least(datediff('minute', ANKUNFTSZEIT, ABFAHRTSZEIT), 5) as scheduled_dwell_min,
                count(*) as stops,
                round(100 * count(*) / sum(count(*)) over (), 1) as pct_of_stops,
@@ -229,9 +260,7 @@ def dwell_bias(con: duckdb.DuckDBPyConnection) -> duckdb.DuckDBPyRelation:
                round(avg(ab_delay - an_delay), 2) as stop_delay_mean,
                round(median(ab_delay - an_delay), 2) as stop_delay_median
         from d
-        where an_delay is not null and ab_delay is not null
-          and abs(an_delay) <= {MAX_ABS_DELAY_MIN} and abs(ab_delay) <= {MAX_ABS_DELAY_MIN}
-          and ABFAHRTSZEIT >= ANKUNFTSZEIT
+        where an_delay is not null and ab_delay is not null and ABFAHRTSZEIT >= ANKUNFTSZEIT
         group by 1
         order by 1
         """
@@ -242,7 +271,7 @@ def delay_by_status(con: duckdb.DuckDBPyConnection) -> duckdb.DuckDBPyRelation:
     """H6a: measured (REAL) versus forecast (PROGNOSE) delays at Swiss stops (minutes)."""
     d = delays(con)  # noqa: F841
     return con.sql(
-        f"""
+        """
         with long as (
             select 'Ankunft' as event, 'REAL' as status, an_delay as delay from d
             union all select 'Ankunft', 'PROGNOSE', an_delay_prognose from d
@@ -252,7 +281,7 @@ def delay_by_status(con: duckdb.DuckDBPyConnection) -> duckdb.DuckDBPyRelation:
         select event, status,
                count(delay) as n,
                round(median(delay), 2) as median,
-               round(avg(delay) filter (abs(delay) <= {MAX_ABS_DELAY_MIN}), 2) as mean,
+               round(avg(delay), 2) as mean,
                round(quantile_cont(delay, 0.95), 2) as p95,
                round(100 * avg((delay >= 3)::int), 1) as pct_late_3min_or_more
         from long
@@ -301,14 +330,13 @@ def stops_by_real_coverage(con: duckdb.DuckDBPyConnection) -> duckdb.DuckDBPyRel
 
     Shows whether missing measurements are spread out or concentrated on some stops.
     """
+    d = delays(con)  # noqa: F841
     return con.sql(
         """
         with events as (
-            select BPUIC, AN_PROGNOSE_STATUS as status from rail
-            where IN_CH and not FAELLT_AUS_TF and ANKUNFTSZEIT is not null
+            select BPUIC, AN_PROGNOSE_STATUS as status from d where ANKUNFTSZEIT is not null
             union all
-            select BPUIC, AB_PROGNOSE_STATUS from rail
-            where IN_CH and not FAELLT_AUS_TF and ABFAHRTSZEIT is not null
+            select BPUIC, AB_PROGNOSE_STATUS from d where ABFAHRTSZEIT is not null
         ),
         stops as (
             select BPUIC, count(*) as n,
