@@ -19,8 +19,11 @@ from sbb_delays.paths import ISTDATEN_RAIL, ISTDATEN_RAW
 
 RAIL_PRODUCT = "Zug"
 
-# Column names stay as in the source so they match the official documentation.
+# Column names stay as in the source so they match the official documentation. ZEILE is added:
+# the row number in the daily CSV. Rows of a trip are stored in travel order, and scheduled
+# times only have minute resolution, so ZEILE is the reliable stop sequence.
 SELECT_TYPED = """
+    ZEILE,
     strptime(BETRIEBSTAG, '%d.%m.%Y')::date as BETRIEBSTAG,
     FAHRT_BEZEICHNER,
     BETREIBER_ID,
@@ -51,7 +54,11 @@ def csv_to_rail_parquet(csv_path: Path, parquet_path: Path) -> int:
     parquet_path.parent.mkdir(parents=True, exist_ok=True)
     tmp = parquet_path.with_suffix(".parquet.part")
     con = duckdb.connect()
-    source = "read_csv(?, delim=';', header=true, all_varchar=true)"
+    # parallel=false keeps the file order, which row_number() turns into ZEILE
+    source = """(
+        select row_number() over () as ZEILE, *
+        from read_csv(?, delim=';', header=true, all_varchar=true, parallel=false)
+    )"""
     expected = con.execute(
         f"select count(*) from {source} where PRODUKT_ID = ?", [str(csv_path), RAIL_PRODUCT]
     ).fetchone()[0]
