@@ -272,3 +272,25 @@ Befunde, September 2026, Halte in der Schweiz, ohne Ausfälle:
 - **Rechenprobe, September 2026:** gemessene Ankünfte 4'131'201 → 4'130'730; Anteil ausserhalb ±60 min 0.018 % →
   0.007 % (vorher zählten die Datumsfehler mit); 5-%-Quantil der Ankunft −0.92 → −0.90 min; Median und Mittelwert
   unverändert. Die Befunde vom 6.10. und 25.10. bleiben in der Aussage gleich.
+
+## 2026-10-28 — Korrektur H6b: Vorhalte ohne Messung mitzählen (Review PR #2, Frage 2)
+
+- **Frage (schwagia, `quality.py`):** H6b zählte nur Ankünfte nach einem gemessenen Vorhalt. Fallen damit nicht genau
+  die Strecken weg, auf denen `REAL` systematisch fehlt, und sind die 98–99.6 % zu optimistisch?
+- **Befund (September 2026, Schweizer Halte, nach den zentralen Regeln in `delays()`):**
+
+| Vorhalt | Anteil der Ankünfte | davon gemessen | Spanne über die Verspätungsklassen |
+|---|---|---|---|
+| gemessen | 96.55 % | 99.49 % | 97.9 % bis 99.6 % |
+| nur Prognose | 2.54 % | 16.09 % | 5.9 % bis 29.9 % (Klasse nach Prognose-Verspätung) |
+| ohne Zeit | 0.91 % | 1.27 % | – |
+| alle | 100 % | 96.48 % | |
+
+- **Korrektur:** Die 98–99.6 % gelten nur für Ankünfte nach einem gemessenen Vorhalt, nicht für alle Ankünfte.
+  Fehlt die Messung am Vorhalt, fehlt sie meist auch am nächsten Halt: Das Fehlen zieht sich über Streckenstücke
+  (passend zu H6c).
+- **Was bleibt:** Die Aussage von H6b, dass das Fehlen nicht von der Verspätung abhängt, bleibt bestehen. Auch bei
+  Vorhalten mit nur Prognose sinkt der gemessene Anteil mit der Verspätung nicht (12.1 % bei 1–3 min, 29.9 % bei
+  6–15 min). Einschränkung: Die Prognose ist nur eine Näherung der unbekannten Verspätung.
+- **Folge für A2:** unverändert «teilweise»; das Fehlen ist an Orte und Streckenstücke gebunden, nicht an die
+  Verspätung. `real_share_by_previous_delay()` weist jetzt alle Vorhalt-Klassen aus.

@@ -293,34 +293,49 @@ def delay_by_status(con: duckdb.DuckDBPyConnection) -> duckdb.DuckDBPyRelation:
 
 
 def real_share_by_previous_delay(con: duckdb.DuckDBPyConnection) -> duckdb.DuckDBPyRelation:
-    """H6b: share of REAL arrivals by the measured departure delay at the previous stop.
+    """H6b: share of measured arrivals by what is known about the previous stop.
 
-    If being late made a measurement less likely, the share would fall with the delay.
+    previous_stop: whether the departure at the previous Swiss stop of the trip was measured
+    (REAL), only forecast (PROGNOSE), or has no usable time. previous_delay_min classifies the
+    measured delay, or the forecast delay where only a forecast exists. If being late made a
+    measurement less likely, pct_real would fall with the delay within each previous_stop group.
+    Counting only measured previous stops (the first version) leaves out the stretches where
+    measurements are missing systematically (review PR #2, question 2).
     """
+    d = delays(con)  # noqa: F841
     return con.sql(
         f"""
         with ordered as (
-            select AN_PROGNOSE_STATUS as status, IN_CH, FAELLT_AUS_TF, ANKUNFTSZEIT,
-                   lag(IN_CH) over trip as prev_in_ch,
-                   lag(case when AB_PROGNOSE_STATUS = 'REAL'
-                            then epoch(AB_PROGNOSE - ABFAHRTSZEIT) / 60 end) over trip
-                       as prev_delay
-            from rail
+            select an_delay, ANKUNFTSZEIT,
+                   lag(ab_delay) over trip as prev_real,
+                   lag(ab_delay_prognose) over trip as prev_prognose,
+                   lag(ZEILE) over trip as prev_zeile
+            from d
             window trip as (partition by {TRIP} order by ZEILE)
+        ),
+        classified as (
+            select an_delay,
+                   case when prev_real is not null then 'a) gemessen'
+                        when prev_prognose is not null then 'b) nur Prognose'
+                        else 'c) ohne Zeit' end as previous_stop,
+                   coalesce(prev_real, prev_prognose) as prev_delay
+            from ordered
+            where prev_zeile is not null and ANKUNFTSZEIT is not null
         )
-        select case when prev_delay < 0 then 'a) unter 0'
+        select previous_stop,
+               case when prev_delay is null then '-'
+                    when prev_delay < 0 then 'a) unter 0'
                     when prev_delay < 1 then 'b) 0 bis 1'
                     when prev_delay < 3 then 'c) 1 bis 3'
                     when prev_delay < 6 then 'd) 3 bis 6'
                     when prev_delay < 15 then 'e) 6 bis 15'
                     else 'f) 15 und mehr' end as previous_delay_min,
                count(*) as arrivals,
-               round(100 * avg((status = 'REAL')::int), 2) as pct_real
-        from ordered
-        where IN_CH and prev_in_ch and not FAELLT_AUS_TF and ANKUNFTSZEIT is not null
-          and abs(prev_delay) <= {MAX_ABS_DELAY_MIN}
-        group by 1
-        order by 1
+               round(100 * count(*) / sum(count(*)) over (), 2) as pct_of_arrivals,
+               round(100 * avg((an_delay is not null)::int), 2) as pct_real
+        from classified
+        group by all
+        order by previous_stop, previous_delay_min
         """
     )
 

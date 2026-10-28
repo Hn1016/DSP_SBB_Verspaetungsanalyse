@@ -138,7 +138,32 @@ def test_stops_by_real_coverage_classifies_every_swiss_stop(con):
 def test_real_share_by_previous_delay(con):
     rows = as_dicts(quality.real_share_by_previous_delay(con))
     # Olten (previous departure +1.0 min) and Bern (previous departure +2.0 min), both REAL
-    assert rows == [{"previous_delay_min": "c) 1 bis 3", "arrivals": 2, "pct_real": 100.0}]
+    assert rows == [
+        {
+            "previous_stop": "a) gemessen",
+            "previous_delay_min": "c) 1 bis 3",
+            "arrivals": 2,
+            "pct_of_arrivals": 100.0,
+            "pct_real": 100.0,
+        }
+    ]
+
+
+def test_real_share_by_previous_delay_counts_unmeasured_previous_stops(con):
+    # Make the Olten departure a forecast: Bern then follows a stop with a forecast only
+    con.execute("create table rail_copy as select * from rail")
+    con.execute(
+        """
+        create or replace view rail as
+        select * replace (
+            case when ZEILE = 2 then 'PROGNOSE' else AB_PROGNOSE_STATUS end as AB_PROGNOSE_STATUS
+        ) from rail_copy
+        """
+    )
+    rows = {r["previous_stop"]: r for r in as_dicts(quality.real_share_by_previous_delay(con))}
+    assert rows["b) nur Prognose"]["previous_delay_min"] == "c) 1 bis 3"  # forecast +2.0 min
+    assert rows["b) nur Prognose"]["arrivals"] == 1
+    assert rows["a) gemessen"]["arrivals"] == 1
 
 
 def test_delays_apply_the_cleaning_rules(con):
