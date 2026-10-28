@@ -186,3 +186,121 @@ Datenbasis: September 2026, nur Züge: 5'327'156 Zeilen, 463'995 Fahrten, 52 Bet
   Hauptkennzahl, Zeitfenster, Stabilitätsschwelle) werden vor der ersten Rangliste festgelegt.
 - **Prüfung:** Jede Aussage gegen `docs/requirements.md` bzw. den zitierten Log-Eintrag gelesen.
 - **Übernommen/verworfen:** _(vom Team auszufüllen)_
+
+## 2026-10-25 — Hypothese H6: Fehlende `REAL`-Zeiten sind nicht systematisch (vor der Analyse notiert)
+
+Anlass: Review-Frage zu PR #2, «Warum wird die PROGNOSE-Verspätung verworfen, wenn Annahme 2 sie braucht?».
+Annahme 2 (`docs/assumptions.md`): Ob eine Zeit `REAL` ist, hängt nicht von der Verspätung oder vom Abschnitt ab.
+`quality.delays()` setzt die Verspätung für alle Nicht-`REAL`-Zeilen auf leer; damit lässt sich die Annahme nicht prüfen.
+
+- **H6a — Verteilung:** Die `PROGNOSE`-Verspätung an Schweizer Halten hat einen ähnlichen Median wie die
+  `REAL`-Verspätung (Differenz unter 0.5 min). *Einschränkung:* `PROGNOSE` ist die letzte Prognose, keine Messung;
+  sie dient nur als Näherung für die unbekannte Ist-Zeit.
+- **H6b — Abhängigkeit von der Verspätung:** Der Anteil `REAL` an einem Halt hängt nicht von der gemessenen
+  Abfahrtsverspätung am vorherigen Halt derselben Fahrt ab (Anteil `REAL` in allen Verspätungsklassen innerhalb
+  von ±2 Prozentpunkten).
+- **H6c — Abhängigkeit vom Ort:** Fehlende `REAL`-Zeiten verteilen sich auf viele Halte. *Erwartung:* Die zehn Halte
+  mit den meisten Nicht-`REAL`-Ereignissen tragen weniger als 20 % davon.
+- *Folge bei Widerlegung:* Annahme 2 gilt nicht; betroffene Abschnitte bzw. Halte werden ausgewiesen oder
+  ausgeschlossen, und die Rangliste wird mit und ohne sie verglichen.
+
+## 2026-10-25 — Befund H6 und Antwort auf die Review-Frage zu `PROGNOSE`
+
+**Frage (Review PR #2):** Warum wird die `PROGNOSE`-Verspätung verworfen, wenn Annahme 2 sie braucht?
+
+**Antwort:** Zu Recht kritisiert. `delays()` hat `PROGNOSE` verworfen, weil es keine Messung ist und nicht in die
+Rangliste gehört. Damit fehlte aber die einzige Vergleichsgrösse, um Annahme 2 zu prüfen. Geändert: `delays()`
+liefert die `PROGNOSE`-Verspätung jetzt getrennt (`an_delay_prognose`, `ab_delay_prognose`); für die Rangliste
+zählen weiterhin nur `an_delay`/`ab_delay` aus `REAL`. Neue Prüfungen in `quality.py` und im Notebook (Abschnitt H6).
+
+Befunde, September 2026, Halte in der Schweiz, ohne Ausfälle:
+
+- **H6a — gestützt.** Median `PROGNOSE` gegenüber `REAL`: Ankunft 0.50 zu 0.53 min, Abfahrt 0.98 zu 1.00 min
+  (Differenz unter 0.5 min). Der Mittelwert der Ankunft liegt bei `PROGNOSE` höher (1.17 zu 0.84 min). Für ca. 8'000
+  `PROGNOSE`-Zeilen je Ereignisart fehlt auch die Prognosezeit.
+- **H6b — gestützt.** Der Anteil `REAL` hängt kaum von der Verspätung am vorherigen Halt ab: 98.0 % bis 99.6 % über
+  alle Klassen (Schwelle ±2 Prozentpunkte eingehalten). Leicht tiefer bei 15 min und mehr (98.0 %) und bei zu
+  frühen Zügen (98.6 %).
+- **H6c — formal gestützt, inhaltlich widerlegt.** Die zehn Halte mit den meisten Nicht-`REAL`-Ereignissen tragen
+  17.4 % davon (Schwelle 20 %). Die Schwelle war aber das falsche Mass: Das Fehlen ist an bestimmte Halte gebunden.
+  52 Schweizer Halte haben nie eine `REAL`-Zeit (36.9 % aller Nicht-`REAL`-Ereignisse), 108 Halte haben 20 bis 99 %
+  Nicht-`REAL` (44.1 %). Betroffen sind v. a. Strecken mit deutschen Betreibern auf Schweizer Gebiet (Klettgau
+  Neuhausen–Trasadingen, Basel Bad Bf, Riehen, Herblingen–Thayngen) sowie die BLM (Grütschalp–Mürren).
+- **Folgerung für Annahme 2:** Der Teil «hängt nicht von der Verspätung ab» ist gestützt. Der Teil «hängt nicht vom
+  Abschnitt ab» ist widerlegt.
+
+**Entscheidungen:**
+
+- Die 52 nie gemessenen Halte fehlen in Rangliste und Karte; sie werden im Bericht als Abdeckungslücke genannt,
+  nicht als «unauffällig».
+- Die Abdeckung je Halt bzw. Abschnitt wird bei der Abschnittsbildung als Spalte geführt. Die Rangliste wird mit
+  und ohne Abschnitte unter 80 % `REAL` berechnet und verglichen (Stabilitätsprüfung).
+- `PROGNOSE`-Werte fliessen nicht in die Rangliste ein.
+
+## 2026-10-25 — KI-Einsatz: Antwort auf die Review-Frage
+
+- **Aufgabe:** Claude Code hat H6 formuliert (Commit vor der Analyse), die Abfragen im laufenden Notebook ausgeführt
+  (marimo pair), `quality.py` erweitert und diesen Eintrag geschrieben.
+- **Prüfung:** 25 pytest-Tests, davon einer mit einer künstlichen `PROGNOSE`-Zeile; Notebook läuft.
+- **Offen für das Team:** Ob die Schwelle von 80 % `REAL` für die Rangliste fachlich passt.
+
+## 2026-10-28 — Entscheidung: Annahmen A1–A10 lösen die Hypothesen H1–H6 als Gliederung ab
+
+- **Entscheidung:** Ab jetzt gliedern die Annahmen A1–A10 (`docs/assumptions.md`, Branch `docs/one-pager`,
+  2026-10-17) die Prüfungen. H1–H6 werden nicht weitergeführt; ihre Einträge bleiben als Nachweis im Log stehen.
+- **Begründung:** H1–H5 wurden vor dem Tutorial aus der Datensicht formuliert. Die Annahmen A1–A10 sind aus dem
+  One-Pager abgeleitet und nach Wichtigkeit sortiert; so wird zuerst geprüft, was das Projekt gefährdet.
+- **Was weiter gilt:** Die Entscheidungen aus H1–H6 bleiben in Kraft: nur Züge, nur Halte in der Schweiz, nur `REAL`
+  als Messung, Reihenfolge nach `ZEILE`, doppelte Zeilen, rückwärts laufende Soll-Zeiten und Werte über ±12 Stunden
+  verwerfen, `PROGNOSE` getrennt führen. Der One-Pager stützt sich darauf («Eingrenzung», Log 2026-10-06).
+- **Zuordnung:**
+
+| Hypothese | Annahme | Was der Befund für die Annahme bedeutet |
+|---|---|---|
+| H1 Abdeckung | A2, A3 | Abdeckung im September 96.2 % an Schweizer Halten; für A3 nur ein Monat |
+| H2 Fahrten rekonstruierbar | A4, A5 | `ZEILE` ordnet die Halte (September); rückwärts laufende Abschnitte am 25.–27.9. deuten auf Umleitungen (A5) |
+| H3 Ausfälle | A9 | Ausfälle häufen sich an Wochenenden; ob sie die Rangliste verschieben, prüft erst A9 |
+| H4 Koordinaten | – | reine Datenprüfung ohne eigene Annahme; bleibt bestehen |
+| H5 Verspätungswerte | A1 | Werte plausibel; Datumsfehler verworfen |
+| Nebenbefund Haltverspätung | A7, A8 | Minutenauflösung verzerrt die Haltverspätung; Grundlage für A8, Hinweis auf A7 |
+| H6 Fehlende `REAL`-Zeiten | A2 | gestützt für «unabhängig von der Verspätung», widerlegt für «unabhängig vom Ort» |
+
+- **Offen:** Die Spalte «Evidenz» in `docs/assumptions.md` gibt den Stand vom 2026-10-17 wieder, vor diesen Befunden.
+  Sie wird nachgeführt, sobald `docs/assumptions.md` auf `main` liegt.
+
+## 2026-10-28 — Entscheidung: Bereinigungsregeln zentral in `delays()` (Review PR #2, Frage 1)
+
+- **Frage (schwagia, `quality.py`):** Warum werden die Bereinigungen vom 6.10. in `delays()` nicht gemacht, und wo
+  sollen sie zentral sein, damit die Rangliste sie sicher bekommt?
+- **Befund:** Die Regeln waren verteilt. `delays()` filterte nur auf Schweiz und Ausfälle; die doppelten Zeilen
+  blieben drin; Datumsfehler (über ±12 h: 448 Ankünfte, 456 Abfahrten) waren in `delay_summary()` nur aus dem
+  Mittelwert ausgeschlossen, nicht aus Quantilen und Anteilen.
+- **Entscheidung:** Alle Regeln, die je Halt gelten, stehen jetzt in `delays()`: nur Schweiz, ohne Ausfälle, ohne
+  doppelte Zeilen, Datumsfehler ohne Verspätung (markiert in `an_date_error`/`ab_date_error`). Alle Prüfungen bauen
+  darauf auf und filtern nicht mehr selbst. Rückwärts laufende Soll-Zeiten sind nur je Abschnitt erkennbar; die
+  Abschnittsbildung verwirft sie und baut ebenfalls auf `delays()` auf. Regel in `AGENTS.md`.
+- **Rechenprobe, September 2026:** gemessene Ankünfte 4'131'201 → 4'130'730; Anteil ausserhalb ±60 min 0.018 % →
+  0.007 % (vorher zählten die Datumsfehler mit); 5-%-Quantil der Ankunft −0.92 → −0.90 min; Median und Mittelwert
+  unverändert. Die Befunde vom 6.10. und 25.10. bleiben in der Aussage gleich.
+
+## 2026-10-28 — Korrektur H6b: Vorhalte ohne Messung mitzählen (Review PR #2, Frage 2)
+
+- **Frage (schwagia, `quality.py`):** H6b zählte nur Ankünfte nach einem gemessenen Vorhalt. Fallen damit nicht genau
+  die Strecken weg, auf denen `REAL` systematisch fehlt, und sind die 98–99.6 % zu optimistisch?
+- **Befund (September 2026, Schweizer Halte, nach den zentralen Regeln in `delays()`):**
+
+| Vorhalt | Anteil der Ankünfte | davon gemessen | Spanne über die Verspätungsklassen |
+|---|---|---|---|
+| gemessen | 96.55 % | 99.49 % | 97.9 % bis 99.6 % |
+| nur Prognose | 2.54 % | 16.09 % | 5.9 % bis 29.9 % (Klasse nach Prognose-Verspätung) |
+| ohne Zeit | 0.91 % | 1.27 % | – |
+| alle | 100 % | 96.48 % | |
+
+- **Korrektur:** Die 98–99.6 % gelten nur für Ankünfte nach einem gemessenen Vorhalt, nicht für alle Ankünfte.
+  Fehlt die Messung am Vorhalt, fehlt sie meist auch am nächsten Halt: Das Fehlen zieht sich über Streckenstücke
+  (passend zu H6c).
+- **Was bleibt:** Die Aussage von H6b, dass das Fehlen nicht von der Verspätung abhängt, bleibt bestehen. Auch bei
+  Vorhalten mit nur Prognose sinkt der gemessene Anteil mit der Verspätung nicht (12.1 % bei 1–3 min, 29.9 % bei
+  6–15 min). Einschränkung: Die Prognose ist nur eine Näherung der unbekannten Verspätung.
+- **Folge für A2:** unverändert «teilweise»; das Fehlen ist an Orte und Streckenstücke gebunden, nicht an die
+  Verspätung. `real_share_by_previous_delay()` weist jetzt alle Vorhalt-Klassen aus.
