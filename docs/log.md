@@ -177,6 +177,16 @@ Datenbasis: September 2026, nur Züge: 5'327'156 Zeilen, 463'995 Fahrten, 52 Bet
   Gegenprüfen gefunden und korrigiert (Duplikatzähler; Sortierung über Soll-Zeit).
 - **Übernommen/verworfen:** _(vom Team auszufüllen)_
 
+## 2026-10-17 — KI-Einsatz: One-Pager
+
+- **Aufgabe:** Claude Code hat `docs/one-pager.md` (Abschnitte Warum, Was, Wie, Nicht-Ziele, Fertig, nach dem
+  Tutorial `vp-82/ds-projekt-2026-tutorial`, Kapitel 1) erstellt.
+- **Reflektion:** Quellen sind nur die Aufgabenstellung und Entscheidungen in diesem Log; nicht Entschiedenes ist als
+  «offen» markiert und nicht vom Agenten ergänzt. Die offenen Entscheidungsregeln (u. a. Richtung, «systematisch»,
+  Hauptkennzahl, Zeitfenster, Stabilitätsschwelle) werden vor der ersten Rangliste festgelegt.
+- **Prüfung:** Jede Aussage gegen `docs/requirements.md` bzw. den zitierten Log-Eintrag gelesen.
+- **Übernommen/verworfen:** _(vom Team auszufüllen)_
+
 ## 2026-10-25 — Hypothese H6: Fehlende `REAL`-Zeiten sind nicht systematisch (vor der Analyse notiert)
 
 Anlass: Review-Frage zu PR #2, «Warum wird die PROGNOSE-Verspätung verworfen, wenn Annahme 2 sie braucht?».
@@ -294,3 +304,30 @@ Befunde, September 2026, Halte in der Schweiz, ohne Ausfälle:
   6–15 min). Einschränkung: Die Prognose ist nur eine Näherung der unbekannten Verspätung.
 - **Folge für A2:** unverändert «teilweise»; das Fehlen ist an Orte und Streckenstücke gebunden, nicht an die
   Verspätung. `real_share_by_previous_delay()` weist jetzt alle Vorhalt-Klassen aus.
+
+## 2026-10-29 — One-Pager Schritt 2 nachgeführt (Review PR #3, Frage 2)
+
+- **Frage (schwagia, `one-pager.md`):** Warum werden Abschnitte nur aus `REAL`-Halten gebildet, ohne die Entscheidung
+  vom 25.10.? Sonst fallen die 52 nie gemessenen Halte still weg, obwohl unter «Fertig» jeder Abschnitt einen Wert
+  oder einen Grund bekommen soll.
+- **Antwort:** Der One-Pager stammt vom 17.10., die Entscheidung vom 25.10.; Schritt 2 war veraltet. Nachgeführt:
+  Anteil `REAL` als Spalte je Abschnitt und Halt, nie gemessene Halte als Abdeckungslücke im Bericht, Vergleich der
+  Rangliste mit und ohne Abschnitte unter 80 % `REAL`, Verweis auf die zentralen Regeln in `quality.delays()`. Neu
+  offen: ob die Schwelle von 80 % passt. Der offene Punkt unter «Fertig» bleibt offen; entschieden ist nur der
+  Grund «nie gemessen».
+- Es wurde nur übernommen, was im Log bereits entschieden ist; offene Punkte sind nicht vom Agenten gefüllt.
+
+## 2026-10-29 — Evidenz von A9 und A10 ohne Grundlage (Review PR #3, Frage 1)
+
+- **Frage (schwagia, `assumptions.md`):** Worauf stützt sich «Evidenz hoch» bei A9? H3 zeigt nur, dass Ausfälle
+  selten sind und sich am Wochenende häufen.
+- **Antwort:** Auf nichts Belastbares. Die Spalte «Evidenz» ist die Einschätzung des Teams vom 17.10., gemacht ohne
+  die Daten zu öffnen (Kopf von `assumptions.md`). H3 hat Ausfälle nur gezählt; ob sie die Rangliste verschieben,
+  wurde nicht geprüft (Zuordnung vom 28.10.: «prüft erst A9»). Dasselbe gilt für A10: Fahrten je Abschnitt und
+  Zeitfenster wurden nie gezählt. Beide müssten «tief» sein und rückten damit in der Tabelle nach oben.
+- **Entscheidung:** Die Tabelle bleibt in diesem PR, wie sie ist (Vorgabe: One-Pager-PR mit den offenen Punkten so,
+  wie sie sind). Das geplante Paket «Evidenz nachführen» umfasst nicht nur A2, sondern die ganze Spalte, mindestens
+  A2, A9 und A10, und sortiert die Tabelle danach neu.
+- **Hinweis für dieses Paket:** Auf `feat/assumption-checks` (noch nicht auf `main`) gibt es inzwischen Prüfungen für
+  A1–A10. A9 hielt dort nur knapp (7 von 10 Top-Abschnitten gleich, Schwelle 7), und das Kriterium für A10 erwies
+  sich als zu schwach. Auch danach wäre «hoch» bei beiden nicht begründet.
