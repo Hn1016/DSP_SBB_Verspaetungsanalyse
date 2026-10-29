@@ -39,6 +39,9 @@ Full requirements: `docs/requirements.md` (German). Read it before non-trivial w
 ## Workflow
 
 - `main` is protected; work on feature branches, merge via PR reviewed by the other team member.
+- A package starts as an issue that a person writes with the Paket form before the branch exists,
+  and its pull request closes that issue. The pull request text starts with `Closes #N` and has a
+  section «Was vom Issue abweicht».
 - Small, focused commits.
 - Log decisions, assumptions, hypotheses and AI use in `docs/log.md` in the same PR as the code
   (dated entries, no prompt transcripts). Hypotheses are logged *before* the analysis.
