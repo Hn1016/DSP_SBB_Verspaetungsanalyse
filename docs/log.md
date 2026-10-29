@@ -331,3 +331,16 @@ Befunde, September 2026, Halte in der Schweiz, ohne Ausfälle:
 - **Hinweis für dieses Paket:** Auf `feat/assumption-checks` (noch nicht auf `main`) gibt es inzwischen Prüfungen für
   A1–A10. A9 hielt dort nur knapp (7 von 10 Top-Abschnitten gleich, Schwelle 7), und das Kriterium für A10 erwies
   sich als zu schwach. Auch danach wäre «hoch» bei beiden nicht begründet.
+
+## 2026-10-29 — KI-Einsatz: Issue-Formular «Paket»
+
+- **Mine:** Ein Issue-Formular «Paket» mit fünf Pflicht-Textfeldern (Was am Ende existiert, Welcher Frage es dient,
+  Fertig wenn, Art und Umfang, Nicht enthalten); leere Issues sind ausgeschaltet. Neue Regel: Ein Paket beginnt als
+  Issue, das eine Person mit dem Formular schreibt, bevor der Branch existiert, und sein Pull Request schliesst dieses
+  Issue. Vorlage sind `package.yml`, `config.yml` und die letzte Workflow-Regel aus dem Tutorial-Repository.
+- **Delegated:** Claude Code hat Feldnamen und Beschreibungen ins Deutsche übersetzt (die Vorlage hat keine
+  Platzhalter, es wurden keine ergänzt), die Regel in `AGENTS.md` unter «Workflow» eingetragen (`CLAUDE.md`
+  importiert nur `AGENTS.md`), die Begründung in Klammern aus der Vorlage weggelassen (die übrigen Regeln haben keine)
+  und diesen Eintrag geschrieben.
+- **Hinweis:** GitHub zeigt Issue-Formulare erst, wenn sie auf dem Standard-Branch liegen. Die Regel gilt deshalb ab
+  dem Merge; dieses Paket selbst hat noch kein Issue.

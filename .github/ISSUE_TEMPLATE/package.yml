@@ -1,0 +1,39 @@
+name: Paket
+description: Ein Arbeitspaket, von einer Person geschrieben, bevor der Branch existiert.
+title: "Paket: "
+body:
+  - type: textarea
+    id: what-exists
+    attributes:
+      label: Was am Ende existiert
+      description: Eine Datei, ein Schritt, ein Satz oder eine Regel. Ein bis zwei Sätze, kein Wie.
+    validations:
+      required: true
+  - type: textarea
+    id: question
+    attributes:
+      label: Welcher Frage es dient
+      description: Die Zeile im One-Pager oder die Hypothese im Log, zu der dieses Paket gehört.
+    validations:
+      required: true
+  - type: textarea
+    id: done-when
+    attributes:
+      label: Fertig wenn
+      description: Was jemand anderes ausführt oder liest, um zu sehen, dass es fertig ist, mit dem erwarteten Wert, wo es einen gibt.
+    validations:
+      required: true
+  - type: textarea
+    id: kind-size
+    attributes:
+      label: Art und Umfang
+      description: Herausfinden, übernehmen oder absichern, und etwa wie viele Zeilen. Mehr als etwa 200 braucht eine Begründung.
+    validations:
+      required: true
+  - type: textarea
+    id: out-of-scope
+    attributes:
+      label: Nicht enthalten
+      description: Was dieses Paket nicht tut, besonders den naheliegenden nächsten Schritt.
+    validations:
+      required: true
