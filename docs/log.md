@@ -338,6 +338,9 @@ Befunde, September 2026, Halte in der Schweiz, ohne Ausfälle:
   Fertig wenn, Art und Umfang, Nicht enthalten); leere Issues sind ausgeschaltet. Neue Regel: Ein Paket beginnt als
   Issue, das eine Person mit dem Formular schreibt, bevor der Branch existiert, und sein Pull Request schliesst dieses
   Issue. Vorlage sind `package.yml`, `config.yml` und die letzte Workflow-Regel aus dem Tutorial-Repository.
+  Nach dem Review von PR #4: Das Feld «Art und Umfang» heisst «Art und Grösse», wörtlich wie «Kind and size» in der
+  Vorlage. Der PR-Text beginnt mit «Closes #N» und enthält einen Abschnitt «Was vom Issue abweicht» (Regel in
+  `AGENTS.md`).
 - **Delegated:** Claude Code hat Feldnamen und Beschreibungen ins Deutsche übersetzt (die Vorlage hat keine
   Platzhalter, es wurden keine ergänzt), die Regel in `AGENTS.md` unter «Workflow» eingetragen (`CLAUDE.md`
   importiert nur `AGENTS.md`), die Begründung in Klammern aus der Vorlage weggelassen (die übrigen Regeln haben keine)
