@@ -304,3 +304,15 @@ Befunde, September 2026, Halte in der Schweiz, ohne Ausfälle:
   6–15 min). Einschränkung: Die Prognose ist nur eine Näherung der unbekannten Verspätung.
 - **Folge für A2:** unverändert «teilweise»; das Fehlen ist an Orte und Streckenstücke gebunden, nicht an die
   Verspätung. `real_share_by_previous_delay()` weist jetzt alle Vorhalt-Klassen aus.
+
+## 2026-10-29 — One-Pager Schritt 2 nachgeführt (Review PR #3, Frage 2)
+
+- **Frage (schwagia, `one-pager.md`):** Warum werden Abschnitte nur aus `REAL`-Halten gebildet, ohne die Entscheidung
+  vom 25.10.? Sonst fallen die 52 nie gemessenen Halte still weg, obwohl unter «Fertig» jeder Abschnitt einen Wert
+  oder einen Grund bekommen soll.
+- **Antwort:** Der One-Pager stammt vom 17.10., die Entscheidung vom 25.10.; Schritt 2 war veraltet. Nachgeführt:
+  Anteil `REAL` als Spalte je Abschnitt und Halt, nie gemessene Halte als Abdeckungslücke im Bericht, Vergleich der
+  Rangliste mit und ohne Abschnitte unter 80 % `REAL`, Verweis auf die zentralen Regeln in `quality.delays()`. Neu
+  offen: ob die Schwelle von 80 % passt. Der offene Punkt unter «Fertig» bleibt offen; entschieden ist nur der
+  Grund «nie gemessen».
+- Es wurde nur übernommen, was im Log bereits entschieden ist; offene Punkte sind nicht vom Agenten gefüllt.

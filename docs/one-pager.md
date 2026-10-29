@@ -1,7 +1,8 @@
 # One-Pager: Wo entstehen und wo verschwinden Verspätungen im Schweizer Bahnnetz?
 
-Stand: 2026-10-17. Quellen: Aufgabenstellung (`docs/requirements.md`) und die Entscheidungen im Projektlog
-(`docs/log.md`). Was dort nicht entschieden ist, steht hier als **offen**.
+Stand: 2026-10-17, Schritt 2 und «Fertig» nachgeführt am 2026-10-29. Quellen: Aufgabenstellung
+(`docs/requirements.md`) und die Entscheidungen im Projektlog (`docs/log.md`). Was dort nicht entschieden ist, steht
+hier als **offen**.
 
 ## Warum (Why)
 
@@ -64,7 +65,10 @@ Offen (vor der ersten Rangliste festzulegen, in einem eigenen Pull Request ohne 
 
 1. Monatsarchive laden und je Betriebstag als Parquet speichern (bestehend: `download`, `load`).
 2. Abschnitte bilden: Halte einer Fahrt nach `ZEILE` ordnen, nur zwischen zwei nicht ausgefallenen Halten mit
-   `REAL`; doppelte Zeilen, rückwärts laufende Soll-Zeiten und Werte über ±12 Stunden verwerfen.
+   `REAL`; doppelte Zeilen, rückwärts laufende Soll-Zeiten und Werte über ±12 Stunden verwerfen (Regeln zentral in
+   `quality.delays()`, Log 2026-10-28). Der Anteil `REAL` wird je Abschnitt und Halt als Spalte geführt. Halte ohne
+   `REAL`-Zeit fallen nicht still weg, sondern werden im Bericht als Abdeckungslücke genannt; die Rangliste wird mit
+   und ohne Abschnitte unter 80 % `REAL` verglichen (Log 2026-10-25).
 3. Strecken- und Haltverspätung je Fahrt berechnen.
 4. Je Abschnitt bzw. Halt und Zeitfenster aggregieren.
 5. Je Abschnitt eine einfache Regression des Zuwachses auf die eingehende Verspätung: Die Steigung zeigt, ob ein
@@ -79,6 +83,7 @@ Offen:
 - Wie Halte (BPUIC) auf die Streckenabschnitte und Kilometrierung von data.sbb.ch abgebildet werden.
 - Durchfahrten: vorerst wie Halte ohne Fahrgastwechsel behandelt, nicht als Halt ausgewertet (Annahme,
   Log 2026-10-06).
+- Ob die Schwelle von 80 % `REAL` für den Vergleich passt (Log 2026-10-25, vom Team zu bestätigen).
 
 ## Nicht-Ziele (Non-goals)
 
@@ -102,4 +107,5 @@ Offen:
 
 Offen:
 - Ob jeder Abschnitt und Halt entweder einen Wert oder einen genannten Grund bekommt, warum er nicht bewertet wird
-  (z. B. zu wenige gemessene Fahrten), statt still zu entfallen.
+  (z. B. zu wenige gemessene Fahrten), statt still zu entfallen. Entschieden ist bisher nur der Grund «nie
+  gemessen»: Diese Halte werden als Abdeckungslücke genannt (Log 2026-10-25).
