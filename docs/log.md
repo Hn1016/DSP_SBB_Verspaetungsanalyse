@@ -316,3 +316,18 @@ Befunde, September 2026, Halte in der Schweiz, ohne Ausfälle:
   offen: ob die Schwelle von 80 % passt. Der offene Punkt unter «Fertig» bleibt offen; entschieden ist nur der
   Grund «nie gemessen».
 - Es wurde nur übernommen, was im Log bereits entschieden ist; offene Punkte sind nicht vom Agenten gefüllt.
+
+## 2026-10-29 — Evidenz von A9 und A10 ohne Grundlage (Review PR #3, Frage 1)
+
+- **Frage (schwagia, `assumptions.md`):** Worauf stützt sich «Evidenz hoch» bei A9? H3 zeigt nur, dass Ausfälle
+  selten sind und sich am Wochenende häufen.
+- **Antwort:** Auf nichts Belastbares. Die Spalte «Evidenz» ist die Einschätzung des Teams vom 17.10., gemacht ohne
+  die Daten zu öffnen (Kopf von `assumptions.md`). H3 hat Ausfälle nur gezählt; ob sie die Rangliste verschieben,
+  wurde nicht geprüft (Zuordnung vom 28.10.: «prüft erst A9»). Dasselbe gilt für A10: Fahrten je Abschnitt und
+  Zeitfenster wurden nie gezählt. Beide müssten «tief» sein und rückten damit in der Tabelle nach oben.
+- **Entscheidung:** Die Tabelle bleibt in diesem PR, wie sie ist (Vorgabe: One-Pager-PR mit den offenen Punkten so,
+  wie sie sind). Das geplante Paket «Evidenz nachführen» umfasst nicht nur A2, sondern die ganze Spalte, mindestens
+  A2, A9 und A10, und sortiert die Tabelle danach neu.
+- **Hinweis für dieses Paket:** Auf `feat/assumption-checks` (noch nicht auf `main`) gibt es inzwischen Prüfungen für
+  A1–A10. A9 hielt dort nur knapp (7 von 10 Top-Abschnitten gleich, Schwelle 7), und das Kriterium für A10 erwies
+  sich als zu schwach. Auch danach wäre «hoch» bei beiden nicht begründet.
