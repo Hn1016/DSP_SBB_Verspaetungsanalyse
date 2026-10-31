@@ -347,3 +347,24 @@ Befunde, September 2026, Halte in der Schweiz, ohne Ausfälle:
   und diesen Eintrag geschrieben.
 - **Hinweis:** GitHub zeigt Issue-Formulare erst, wenn sie auf dem Standard-Branch liegen. Die Regel gilt deshalb ab
   dem Merge; dieses Paket selbst hat noch kein Issue.
+
+## 2026-10-31 — Entscheidung: Formular «Package» an Richtlinien v3 angeglichen (Issue #5)
+
+- **Entscheidung:** Das Issue-Formular heisst «Package» wie in den Richtlinien v3, Abschnitt 8, der Titel beginnt mit
+  «Package: ». Das letzte Feld heisst «Nicht Teil davon» statt «Nicht enthalten». Das Feld «Fertig wenn» behält seinen
+  Namen; «mit Erwartungswert» aus v3 steht in der Beschreibung, die den Erwartungswert jetzt verlangt statt nur «wo es
+  einen gibt».
+- **Begründung:** v3 nennt Formular und Felder so: «Was am Ende existiert, Welcher Frage es dient, Fertig wenn mit
+  Erwartungswert, Art und Grösse, Nicht Teil davon». Die Vorlage im Tutorial führt «with the expected value» ebenfalls
+  in der Beschreibung, nicht im Feldnamen.
+- **Offen:** Die Regel in `AGENTS.md` spricht noch vom «Paket form»; sie war nicht Teil von Issue #5.
+
+## 2026-10-31 — KI-Einsatz: Issue #5
+
+- **Mine:** das Issue (schwagia) und die zwei Entscheide dazu (Haonan): Formular umbenennen in «Package»;
+  «Fertig wenn» bleibt der Feldname, der Erwartungswert gehört in die Beschreibung.
+- **Delegated:** die vier Zeilen in `package.yml`, der Titel «Package: » (aus der Tutorial-Vorlage übernommen) und
+  diese Einträge.
+- **Prüfung:** Feldnamen gegen Abschnitt 8 der Richtlinien v3 gelesen; YAML lädt; Tests und `ruff` laufen durch. Ob
+  New issue das Formular so zeigt, lässt sich erst nach dem Merge von Hand prüfen.
+
