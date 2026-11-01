@@ -457,3 +457,29 @@ Befunde, September 2026, Halte in der Schweiz, ohne Ausfälle:
   der One-Pager ist aber Seite 1 des Berichts, dessen Leserin das Repository nicht öffnet. Die fünf stehen jetzt als
   Auswahl in der Regel.
 
+
+## 2026-11-01 — Hypothese: Erste Rangliste, eine Woche im Kanton Zürich (Issue #14, vor der Analyse notiert)
+
+Anlass: erster Durchstich bis zu einer Rangliste (Richtlinien v3, Abschnitt 1, «Start»). Daten: Mo 7.9. bis
+So 13.9.2026, Parquet in `data/processed/istdaten_rail/`, Haltestellenliste vom 2026-10-05.
+
+- **Erwartung (schwagia, im Issue):** Zuoberst bei den Abschnitten steht Zürich Hardbrücke → Zürich HB, zuoberst bei
+  den Halten steht Zürich HB. Gehalten heisst: der erwartete Eintrag steht auf Rang 1; jede Tabelle wird für sich
+  bewertet.
+- **Regeln aus dem Issue:**
+  - Abschnitt = zwei aufeinanderfolgende Halte einer Fahrt, je Richtung getrennt (A→B ≠ B→A), beide Halte im Kanton
+    Zürich laut Haltestellenliste.
+  - Streckenverspätung = Ankunftsverspätung an B minus Abfahrtsverspätung an A, nur wenn beide `REAL` sind;
+    Bereinigung über `quality.delays()`.
+  - Haltverspätung nur an Halten mit geplanter Haltezeit von mindestens 1 Minute.
+  - In die Tabelle kommt nur, wer in der Woche mindestens 20 gemessene Fahrten hat. Rangfolge nach Mittelwert.
+- **Regeln, vom Team ergänzt (Haonan, 2026-11-01):**
+  - «Aufeinanderfolgend» gilt in der ganzen Fahrt, nach `ZEILE`, auch über Halte ausserhalb des Kantons und Halte ohne
+    `REAL`. Erst danach bleiben die Paare, bei denen beide Halte in Zürich liegen und gemessen sind. Ein Abschnitt über
+    einen ausgefallenen Halt wird verworfen, ebenso einer mit rückwärts laufender Soll-Zeit.
+  - Haltverspätung je Halt über beide Richtungen zusammen.
+  - Die Schwelle von 1 Minute für die Haltverspätung genügt für diesen ersten Blick. Sie ersetzt nicht den
+    Referenzwert je Soll-Haltezeit, den `AGENTS.md` vor einer Rangliste der Halte verlangt; das ist eine bekannte
+    Grenze dieser Tabelle.
+- *Folge bei Widerlegung:* kein Kurswechsel, sondern Hinweis, wo die Daten anders aussehen als erwartet; die
+  Entscheidung trifft das Team nach dem Befund.
