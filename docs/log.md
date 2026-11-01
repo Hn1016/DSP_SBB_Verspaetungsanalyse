@@ -368,3 +368,21 @@ Befunde, September 2026, Halte in der Schweiz, ohne Ausfälle:
 - **Prüfung:** Feldnamen gegen Abschnitt 8 der Richtlinien v3 gelesen; YAML lädt; Tests und `ruff` laufen durch. Ob
   New issue das Formular so zeigt, lässt sich erst nach dem Merge von Hand prüfen.
 
+## 2026-11-01 — Entscheidung: Regeln in `AGENTS.md` an Richtlinien v3 angeglichen (Issue #7)
+
+- **Entscheidung:** Die Workflow-Regel nennt das Formular «Package». Die Regel zu den Prüfungen steht jetzt
+  wörtlich in `AGENTS.md` (pro zentraler Zahl die eine Prüfung, deren Scheitern den Satz ändern würde, Erwartung vor
+  dem Lauf, nicht alle fünf), mit Quelle «guidelines v3, section 3», statt auf «requirements section 6» zu verweisen.
+- **Begründung:** `docs/requirements.md` gibt noch die Richtlinien v2 wieder, dort ist Abschnitt 6 die alte Regel
+  («mindestens eine Prüfung»), und das PDF von v3 liegt nicht im Repository. Ein reiner Verweis auf v3 zeigte für
+  den Agenten ins Leere; die zitierte Regel gilt auch ohne das Dokument.
+- **Offen:** `docs/requirements.md` auf v3 nachführen (eigenes Issue).
+
+## 2026-11-01 — KI-Einsatz: Issue #7
+
+- **Mine:** das Issue (schwagia) und der Entscheid, die Regel zu zitieren statt zu verweisen (Haonan).
+- **Delegated:** die englische Fassung der Regel aus Abschnitt 3 der Richtlinien v3, die zwei Änderungen in
+  `AGENTS.md` und diese Einträge.
+- **Prüfung:** Wortlaut gegen Abschnitt 3 der Richtlinien v3 gelesen; «Paket form» und «section 6» kommen in
+  `AGENTS.md` nicht mehr vor; Tests und `ruff` laufen durch.
+
