@@ -397,10 +397,12 @@ Befunde, September 2026, Halte in der Schweiz, ohne Ausfälle:
   Dateikopf (Zeile 1–50) bleiben unverändert. Das PDF liegt weiterhin nicht im Repository.
 - **Alternativen:** nur die geänderten Stellen nachführen (verworfen: dann stehen v2 und v3 gemischt in einer Datei);
   eine eigene Zusammenfassung (verworfen: der Text soll wörtlich sein).
-- **Darstellung, nicht Wortlaut:** «Teil A/B/C» sind Fettzeilen, damit es genau zehn `###`-Abschnitte gibt. «Tutorial:
-  …» steht kursiv unter dem Titel. Die über den Seitenumbruch laufende Tabelle in Abschnitt 3 ist eine Tabelle, ihre
-  wiederholte Kopfzeile entfällt. Fettdruck wie im PDF; Backticks um Dateien und Befehle wie bisher in dieser Datei,
-  das PDF hat keine.
+- **Darstellung, nicht Wortlaut:** «Teil A/B/C» sind Fettzeilen, weil es zwischen «##» und «###» keine freie Ebene
+  gibt: als «## Teil A» stünden sie auf derselben Ebene wie «Aufgabenstellung» und «Arbeitsrichtlinien», als «### Teil
+  A» gäbe es dreizehn statt zehn Abschnitte. Entscheid des Agenten, nach Review (Hn1016) begründet. «Tutorial: …» steht
+  kursiv unter dem Titel. Die über den Seitenumbruch laufende Tabelle in Abschnitt 3 ist eine Tabelle, ihre wiederholte
+  Kopfzeile entfällt. Fettdruck wie im PDF; Backticks um Dateien und Befehle wie bisher in dieser Datei, das PDF hat
+  keine.
 - **Abweichung vom Issue:** Der Teil hat 153 Zeilen statt der geschätzten 80–120, weil v3 länger ist als v2 und nicht
   gekürzt wird.
 - **Beleg:** Wortvergleich PDF gegen Markdown, siehe KI-Einsatz unten.
