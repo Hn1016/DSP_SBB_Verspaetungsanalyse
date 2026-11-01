@@ -47,4 +47,6 @@ Full requirements: `docs/requirements.md` (German). Read it before non-trivial w
   (dated entries, no prompt transcripts). Hypotheses are logged *before* the analysis.
 - Every key number in the report has one check behind it: the one whose failure would change the
   sentence, with the expectation written before the run. Not all five (baseline, permutation, placebo,
-  arithmetic check, stability). A check that cannot fail is no check (guidelines v3, section 3).
+  arithmetic check, stability). For each check ask: can it fail here, and would my sentence change
+  if it did? Do the first with two yeses; the others get one line in the report saying why not.
+  A check that cannot fail is no check (guidelines v3, section 3).

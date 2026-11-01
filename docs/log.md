@@ -385,4 +385,8 @@ Befunde, September 2026, Halte in der Schweiz, ohne Ausfälle:
   `AGENTS.md` und diese Einträge.
 - **Prüfung:** Wortlaut gegen Abschnitt 3 der Richtlinien v3 gelesen; «Paket form» und «section 6» kommen in
   `AGENTS.md` nicht mehr vor; Tests und `ruff` laufen durch.
+- **Übernommen/verworfen:** Die Kernregel ist fast wörtlich übernommen. In der ersten Fassung fehlte das Vorgehen
+  aus Abschnitt 3 («für jede Prüfung fragen: kann sie hier scheitern, und ändert sich mein Satz; die erste mit
+  zweimal ja wird gemacht, die anderen bekommen im Bericht eine Zeile, warum nicht»). Das war kein Entscheid,
+  sondern eine Kürzung des Agenten; nach dem Review (schwagia, PR #8) steht es jetzt in `AGENTS.md`.
 
