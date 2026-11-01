@@ -1,8 +1,8 @@
 # One-Pager: Wo entstehen und wo verschwinden Verspätungen im Schweizer Bahnnetz?
 
-Stand: 2026-10-17, Schritt 2 und «Fertig» nachgeführt am 2026-10-29. Quellen: Aufgabenstellung
-(`docs/requirements.md`) und die Entscheidungen im Projektlog (`docs/log.md`). Was dort nicht entschieden ist, steht
-hier als **offen**.
+Stand: 2026-10-17, Schritt 2 und «Fertig» nachgeführt am 2026-10-29, Prüfungen an die Richtlinien v3 angeglichen am
+2026-11-01. Quellen: Aufgabenstellung (`docs/requirements.md`) und die Entscheidungen im Projektlog (`docs/log.md`).
+Was dort nicht entschieden ist, steht hier als **offen**.
 
 ## Warum (Why)
 
@@ -74,7 +74,7 @@ Offen (vor der ersten Rangliste festzulegen, in einem eigenen Pull Request ohne 
 5. Je Abschnitt eine einfache Regression des Zuwachses auf die eingehende Verspätung: Die Steigung zeigt, ob ein
    Abschnitt einen konstanten Betrag addiert oder proportional verstärkt.
 6. Normieren pro Fahrt und pro Streckenkilometer, mit der Zugzahl pro Abschnitt vergleichen.
-7. Prüfungen nach Abschnitt 6 der Richtlinien, dann Karte und Bericht.
+7. Prüfungen nach Abschnitt 3 der Richtlinien, dann Karte und Bericht.
 
 Offen:
 - Der Raum: ganzes Netz oder eine Region; ob Betreiber mit tiefer `REAL`-Abdeckung (LEB, MBC, ZB) ausgeschlossen
@@ -98,8 +98,9 @@ Offen:
 - Die Rangliste der zehn wichtigsten Abschnitte und Halte existiert, mit den Kennzahlen absolut, pro Fahrt und
   pro Streckenkilometer.
 - Ihre Stabilität ist gemessen: über zufällige Zeitfenster und zwischen den beiden Fahrplänen.
-- Jede zentrale Zahl im Bericht ist durch mindestens eine Prüfung abgesichert (Baseline, Permutation, Placebo,
-  Rechenprobe oder Stabilität).
+- Jede zentrale Zahl im Bericht hat eine Prüfung hinter sich: die eine aus Baseline, Permutation, Placebo,
+  Rechenprobe oder Stabilität, deren Scheitern den Satz ändern würde, mit der Erwartung vor dem Lauf (Richtlinien v3,
+  Abschnitt 3).
 - Die interaktive Karte zeigt Verstärker und Absorber.
 - Der Bericht nennt zu jedem Top-10-Eintrag, welche Art Massnahme infrage kommt, und offen auch widerlegte
   Hypothesen.

@@ -430,3 +430,30 @@ Befunde, September 2026, Halte in der Schweiz, ohne Ausfälle:
   im Text, und ist dort korrigiert. Den Verweis im One-Pager mitzuändern stand als Option im Plan; sie wurde nicht
   gewählt, weil die Datei ausserhalb des Issues liegt und reviewt ist.
 
+## 2026-11-01 — Entscheidung: One-Pager an die Prüfregel der Richtlinien v3 angeglichen (Issue #11)
+
+- **Entscheidung:** Schritt 7 verweist auf Abschnitt 3 der Richtlinien statt auf Abschnitt 6. Unter «Fertig» steht die
+  Regel aus v3: pro zentraler Zahl die eine Prüfung, deren Scheitern den Satz ändern würde, mit der Erwartung vor dem
+  Lauf. Die Zeile «Stand» nennt die Änderung vom 2026-11-01.
+- **Begründung:** Seit `docs/requirements.md` v3 wiedergibt (Issue #9), widersprach der One-Pager den Richtlinien und
+  `AGENTS.md`. Er ist Seite 1 des Abschlussberichts (v3, Abschnitt 4).
+- **Klärung (Review PR #12):** Die Stabilität der Rangliste ist eine KPI der Aufgabenstellung und kommt in den
+  Bericht, unabhängig von der Prüfauswahl. Die v3-Regel gilt zusätzlich für jede zentrale Zahl. Ob die Stabilität für
+  die Rangliste auch die eine Prüfung ist, wird mit Erwartung vor dem Lauf festgelegt (offen, siehe One-Pager «Ab
+  welcher Rangkorrelation die Rangliste als stabil gilt»).
+
+## 2026-11-01 — KI-Einsatz: Issue #11
+
+- **Aufgabe:** den One-Pager an die Prüfregel der Richtlinien v3 angleichen (Schritt 7, «Fertig», «Stand»).
+- **Mine:** das Issue (schwagia) mit beiden Stellen und dem Datum in «Stand».
+- **Delegated:** die drei Änderungen im One-Pager, diese Einträge und der Vorschlag für die Antwort zur Stabilität
+  (Review PR #12), den Haonan übernommen hat.
+- **Prüfung:** Die beiden Greps aus dem Issue finden nichts; «deren Scheitern den Satz ändern würde» steht unter
+  «Fertig», «Abschnitt 3» in Schritt 7. Tests und `ruff` laufen durch.
+- **Übernommen/verworfen:** Die Regel ist sinngemäss aus v3, Abschnitt 3 übernommen, in der Kurzform von `AGENTS.md`.
+  Das Vorgehen «für jede Prüfung fragen …» steht nicht im One-Pager, weil der One-Pager das Ziel nennt, nicht das
+  Vorgehen; es steht in `AGENTS.md` und `docs/requirements.md`. Verworfen nach Review (schwagia, PR #12): die
+  Aufzählung der fünf Prüfarten wegzulassen. Der Agent hatte sie gestrichen, weil sie in `docs/requirements.md` steht;
+  der One-Pager ist aber Seite 1 des Berichts, dessen Leserin das Repository nicht öffnet. Die fünf stehen jetzt als
+  Auswahl in der Regel.
+
