@@ -457,3 +457,37 @@ Befunde, September 2026, Halte in der Schweiz, ohne Ausfälle:
   der One-Pager ist aber Seite 1 des Berichts, dessen Leserin das Repository nicht öffnet. Die fünf stehen jetzt als
   Auswahl in der Regel.
 
+## 2026-11-01 — Entscheidung: Tests laufen in CI (Issue #13)
+
+- **Entscheidung:** `.github/workflows/tests.yml` führt bei jedem Pull Request und jedem Push auf `main`
+  `uv sync --locked` und `uv run pytest` aus. Job und Check heissen `tests`. Python kommt über uv aus `.python-version`.
+- **uv-Version fest auf 0.13.6:** Alternative: immer die neueste uv-Version. Begründung: Der Check wird Pflicht; ein
+  neues uv-Release soll keinen roten Check auslösen, der Merges blockiert. Das Issue verlangt das nicht. Die Version
+  muss von Hand nachgezogen werden.
+- **Action-Versionen:** `actions/checkout@v7` und `astral-sh/setup-uv@v10.3.3`. Bei `setup-uv` gibt es seit v8 nur noch
+  unveränderliche Release-Tags; ein Tag `v10` existiert nicht (Beleg: `git ls-remote --tags`, 2026-11-01), und der
+  noch vorhandene Tag `v7` steht auf einer alten Version. Deshalb die neueste Major-Version mit vollem Tag.
+- **Ruleset von `main`, Empfehlung an Haonan:** `tests` als Pflicht-Check mit Quelle GitHub Actions; Bypass-Liste leer;
+  «Require branches to be up to date» aus (schwagia). Das spart bei zwei Personen Rebases, und der Lauf bei jedem Push
+  auf `main` zeigt, wenn zwei einzeln grüne PRs zusammen rot sind. Die tatsächlichen Einstellungen werden hier
+  nachgetragen, sobald Haonan sie gesetzt hat.
+- **Prüfung, Erwartung vor dem Lauf:** Normaler PR: Check `tests` grün, 20 passed, 7 skipped. Test-PR gegen `main` mit
+  einem absichtlich roten Test: Check rot, 1 failed, 20 passed, 7 skipped, Merge gesperrt; Schliessen ohne Merge.
+  Ergebnis: noch offen, wird in diesem PR nachgetragen.
+
+## 2026-11-01 — KI-Einsatz: Issue #13
+
+- **Aufgabe:** die Tests als GitHub Action bei jedem Pull Request und jedem Push auf `main` laufen lassen.
+- **Mine:** das Issue (Hn1016); die Vorgaben dazu (schwagia): uv mit Python aus `.python-version`, `uv sync --locked`,
+  Job-Name `tests`, Tests unverändert. Von schwagia bewusst übernommen: die feste uv-Version (Vorschlag des Agenten)
+  und «Require branches to be up to date» aus.
+- **Delegated:** Claude Code hat den Workflow, die Zeile im README, diese Einträge und den Ablauf des Test-PR
+  vorgeschlagen und geschrieben, die Tags geprüft und `setup-uv@v10.3.3` gewählt.
+- **Prüfung:** In einem frischen Klon ohne Daten läuft `uv sync --locked`; `uv run pytest` ergibt 20 passed, 7 skipped
+  (die sieben aus `tests/test_data.py`). Tags mit `git ls-remote --tags` geprüft. Nicht geprüft: der Workflow auf
+  GitHub selbst; das zeigen erst der Haupt-PR und der Test-PR.
+- **Übernommen/verworfen:** Verworfen: ein eigener Python-Schritt im Workflow, weil uv die Version selbst aus
+  `.python-version` liest; `ruff` als Pflicht-Check, weil das Issue ihn ausschliesst; `setup-uv@v10`, weil der Tag nicht
+  existiert, und `setup-uv@v7`, der zwar als kurzer Tag existiert, aber drei Major-Versionen zurückliegt. Der Agent hatte
+  `@v10` im Plan ungeprüft angenommen; die Prüfung vor dem Commit verlangte schwagia.
+

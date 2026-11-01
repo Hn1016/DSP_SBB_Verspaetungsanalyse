@@ -19,6 +19,8 @@ uv sync
 uv run pytest
 ```
 
+Bei jedem Pull Request und jedem Push auf `main` laufen die Tests automatisch (GitHub Actions, Check `tests`); die Datentests werden dort übersprungen.
+
 ## Datenbeschaffung
 
 Rohdaten liegen in `data/raw/` und werden nicht verändert und nicht versioniert. Jeder Download
