@@ -1,6 +1,6 @@
-name: Paket
+name: Package
 description: Ein Arbeitspaket, von einer Person geschrieben, bevor der Branch existiert.
-title: "Paket: "
+title: "Package: "
 body:
   - type: textarea
     id: what-exists
@@ -20,7 +20,7 @@ body:
     id: done-when
     attributes:
       label: Fertig wenn
-      description: Was jemand anderes ausführt oder liest, um zu sehen, dass es fertig ist, mit dem erwarteten Wert, wo es einen gibt.
+      description: Was jemand anderes ausführt oder liest, um zu sehen, dass es fertig ist, mit dem Erwartungswert.
     validations:
       required: true
   - type: textarea
@@ -33,7 +33,7 @@ body:
   - type: textarea
     id: out-of-scope
     attributes:
-      label: Nicht enthalten
+      label: Nicht Teil davon
       description: Was dieses Paket nicht tut, besonders den naheliegenden nächsten Schritt.
     validations:
       required: true
