@@ -390,3 +390,43 @@ Befunde, September 2026, Halte in der Schweiz, ohne Ausfälle:
   zweimal ja wird gemacht, die anderen bekommen im Bericht eine Zeile, warum nicht»). Das war kein Entscheid,
   sondern eine Kürzung des Agenten; nach dem Review (schwagia, PR #8) steht es jetzt in `AGENTS.md`.
 
+## 2026-11-01 — Entscheidung: `docs/requirements.md` gibt die Richtlinien v3 wörtlich wieder (Issue #9)
+
+- **Entscheidung:** Der Teil «Arbeitsrichtlinien» ist ganz ersetzt, durch den Text von v3 (Version 3, 25. Oktober 2026)
+  mit Titel, Einleitung, zehn Abschnitten, «Tutorial: …»-Hinweisen und allen Tabellen. Die Aufgabenstellung und der
+  Dateikopf (Zeile 1–50) bleiben unverändert. Das PDF liegt weiterhin nicht im Repository.
+- **Alternativen:** nur die geänderten Stellen nachführen (verworfen: dann stehen v2 und v3 gemischt in einer Datei);
+  eine eigene Zusammenfassung (verworfen: der Text soll wörtlich sein).
+- **Darstellung, nicht Wortlaut:** «Teil A/B/C» sind Fettzeilen, weil es zwischen «##» und «###» keine freie Ebene
+  gibt: als «## Teil A» stünden sie auf derselben Ebene wie «Aufgabenstellung» und «Arbeitsrichtlinien», als «### Teil
+  A» gäbe es dreizehn statt zehn Abschnitte. Entscheid des Agenten, nach Review (Hn1016) begründet. «Tutorial: …» steht
+  kursiv unter dem Titel. Die über den Seitenumbruch laufende Tabelle in Abschnitt 3 ist eine Tabelle, ihre wiederholte
+  Kopfzeile entfällt. Fettdruck wie im PDF; Backticks um Dateien und Befehle wie bisher in dieser Datei, das PDF hat
+  keine.
+- **Abweichung vom Issue:** Der Teil hat 153 Zeilen statt der geschätzten 80–120, weil v3 länger ist als v2 und nicht
+  gekürzt wird.
+- **Beleg:** Wortvergleich PDF gegen Markdown, siehe KI-Einsatz unten.
+- **Erledigt:** der offene Punkt aus dem Eintrag zu Issue #7.
+- **Offen:** `docs/one-pager.md`, Schritt 7, verweist noch auf «Abschnitt 6 der Richtlinien». Das stimmte für v2; in v3
+  sind die Prüfungen Abschnitt 3. Die Datei ist nicht Teil von Issue #9 und braucht ein eigenes Issue.
+
+## 2026-11-01 — KI-Einsatz: Issue #9
+
+- **Aufgabe:** den Richtlinienteil von `docs/requirements.md` auf v3 nachführen.
+- **Mine:** das Issue (Hn1016) und die Vorgaben dazu (schwagia): Text wörtlich, nicht umformuliert oder gekürzt;
+  Aufgabenstellung unverändert; PDF nicht ins Repository; zuerst Plan, dann Go. Der Entscheid, den One-Pager in diesem
+  Paket nicht anzufassen (schwagia, auf Vorschlag des Agenten).
+- **Delegated:** Claude Code hat den Text aus dem PDF extrahiert (`pypdf`, Schriften mit `pymupdf`, beide nur in einer
+  temporären Umgebung, keine neue Abhängigkeit), als Markdown gesetzt, die Darstellungsentscheide oben getroffen, den
+  veralteten Verweis im One-Pager gefunden und diese Einträge geschrieben.
+- **Prüfung:** Erwartungen vor dem Lauf im Plan notiert. Wortfolge PDF gegen Markdown (1733 Wörter): einziger
+  Unterschied wie erwartet die wiederholte Kopfzeile «Prüfung Frage Beispiel». Zeile 1–50 byte-identisch mit `main`.
+  Zehn `###`-Abschnitte in der Reihenfolge von v3. «mindestens eine der folgenden» kommt nicht mehr vor; «Package»,
+  «Mine», «Delegated» und «die eine, deren Scheitern den Satz ändern würde» kommen vor. Tests und `ruff` laufen durch.
+  Nicht geprüft: die Darstellung auf GitHub; Fettdruck und Zellgrenzen sind nicht Teil des Wortvergleichs.
+- **Übernommen/verworfen:** Der Text ist unverändert übernommen. Verworfen: die reine Textextraktion als Grundlage für
+  die Struktur, weil sie keine Hervorhebungen zeigt; die Schriften wurden deshalb einzeln ausgelesen. Der erste
+  Wortvergleich meldete acht weitere Unterschiede; das war ein Fehler im Prüfskript (Backticks trennten Wörter), nicht
+  im Text, und ist dort korrigiert. Den Verweis im One-Pager mitzuändern stand als Option im Plan; sie wurde nicht
+  gewählt, weil die Datei ausserhalb des Issues liegt und reviewt ist.
+
