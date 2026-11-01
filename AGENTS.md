@@ -39,11 +39,14 @@ Full requirements: `docs/requirements.md` (German). Read it before non-trivial w
 ## Workflow
 
 - `main` is protected; work on feature branches, merge via PR reviewed by the other team member.
-- A package starts as an issue that a person writes with the Paket form before the branch exists,
+- A package starts as an issue that a person writes with the Package form before the branch exists,
   and its pull request closes that issue. The pull request text starts with `Closes #N` and has a
   section «Was vom Issue abweicht».
 - Small, focused commits.
 - Log decisions, assumptions, hypotheses and AI use in `docs/log.md` in the same PR as the code
   (dated entries, no prompt transcripts). Hypotheses are logged *before* the analysis.
-- Every key number needs a check (baseline, permutation, placebo, sum check or stability),
-  see requirements section 6.
+- Every key number in the report has one check behind it: the one whose failure would change the
+  sentence, with the expectation written before the run. Not all five (baseline, permutation, placebo,
+  arithmetic check, stability). For each check ask: can it fail here, and would my sentence change
+  if it did? Do the first with two yeses; the others get one line in the report saying why not.
+  A check that cannot fail is no check (guidelines v3, section 3).
