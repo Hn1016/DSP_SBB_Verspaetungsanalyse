@@ -430,3 +430,22 @@ Befunde, September 2026, Halte in der Schweiz, ohne Ausfälle:
   im Text, und ist dort korrigiert. Den Verweis im One-Pager mitzuändern stand als Option im Plan; sie wurde nicht
   gewählt, weil die Datei ausserhalb des Issues liegt und reviewt ist.
 
+## 2026-11-01 — Entscheidung: One-Pager an die Prüfregel der Richtlinien v3 angeglichen (Issue #11)
+
+- **Entscheidung:** Schritt 7 verweist auf Abschnitt 3 der Richtlinien statt auf Abschnitt 6. Unter «Fertig» steht die
+  Regel aus v3: pro zentraler Zahl die eine Prüfung, deren Scheitern den Satz ändern würde, mit der Erwartung vor dem
+  Lauf. Die Zeile «Stand» nennt die Änderung vom 2026-11-01.
+- **Begründung:** Seit `docs/requirements.md` v3 wiedergibt (Issue #9), widersprach der One-Pager den Richtlinien und
+  `AGENTS.md`. Er ist Seite 1 des Abschlussberichts (v3, Abschnitt 4).
+
+## 2026-11-01 — KI-Einsatz: Issue #11
+
+- **Mine:** das Issue (schwagia) mit beiden Stellen und dem Datum in «Stand».
+- **Delegated:** die drei Änderungen im One-Pager und diese Einträge. Die Aufzählung der fünf Prüfarten unter
+  «Fertig» ist weggelassen, weil v3 ausdrücklich nicht alle fünf verlangt; sie stehen in `docs/requirements.md`.
+- **Prüfung:** Die beiden Greps aus dem Issue finden nichts; «deren Scheitern den Satz ändern würde» steht unter
+  «Fertig», «Abschnitt 3» in Schritt 7. Tests und `ruff` laufen durch.
+- **Übernommen/verworfen:** Die Regel ist sinngemäss aus v3, Abschnitt 3 übernommen, in der Kurzform von `AGENTS.md`.
+  Das Vorgehen «für jede Prüfung fragen …» steht nicht im One-Pager, weil der One-Pager das Ziel nennt, nicht das
+  Vorgehen; es steht in `AGENTS.md` und `docs/requirements.md`.
+
