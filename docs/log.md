@@ -440,12 +440,15 @@ Befunde, September 2026, Halte in der Schweiz, ohne Ausfälle:
 
 ## 2026-11-01 — KI-Einsatz: Issue #11
 
+- **Aufgabe:** den One-Pager an die Prüfregel der Richtlinien v3 angleichen (Schritt 7, «Fertig», «Stand»).
 - **Mine:** das Issue (schwagia) mit beiden Stellen und dem Datum in «Stand».
-- **Delegated:** die drei Änderungen im One-Pager und diese Einträge. Die Aufzählung der fünf Prüfarten unter
-  «Fertig» ist weggelassen, weil v3 ausdrücklich nicht alle fünf verlangt; sie stehen in `docs/requirements.md`.
+- **Delegated:** die drei Änderungen im One-Pager und diese Einträge.
 - **Prüfung:** Die beiden Greps aus dem Issue finden nichts; «deren Scheitern den Satz ändern würde» steht unter
   «Fertig», «Abschnitt 3» in Schritt 7. Tests und `ruff` laufen durch.
 - **Übernommen/verworfen:** Die Regel ist sinngemäss aus v3, Abschnitt 3 übernommen, in der Kurzform von `AGENTS.md`.
   Das Vorgehen «für jede Prüfung fragen …» steht nicht im One-Pager, weil der One-Pager das Ziel nennt, nicht das
-  Vorgehen; es steht in `AGENTS.md` und `docs/requirements.md`.
+  Vorgehen; es steht in `AGENTS.md` und `docs/requirements.md`. Verworfen nach Review (schwagia, PR #12): die
+  Aufzählung der fünf Prüfarten wegzulassen. Der Agent hatte sie gestrichen, weil sie in `docs/requirements.md` steht;
+  der One-Pager ist aber Seite 1 des Berichts, dessen Leserin das Repository nicht öffnet. Die fünf stehen jetzt als
+  Auswahl in der Regel.
 

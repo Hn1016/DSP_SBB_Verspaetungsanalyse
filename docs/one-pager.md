@@ -98,8 +98,9 @@ Offen:
 - Die Rangliste der zehn wichtigsten Abschnitte und Halte existiert, mit den Kennzahlen absolut, pro Fahrt und
   pro Streckenkilometer.
 - Ihre Stabilität ist gemessen: über zufällige Zeitfenster und zwischen den beiden Fahrplänen.
-- Jede zentrale Zahl im Bericht hat eine Prüfung hinter sich: die eine, deren Scheitern den Satz ändern würde, mit
-  der Erwartung vor dem Lauf (Richtlinien v3, Abschnitt 3).
+- Jede zentrale Zahl im Bericht hat eine Prüfung hinter sich: die eine aus Baseline, Permutation, Placebo,
+  Rechenprobe oder Stabilität, deren Scheitern den Satz ändern würde, mit der Erwartung vor dem Lauf (Richtlinien v3,
+  Abschnitt 3).
 - Die interaktive Karte zeigt Verstärker und Absorber.
 - Der Bericht nennt zu jedem Top-10-Eintrag, welche Art Massnahme infrage kommt, und offen auch widerlegte
   Hypothesen.
