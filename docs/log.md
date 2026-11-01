@@ -476,12 +476,13 @@ Befunde, September 2026, Halte in der Schweiz, ohne Ausfälle:
 - **Prüfung, Erwartung vor dem Lauf:** Normaler PR: Check `tests` grün, 20 passed, 7 skipped. Test-PR gegen `main` mit
   einem absichtlich roten Test: Check rot, 1 failed, 20 passed, 7 skipped, Merge gesperrt; Schliessen ohne Merge.
 - **Ergebnis:** Normaler PR #15: Check `tests` grün
-  ([Lauf](https://github.com/Hn1016/DSP_SBB_Verspaetungsanalyse/actions/runs/41322544195)). Test-PR #16: Check `tests`
-  rot und als «Required» markiert, Schritt `uv run pytest` mit Exit-Code 1
-  ([Lauf](https://github.com/Hn1016/DSP_SBB_Verspaetungsanalyse/actions/runs/41324264052)). Haonan hat #16 approvt, der
-  Merge blieb trotzdem gesperrt; die Sperre kommt also vom Check, nicht vom fehlenden Approval. #16 ist ohne Merge
-  geschlossen, der Branch gelöscht. Die Testzahlen sind lokal auf denselben Commits belegt (`9b4682c`: 20 passed,
-  7 skipped; `fdfb948`: 1 failed, 20 passed, 7 skipped), nicht aus den CI-Logs.
+  ([Lauf](https://github.com/Hn1016/DSP_SBB_Verspaetungsanalyse/actions/runs/41322544195/job/124895637850?pr=15)).
+  Test-PR #16: Check `tests` rot, 1 failed, 20 passed, 7 skipped (der rote Test `test_ci_red`, die sieben Datentests
+  übersprungen), im PR als «Required» markiert
+  ([Lauf](https://github.com/Hn1016/DSP_SBB_Verspaetungsanalyse/actions/runs/41324264052/job/124900784171?pr=16)).
+  Haonan hat #16 approvt, der Merge blieb trotzdem gesperrt; die Sperre kommt also vom Check, nicht vom fehlenden
+  Approval. #16 ist ohne Merge geschlossen, der Branch gelöscht. Die Zahlen des grünen Laufs sind nur lokal auf
+  demselben Commit belegt (`9b4682c`: 20 passed, 7 skipped), nicht aus dem CI-Log.
 
 ## 2026-11-01 — KI-Einsatz: Issue #13
 
@@ -494,8 +495,8 @@ Befunde, September 2026, Halte in der Schweiz, ohne Ausfälle:
   mit dem roten Test vorgeschlagen und geschrieben, die Tags geprüft und `setup-uv@v10.3.3` gewählt.
 - **Prüfung:** In einem frischen Klon ohne Daten läuft `uv sync --locked`; `uv run pytest` ergibt 20 passed, 7 skipped
   (die sieben aus `tests/test_data.py`). Tags mit `git ls-remote --tags` geprüft. Auf GitHub: PR #15 grün, Test-PR #16
-  rot und nicht mergebar trotz Approval (Ergebnis oben). Nicht geprüft: die Testzahlen in den CI-Logs selbst; Claude
-  Code hat ohne Admin-Rechte keinen Zugriff darauf.
+  rot und nicht mergebar trotz Approval (Ergebnis oben). Die Zahlen des roten Laufs hat schwagia aus dem CI-Log
+  abgelesen; Claude Code hat ohne Admin-Rechte keinen Zugriff auf die Logs. Nicht abgelesen: die Zahlen des grünen Laufs.
 - **Übernommen/verworfen:** Verworfen: ein eigener Python-Schritt im Workflow, weil uv die Version selbst aus
   `.python-version` liest; `ruff` als Pflicht-Check, weil das Issue ihn ausschliesst; `setup-uv@v10`, weil der Tag nicht
   existiert, und `setup-uv@v7`, der zwar als kurzer Tag existiert, aber drei Major-Versionen zurückliegt. Der Agent hatte
