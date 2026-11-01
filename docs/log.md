@@ -483,3 +483,69 @@ So 13.9.2026, Parquet in `data/processed/istdaten_rail/`, Haltestellenliste vom 
     Grenze dieser Tabelle.
 - *Folge bei Widerlegung:* kein Kurswechsel, sondern Hinweis, wo die Daten anders aussehen als erwartet; die
   Entscheidung trifft das Team nach dem Befund.
+
+## 2026-11-01 — Befund: Erste Rangliste, eine Woche im Kanton Zürich (Issue #14)
+
+Berechnet in `notebooks/03_erste_rangliste.py` nach den Regeln aus dem Hypothesen-Eintrag oben. Basis: 148'772
+gemessene Abschnittsfahrten auf 400 Abschnitten, davon 373 mit mindestens 20 Fahrten; 69 Halte mit Soll-Haltezeit ab
+1 Minute und mindestens 20 Fahrten.
+
+**Top 10 Abschnitte nach mittlerer Streckenverspätung (min)**
+
+| Rang | Abschnitt | Fahrten | Mittel | Median |
+|---|---|---|---|---|
+| 1 | Gibswil → Fischenthal | 206 | 1.45 | 1.47 |
+| 2 | Thalwil → Zürich Enge | 257 | 1.09 | 0.75 |
+| 3 | Zürich Oerlikon → Zürich Affoltern | 25 | 0.99 | 0.77 |
+| 4 | Dietikon → Dietikon Schöneggstrasse | 511 | 0.95 | 0.93 |
+| 5 | Pfungen → Winterthur Wülflingen | 284 | 0.87 | 0.87 |
+| 6 | Zürich Enge → Thalwil | 252 | 0.74 | 0.63 |
+| 7 | Eglisau → Glattfelden | 272 | 0.72 | 0.70 |
+| 8 | Bauma → Steg | 210 | 0.72 | 0.73 |
+| 9 | Winterthur → Zürich Stadelhofen | 25 | 0.62 | 0.37 |
+| 10 | Turbenthal → Rämismühle-Zell | 331 | 0.62 | 0.62 |
+
+**Top 10 Halte nach mittlerer Haltverspätung (min), Soll-Haltezeit ab 1 Minute**
+
+| Rang | Halt | Fahrten | Mittel | Median |
+|---|---|---|---|---|
+| 1 | Oberwinterthur | 133 | 1.34 | 1.42 |
+| 2 | Stammheim | 247 | 0.73 | 0.75 |
+| 3 | Feuerthalen | 278 | 0.62 | 0.59 |
+| 4 | Zürich Flughafen | 1978 | 0.62 | 0.50 |
+| 5 | Rikon | 281 | 0.62 | 0.55 |
+| 6 | Kloten | 273 | 0.61 | 0.63 |
+| 7 | Samstagern | 266 | 0.58 | 0.51 |
+| 8 | Saland | 554 | 0.53 | 0.15 |
+| 9 | Dietikon | 1515 | 0.49 | 0.37 |
+| 10 | Bassersdorf | 273 | 0.48 | 0.57 |
+
+- **Befund Abschnitte: nicht gehalten.** Zürich Hardbrücke → Zürich HB steht auf Rang 326 von 373 (2'501 Fahrten,
+  Mittel −1.31 min): Auf diesem Abschnitt nimmt die Verspätung im Mittel ab, er wirkt eher als Absorber.
+- **Befund Halte: nicht gehalten.** Zürich HB steht auf Rang 13 von 69 (8'600 Fahrten, Mittel +0.30 min).
+- **Grenzen dieses Befunds:**
+  - Eine Woche, ein Kanton, nur Mittelwerte, keine Prüfung der Stabilität (laut Issue nicht Teil davon).
+  - Zwei Abschnitte in den Top 10 haben nur 25 Fahrten (Rang 3 und 9), knapp über der Schwelle von 20.
+  - Die Streckenverspätung hängt von der Soll-Fahrzeit ab (Annahme A7 widerlegt, Branch `feat/assumption-checks`):
+    kurze Soll-Fahrzeiten zeigen wegen der Minutenrundung im Mittel positive Werte. Ob die Top 10 echte Verstärker
+    oder kurze Abschnitte sind, ist nicht geprüft.
+  - Die Haltverspätung ist bei 1 Minute Soll-Haltezeit noch von der Rundung beeinflusst; ein Referenzwert je
+    Soll-Haltezeit fehlt (Grenze, im Hypothesen-Eintrag notiert).
+- **Entscheidung:** _(vom Team auszufüllen)_
+
+## 2026-11-01 — KI-Einsatz: Issue #14
+
+- **Aufgabe:** die erste Rangliste der Abschnitte und Halte für eine Woche im Kanton Zürich berechnen.
+- **Mine:** das Issue mit Erwartung, Regeln, Woche, Kanton und Schwelle (schwagia); die drei ergänzten Regeln
+  (Haonan): «aufeinanderfolgend» über die ganze Fahrt mit Ausfällen als Lücke, Halte über beide Richtungen, 1 Minute
+  als Schwelle für den ersten Blick. Die Entscheidung nach dem Befund.
+- **Delegated:** das Notebook mit den Abfragen, der Hypothesen-Eintrag aus den Vorgaben, die Tabellen und der Befund
+  samt Grenzen. Entscheide des Agenten: Nachbarn über alle Zeilen der Fahrt in `rail` (auch Ausland und Ausfälle),
+  dann Abgleich mit `quality.delays()` über Betriebstag und `ZEILE`; Kanton direkt aus der Haltestellenliste gelesen,
+  weil die gemeinsame Sicht `service_points` ihn nicht hat und `src/` laut Issue nicht geändert wird; Rang nach
+  Mittelwert mit `rank()`, Median als zusätzliche Spalte.
+- **Prüfung:** Die Woche enthält keine doppelten Zeilen und keinen Abschnitt mit rückwärts laufender Soll-Zeit; beide
+  Rangfolgen einmal als Skript und einmal im Notebook gerechnet, gleiche Werte. Tests und `ruff` laufen durch.
+  Nicht geprüft: Stabilität, Abhängigkeit von der Soll-Fahrzeit.
+- **Übernommen/verworfen:** Verworfen wurde eine «Rechenprobe» im Notebook, die nur dieselbe Summe zweimal rechnete
+  und nicht scheitern konnte; die Zelle zeigt jetzt nur die Grösse der Basis.
