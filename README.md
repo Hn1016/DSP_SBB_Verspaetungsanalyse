@@ -11,6 +11,7 @@ Projektlog: [docs/log.md](docs/log.md).
 ## Setup
 
 Voraussetzung: [uv](https://docs.astral.sh/uv/) (Python 3.13 wird von uv verwaltet).
+uv 0.13.6 ist Pflicht (`required-version` in `pyproject.toml`, dieselbe Version wie in CI); aktualisieren mit `uv self update 0.13.6`.
 
 ```bash
 git clone <repo-url>
@@ -18,6 +19,8 @@ cd DSP
 uv sync
 uv run pytest
 ```
+
+Bei jedem Pull Request und jedem Push auf `main` laufen die Tests automatisch (GitHub Actions, Check `tests`); die Datentests werden dort übersprungen.
 
 ## Datenbeschaffung
 
