@@ -577,13 +577,24 @@ gemessene Abschnittsfahrten auf 400 Abschnitten, davon 373 mit mindestens 20 Fah
 - **Befund Halte: nicht gehalten.** Zürich HB steht auf Rang 13 von 69 (8'600 Fahrten, Mittel +0.30 min).
 - **Grenzen dieses Befunds:**
   - Eine Woche, ein Kanton, nur Mittelwerte, keine Prüfung der Stabilität (laut Issue nicht Teil davon).
-  - Zwei Abschnitte in den Top 10 haben nur 25 Fahrten (Rang 3 und 9), knapp über der Schwelle von 20.
-  - Die Streckenverspätung hängt von der Soll-Fahrzeit ab (Annahme A7 widerlegt, Branch `feat/assumption-checks`):
-    kurze Soll-Fahrzeiten zeigen wegen der Minutenrundung im Mittel positive Werte. Ob die Top 10 echte Verstärker
-    oder kurze Abschnitte sind, ist nicht geprüft.
+  - Zwei Abschnitte in den Top 10 haben nur 25 Fahrten (Rang 3 und 9). Es sind Haltemuster einzelner Linien zur
+    Hauptverkehrszeit (Review PR #17): Zürich Oerlikon → Zürich Affoltern fährt nur die S21 ohne Halt in Seebach
+    (Mo–Fr, 5 Züge, 16:50–18:50), Winterthur → Zürich Stadelhofen nur die S23 ohne Halt in Stettbach (Mo–Fr, 5 Züge,
+    06:19–08:19). Die übrigen Züge (S6; S11, S12, S7) halten dazwischen und zählen zu kürzeren Abschnitten. Ein
+    Abschnitt ist also durch die bedienten Halte bestimmt, nicht durch die Strecke; die zwei Mittelwerte gelten nur
+    für diese Linien zur Spitzenzeit.
+  - Durchfahrten können Halt A oder B sein (Prüfung, die am 6.10. für die Abschnittsbildung vorgemerkt war, Review
+    PR #17): 22 von 148'772 Abschnittsfahrten; ohne sie ändert sich kein Mittel um mehr als 0.006 min, und die Top 10
+    bleiben gleich. Sie bleiben drin, wie am 6.10. angenommen. Die zwei Abschnitte mit 25 Fahrten erklären sie nicht.
+  - Verdacht, noch nicht geprüft (Review PR #17): Die Streckenverspätung könnte von der Soll-Fahrzeit abhängen
+    (Annahme A7); kurze Soll-Fahrzeiten könnten wegen der Minutenrundung im Mittel positive Werte zeigen. Eine
+    Auswertung dazu liegt nicht im Repository. Ob die Top 10 echte Verstärker oder kurze Abschnitte sind, ist offen.
   - Die Haltverspätung ist bei 1 Minute Soll-Haltezeit noch von der Rundung beeinflusst; ein Referenzwert je
     Soll-Haltezeit fehlt (Grenze, im Hypothesen-Eintrag notiert).
-- **Entscheidung:** _(vom Team auszufüllen)_
+- **Entscheidung (Haonan und schwagia, 2026-11-03, Vorschlag schwagia im Review PR #17):** Die Rangliste wird noch
+  nicht interpretiert, weil die Top 10 kurze Abschnitte sein könnten, deren Wert von der Minutenrundung kommt (A7).
+  Nächstes Paket: prüfen, ob die Streckenverspätung von der Soll-Fahrzeit abhängt, und falls ja, einen
+  Referenzwert je Soll-Fahrzeit einführen.
 
 ## 2026-11-01 — KI-Einsatz: Issue #14
 
@@ -598,6 +609,8 @@ gemessene Abschnittsfahrten auf 400 Abschnitten, davon 373 mit mindestens 20 Fah
   Mittelwert mit `rank()`, Median als zusätzliche Spalte.
 - **Prüfung:** Die Woche enthält keine doppelten Zeilen und keinen Abschnitt mit rückwärts laufender Soll-Zeit; beide
   Rangfolgen einmal als Skript und einmal im Notebook gerechnet, gleiche Werte. Tests und `ruff` laufen durch.
-  Nicht geprüft: Stabilität, Abhängigkeit von der Soll-Fahrzeit.
+  Nicht geprüft: Stabilität, Abhängigkeit von der Soll-Fahrzeit. Nach dem Review (2026-11-03, Fragen schwagia):
+  zwei Zellen im Notebook, Durchfahrten als Abschnittsende und Linien der Abschnitte mit 25 Fahrten. Eine Erwartung
+  stand vorher nur als Vermutung im Review («könnte die 25 Fahrten erklären»); sie hat sich nicht bestätigt.
 - **Übernommen/verworfen:** Verworfen wurde eine «Rechenprobe» im Notebook, die nur dieselbe Summe zweimal rechnete
   und nicht scheitern konnte; die Zelle zeigt jetzt nur die Grösse der Basis.

@@ -56,7 +56,8 @@ def _(con, latest_service_points, quality):
     con.execute(
         """
         create or replace view sections as
-        select a.BPUIC as a_id, b.BPUIC as b_id, b.an_delay - a.ab_delay as section_delay
+        select a.BPUIC as a_id, b.BPUIC as b_id, b.an_delay - a.ab_delay as section_delay,
+               a.LINIEN_TEXT as line, a.DURCHFAHRT_TF or b.DURCHFAHRT_TF as pass_through
         from pairs p
         join week a on a.BETRIEBSTAG = p.BETRIEBSTAG and a.ZEILE = p.zeile_a
         join week b on b.BETRIEBSTAG = p.BETRIEBSTAG and b.ZEILE = p.zeile_b
@@ -149,6 +150,65 @@ def _(con):
         from sections
         """
     )
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md("""
+    ## Prüfungen aus dem Review (PR #17)
+
+    Durchfahrten stehen als Zeilen in `rail` und können Halt A oder B eines Abschnitts sein.
+    Wie viele Abschnittsfahrten betrifft das, und ändern sich die Top 10 ohne sie?
+    """)
+    return
+
+
+@app.cell
+def _(MIN_TRIPS, con):
+    con.sql(
+        f"""
+        with g as (
+            select a_id, b_id,
+                   avg(section_delay) as with_pt,
+                   avg(section_delay) filter (where not pass_through) as without_pt
+            from sections
+            group by all
+            having count(*) >= {MIN_TRIPS}
+        )
+        select (select count(*) filter (where pass_through) from sections) as mit_durchfahrt,
+               (select count(*) from sections) as alle,
+               round(max(abs(with_pt - without_pt)), 3) as max_diff_min,
+               list((a_id, b_id) order by with_pt desc)[1:10]
+                 = list((a_id, b_id) order by without_pt desc)[1:10] as top10_gleich
+        from g
+        """
+    )
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md("""
+    Welche Linien fahren die Abschnitte mit wenigen Fahrten in den Top 10?
+    """)
+    return
+
+
+@app.cell
+def _(con, section_ranking):
+    import polars as _pl
+
+    _few = section_ranking.head(10).filter(_pl.col("fahrten") < 50)["abschnitt"].to_list()
+    con.sql(
+        """
+        select za.name || ' → ' || zb.name as abschnitt, line as linie, count(*) as fahrten
+        from sections
+        join zh za on za.BPUIC = a_id
+        join zh zb on zb.BPUIC = b_id
+        group by all
+        """
+    ).pl().filter(_pl.col("abschnitt").is_in(_few))
     return
 
 
