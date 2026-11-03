@@ -509,3 +509,108 @@ Befunde, September 2026, Halte in der Schweiz, ohne Ausfälle:
   existiert, und `setup-uv@v7`, der zwar als kurzer Tag existiert, aber drei Major-Versionen zurückliegt. Der Agent hatte
   `@v10` im Plan ungeprüft angenommen; die Prüfung vor dem Commit verlangte schwagia.
 
+
+## 2026-11-01 — Hypothese: Erste Rangliste, eine Woche im Kanton Zürich (Issue #14, vor der Analyse notiert)
+
+Anlass: erster Durchstich bis zu einer Rangliste (Richtlinien v3, Abschnitt 1, «Start»). Daten: Mo 7.9. bis
+So 13.9.2026, Parquet in `data/processed/istdaten_rail/`, Haltestellenliste vom 2026-10-05.
+
+- **Erwartung (schwagia, im Issue):** Zuoberst bei den Abschnitten steht Zürich Hardbrücke → Zürich HB, zuoberst bei
+  den Halten steht Zürich HB. Gehalten heisst: der erwartete Eintrag steht auf Rang 1; jede Tabelle wird für sich
+  bewertet.
+- **Regeln aus dem Issue:**
+  - Abschnitt = zwei aufeinanderfolgende Halte einer Fahrt, je Richtung getrennt (A→B ≠ B→A), beide Halte im Kanton
+    Zürich laut Haltestellenliste.
+  - Streckenverspätung = Ankunftsverspätung an B minus Abfahrtsverspätung an A, nur wenn beide `REAL` sind;
+    Bereinigung über `quality.delays()`.
+  - Haltverspätung nur an Halten mit geplanter Haltezeit von mindestens 1 Minute.
+  - In die Tabelle kommt nur, wer in der Woche mindestens 20 gemessene Fahrten hat. Rangfolge nach Mittelwert.
+- **Regeln, vom Team ergänzt (Haonan, 2026-11-01):**
+  - «Aufeinanderfolgend» gilt in der ganzen Fahrt, nach `ZEILE`, auch über Halte ausserhalb des Kantons und Halte ohne
+    `REAL`. Erst danach bleiben die Paare, bei denen beide Halte in Zürich liegen und gemessen sind. Ein Abschnitt über
+    einen ausgefallenen Halt wird verworfen, ebenso einer mit rückwärts laufender Soll-Zeit.
+  - Haltverspätung je Halt über beide Richtungen zusammen.
+  - Die Schwelle von 1 Minute für die Haltverspätung genügt für diesen ersten Blick. Sie ersetzt nicht den
+    Referenzwert je Soll-Haltezeit, den `AGENTS.md` vor einer Rangliste der Halte verlangt; das ist eine bekannte
+    Grenze dieser Tabelle.
+- *Folge bei Widerlegung:* kein Kurswechsel, sondern Hinweis, wo die Daten anders aussehen als erwartet; die
+  Entscheidung trifft das Team nach dem Befund.
+
+## 2026-11-01 — Befund: Erste Rangliste, eine Woche im Kanton Zürich (Issue #14)
+
+Berechnet in `notebooks/03_erste_rangliste.py` nach den Regeln aus dem Hypothesen-Eintrag oben. Basis: 148'772
+gemessene Abschnittsfahrten auf 400 Abschnitten, davon 373 mit mindestens 20 Fahrten; 69 Halte mit Soll-Haltezeit ab
+1 Minute und mindestens 20 Fahrten.
+
+**Top 10 Abschnitte nach mittlerer Streckenverspätung (min)**
+
+| Rang | Abschnitt | Fahrten | Mittel | Median |
+|---|---|---|---|---|
+| 1 | Gibswil → Fischenthal | 206 | 1.45 | 1.47 |
+| 2 | Thalwil → Zürich Enge | 257 | 1.09 | 0.75 |
+| 3 | Zürich Oerlikon → Zürich Affoltern | 25 | 0.99 | 0.77 |
+| 4 | Dietikon → Dietikon Schöneggstrasse | 511 | 0.95 | 0.93 |
+| 5 | Pfungen → Winterthur Wülflingen | 284 | 0.87 | 0.87 |
+| 6 | Zürich Enge → Thalwil | 252 | 0.74 | 0.63 |
+| 7 | Eglisau → Glattfelden | 272 | 0.72 | 0.70 |
+| 8 | Bauma → Steg | 210 | 0.72 | 0.73 |
+| 9 | Winterthur → Zürich Stadelhofen | 25 | 0.62 | 0.37 |
+| 10 | Turbenthal → Rämismühle-Zell | 331 | 0.62 | 0.62 |
+
+**Top 10 Halte nach mittlerer Haltverspätung (min), Soll-Haltezeit ab 1 Minute**
+
+| Rang | Halt | Fahrten | Mittel | Median |
+|---|---|---|---|---|
+| 1 | Oberwinterthur | 133 | 1.34 | 1.42 |
+| 2 | Stammheim | 247 | 0.73 | 0.75 |
+| 3 | Feuerthalen | 278 | 0.62 | 0.59 |
+| 4 | Zürich Flughafen | 1978 | 0.62 | 0.50 |
+| 5 | Rikon | 281 | 0.62 | 0.55 |
+| 6 | Kloten | 273 | 0.61 | 0.63 |
+| 7 | Samstagern | 266 | 0.58 | 0.51 |
+| 8 | Saland | 554 | 0.53 | 0.15 |
+| 9 | Dietikon | 1515 | 0.49 | 0.37 |
+| 10 | Bassersdorf | 273 | 0.48 | 0.57 |
+
+- **Befund Abschnitte: nicht gehalten.** Zürich Hardbrücke → Zürich HB steht auf Rang 326 von 373 (2'501 Fahrten,
+  Mittel −1.31 min): Auf diesem Abschnitt nimmt die Verspätung im Mittel ab, er wirkt eher als Absorber.
+- **Befund Halte: nicht gehalten.** Zürich HB steht auf Rang 13 von 69 (8'600 Fahrten, Mittel +0.30 min).
+- **Grenzen dieses Befunds:**
+  - Eine Woche, ein Kanton, nur Mittelwerte, keine Prüfung der Stabilität (laut Issue nicht Teil davon).
+  - Zwei Abschnitte in den Top 10 haben nur 25 Fahrten (Rang 3 und 9). Es sind Haltemuster einzelner Linien zur
+    Hauptverkehrszeit (Review PR #17): Zürich Oerlikon → Zürich Affoltern fährt nur die S21 ohne Halt in Seebach
+    (Mo–Fr, 5 Züge, 16:50–18:50), Winterthur → Zürich Stadelhofen nur die S23 ohne Halt in Stettbach (Mo–Fr, 5 Züge,
+    06:19–08:19). Die übrigen Züge (S6; S11, S12, S7) halten dazwischen und zählen zu kürzeren Abschnitten. Ein
+    Abschnitt ist also durch die bedienten Halte bestimmt, nicht durch die Strecke; die zwei Mittelwerte gelten nur
+    für diese Linien zur Spitzenzeit.
+  - Durchfahrten können Halt A oder B sein (Prüfung, die am 6.10. für die Abschnittsbildung vorgemerkt war, Review
+    PR #17): 22 von 148'772 Abschnittsfahrten; ohne sie ändert sich kein Mittel um mehr als 0.006 min, und die Top 10
+    bleiben gleich. Sie bleiben drin, wie am 6.10. angenommen. Die zwei Abschnitte mit 25 Fahrten erklären sie nicht.
+  - Verdacht, noch nicht geprüft (Review PR #17): Die Streckenverspätung könnte von der Soll-Fahrzeit abhängen
+    (Annahme A7); kurze Soll-Fahrzeiten könnten wegen der Minutenrundung im Mittel positive Werte zeigen. Eine
+    Auswertung dazu liegt nicht im Repository. Ob die Top 10 echte Verstärker oder kurze Abschnitte sind, ist offen.
+  - Die Haltverspätung ist bei 1 Minute Soll-Haltezeit noch von der Rundung beeinflusst; ein Referenzwert je
+    Soll-Haltezeit fehlt (Grenze, im Hypothesen-Eintrag notiert).
+- **Entscheidung (Haonan und schwagia, 2026-11-03, Vorschlag schwagia im Review PR #17):** Die Rangliste wird noch
+  nicht interpretiert, weil die Top 10 kurze Abschnitte sein könnten, deren Wert von der Minutenrundung kommt (A7).
+  Nächstes Paket: prüfen, ob die Streckenverspätung von der Soll-Fahrzeit abhängt, und falls ja, einen
+  Referenzwert je Soll-Fahrzeit einführen.
+
+## 2026-11-01 — KI-Einsatz: Issue #14
+
+- **Aufgabe:** die erste Rangliste der Abschnitte und Halte für eine Woche im Kanton Zürich berechnen.
+- **Mine:** das Issue mit Erwartung, Regeln, Woche, Kanton und Schwelle (schwagia); die drei ergänzten Regeln
+  (Haonan): «aufeinanderfolgend» über die ganze Fahrt mit Ausfällen als Lücke, Halte über beide Richtungen, 1 Minute
+  als Schwelle für den ersten Blick. Die Entscheidung nach dem Befund.
+- **Delegated:** das Notebook mit den Abfragen, der Hypothesen-Eintrag aus den Vorgaben, die Tabellen und der Befund
+  samt Grenzen. Entscheide des Agenten: Nachbarn über alle Zeilen der Fahrt in `rail` (auch Ausland und Ausfälle),
+  dann Abgleich mit `quality.delays()` über Betriebstag und `ZEILE`; Kanton direkt aus der Haltestellenliste gelesen,
+  weil die gemeinsame Sicht `service_points` ihn nicht hat und `src/` laut Issue nicht geändert wird; Rang nach
+  Mittelwert mit `rank()`, Median als zusätzliche Spalte.
+- **Prüfung:** Die Woche enthält keine doppelten Zeilen und keinen Abschnitt mit rückwärts laufender Soll-Zeit; beide
+  Rangfolgen einmal als Skript und einmal im Notebook gerechnet, gleiche Werte. Tests und `ruff` laufen durch.
+  Nicht geprüft: Stabilität, Abhängigkeit von der Soll-Fahrzeit. Nach dem Review (2026-11-03, Fragen schwagia):
+  zwei Zellen im Notebook, Durchfahrten als Abschnittsende und Linien der Abschnitte mit 25 Fahrten. Eine Erwartung
+  stand vorher nur als Vermutung im Review («könnte die 25 Fahrten erklären»); sie hat sich nicht bestätigt.
+- **Übernommen/verworfen:** Verworfen wurde eine «Rechenprobe» im Notebook, die nur dieselbe Summe zweimal rechnete
+  und nicht scheitern konnte; die Zelle zeigt jetzt nur die Grösse der Basis.
