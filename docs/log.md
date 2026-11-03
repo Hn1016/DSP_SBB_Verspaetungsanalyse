@@ -463,7 +463,13 @@ Befunde, September 2026, Halte in der Schweiz, ohne Ausfälle:
   `uv sync --locked` und `uv run pytest` aus. Job und Check heissen `tests`. Python kommt über uv aus `.python-version`.
 - **uv-Version fest auf 0.13.6:** Alternative: immer die neueste uv-Version. Begründung: Der Check wird Pflicht; ein
   neues uv-Release soll keinen roten Check auslösen, der Merges blockiert. Das Issue verlangt das nicht. Die Version
-  muss von Hand nachgezogen werden.
+  muss von Hand nachgezogen werden, im Workflow und in `pyproject.toml`.
+- **uv-Version auch lokal Pflicht (Review PR #15, Hn1016):** `required-version = "==0.13.6"` unter `[tool.uv]` in
+  `pyproject.toml`, damit lokal und in CI dieselbe uv-Version gilt; mit einer anderen Version bricht uv ab. Das README
+  nennt die Version beim Setup und den Befehl `uv self update 0.13.6`. `pyproject.toml` war im Issue nicht genannt.
+- **Wenn `main` rot wird (Review PR #15, Hn1016):** Wird `main` nach einem Merge rot, kümmert sich, wer zuletzt gemergt
+  hat. Ist die Ursache nicht innerhalb eines Tages klar, wird der Merge über den Revert-Button auf GitHub
+  zurückgenommen; die Korrektur kommt danach als Paket mit Issue.
 - **Action-Versionen:** `actions/checkout@v7` und `astral-sh/setup-uv@v10.3.3`. Bei `setup-uv` gibt es seit v8 nur noch
   unveränderliche Release-Tags; ein Tag `v10` existiert nicht (Beleg: `git ls-remote --tags`, 2026-11-01), und der
   noch vorhandene Tag `v7` steht auf einer alten Version. Deshalb die neueste Major-Version mit vollem Tag.
@@ -490,8 +496,9 @@ Befunde, September 2026, Halte in der Schweiz, ohne Ausfälle:
 - **Mine:** das Issue (Hn1016); die Vorgaben dazu (schwagia): uv mit Python aus `.python-version`, `uv sync --locked`,
   Job-Name `tests`, Tests unverändert. Von schwagia bewusst übernommen: die feste uv-Version (Vorschlag des Agenten)
   und «Require branches to be up to date» aus. Ruleset (Hn1016). Test-PR #16 geöffnet, beurteilt und geschlossen
-  (schwagia, Hn1016).
-- **Delegated:** Claude Code hat den Workflow, die Zeile im README, diese Einträge, den Ablauf des Test-PR und die Datei
+  (schwagia, Hn1016). Nach Review Hn1016 (schwagia): uv 0.13.6 auch lokal über `required-version` in `pyproject.toml`
+  mit Zeile im README; die Regel, wer sich um ein rotes `main` kümmert und wann per Revert zurückgenommen wird.
+- **Delegated:** Claude Code hat den Workflow, die Zeilen im README, diese Einträge, den Ablauf des Test-PR und die Datei
   mit dem roten Test vorgeschlagen und geschrieben, die Tags geprüft und `setup-uv@v10.3.3` gewählt.
 - **Prüfung:** In einem frischen Klon ohne Daten läuft `uv sync --locked`; `uv run pytest` ergibt 20 passed, 7 skipped
   (die sieben aus `tests/test_data.py`). Tags mit `git ls-remote --tags` geprüft. Auf GitHub: PR #15 grün, Test-PR #16
