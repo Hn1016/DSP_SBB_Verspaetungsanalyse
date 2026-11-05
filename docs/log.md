@@ -665,10 +665,16 @@ Mo 7.9. bis So 13.9.2026, Kanton Zürich).
   (Rang 1, 4, 5, 7, 10).
 - **Befund A7: nicht gehalten.** Die Streckenverspätung hängt von der Soll-Fahrzeit ab. Die rohe Rangliste aus #14
   bevorzugt kurze Abschnitte.
+- **Ursache offen (Review PR #19, schwagia):** Die Minutenrundung allein erklärt den Unterschied von gut einer Minute
+  kaum; sie verschiebt eine Soll-Fahrzeit um höchstens eine halbe Minute, unabhängig von der Länge. Dass das Mittel
+  auch von 3 über 4 zu 5 und mehr Minuten weiter sinkt, passt eher zu Fahrzeitreserven im Fahrplan, die auf langen
+  Abschnitten grösser sind. Beides lässt sich mit diesen Daten nicht trennen. Für den Referenzwert ist die Ursache
+  egal; im Bericht heisst «Absorber» darum vorerst «Abschnitt, auf dem Züge Zeit aufholen», nicht «Abschnitt mit
+  Reserve» und nicht «Rundungseffekt».
 - **Grenzen:** Eine Woche, ein Kanton. Die Rangliste aus #14 enthält keine Abschnitte mit 0 Minuten Soll-Fahrzeit;
   die Klassen decken alle 148'772 Fahrten ab.
 - **Entscheidung (nach der Regel aus dem Issue):** Die Rangliste braucht einen Referenzwert je Soll-Fahrzeit. Er wird
-  ein eigenes Issue. Evidenz von A7 in `docs/assumptions.md` nachgeführt.
+  ein eigenes Issue. Evidenz von A7 in `docs/assumptions.md` auf «tief» gesetzt und die Tabelle neu sortiert.
 
 ## 2026-11-05 — KI-Einsatz: Issue #18
 
@@ -680,5 +686,10 @@ Mo 7.9. bis So 13.9.2026, Kanton Zürich).
   Mittel je Klasse über alle Abschnittsfahrten; Soll-Fahrzeit eines Abschnitts als Median über seine Fahrten.
 - **Prüfung:** Die Summe der Fahrten über die Klassen ergibt die 148'772 aus #14, und die Top 10 stimmen mit dem
   Eintrag zu #14 überein (Abschnitte, Fahrten, Mittel). Tests, `ruff` und `marimo check` laufen durch.
+- **Reihenfolge Hypothese und Analyse (Review PR #19, schwagia):** Der Hypothesen-Eintrag wurde am 3.11. geschrieben
+  und am 4.11. auf den Wortlaut des Issues gekürzt, aber erst am 5.11. zusammen mit der Analyse committet; beide
+  Commits tragen dieselbe Sekunde. Der Agent hat die Analyse gerechnet, bevor der Hypothesen-Commit bestand. Der
+  eigene Commit belegt die Reihenfolge darum nicht. Beleg ist Issue #18 vom 3.11., 20:17 UTC, mit beiden Erwartungen;
+  laut GitHub seither nicht bearbeitet. Ab dem nächsten Paket wird die Hypothese committet, bevor gerechnet wird.
 - **Übernommen/verworfen:** Von `feat/assumption-checks` nichts übernommen: Die Prüfung dort rechnet über die ganze
   Schweiz und den ganzen September mit eigener Abschnittsbildung und wäre nicht dieselbe Basis wie #14.
