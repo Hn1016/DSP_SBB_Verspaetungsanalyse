@@ -628,3 +628,57 @@ Abschnitte» (`docs/assumptions.md`). Basis wie Issue #14: Mo 7.9. bis So 13.9.2
   Klasse.
 - *Folge bei Widerlegung:* Die Rangliste aus #14 braucht keinen Referenzwert je Soll-Fahrzeit. Sonst wird der
   Referenzwert ein eigenes Issue.
+
+## 2026-11-05 — Befund: Annahme A7, Streckenverspätung nach Soll-Fahrzeit (Issue #18)
+
+Berechnet in `notebooks/04_soll_fahrzeit.py` auf derselben Basis wie Issue #14 (148'772 gemessene Abschnittsfahrten,
+Mo 7.9. bis So 13.9.2026, Kanton Zürich).
+
+**Mittlere Streckenverspätung je Klasse der Soll-Fahrzeit (min)**
+
+| Soll-Fahrzeit | Fahrten | Mittel | Median |
+|---|---|---|---|
+| 1 min | 9'801 | +0.24 | +0.30 |
+| 2 min | 34'495 | −0.11 | −0.12 |
+| 3 min | 46'803 | −0.53 | −0.52 |
+| 4 min | 24'924 | −0.71 | −0.73 |
+| 5 min und mehr | 32'749 | −0.79 | −0.85 |
+
+**Soll-Fahrzeit der Top 10 Abschnitte aus Issue #14 (Median über die Fahrten der Woche)**
+
+| Rang | Abschnitt | Fahrten | Mittel | Soll-Fahrzeit |
+|---|---|---|---|---|
+| 1 | Gibswil → Fischenthal | 206 | 1.45 | 1 |
+| 2 | Thalwil → Zürich Enge | 257 | 1.09 | 6 |
+| 3 | Zürich Oerlikon → Zürich Affoltern | 25 | 0.99 | 4 |
+| 4 | Dietikon → Dietikon Schöneggstrasse | 511 | 0.95 | 1 |
+| 5 | Pfungen → Winterthur Wülflingen | 284 | 0.87 | 2 |
+| 6 | Zürich Enge → Thalwil | 252 | 0.74 | 6 |
+| 7 | Eglisau → Glattfelden | 272 | 0.72 | 2 |
+| 8 | Bauma → Steg | 210 | 0.72 | 4 |
+| 9 | Winterthur → Zürich Stadelhofen | 25 | 0.62 | 17 |
+| 10 | Turbenthal → Rämismühle-Zell | 331 | 0.62 | 2 |
+
+- **Erwartung 1: gehalten.** Abschnitte mit 1 Minute Soll-Fahrzeit liegen im Mittel 1.03 Minuten über denen mit
+  5 Minuten und mehr (Erwartung: mindestens 0.3). Das Mittel sinkt mit jeder Klasse, von +0.24 auf −0.79 min.
+- **Erwartung 2: gehalten, genau an der Schwelle.** 5 der Top 10 haben eine Soll-Fahrzeit von höchstens 2 Minuten
+  (Rang 1, 4, 5, 7, 10).
+- **Befund A7: nicht gehalten.** Die Streckenverspätung hängt von der Soll-Fahrzeit ab. Die rohe Rangliste aus #14
+  bevorzugt kurze Abschnitte.
+- **Grenzen:** Eine Woche, ein Kanton. Die Rangliste aus #14 enthält keine Abschnitte mit 0 Minuten Soll-Fahrzeit;
+  die Klassen decken alle 148'772 Fahrten ab.
+- **Entscheidung (nach der Regel aus dem Issue):** Die Rangliste braucht einen Referenzwert je Soll-Fahrzeit. Er wird
+  ein eigenes Issue. Evidenz von A7 in `docs/assumptions.md` nachgeführt.
+
+## 2026-11-05 — KI-Einsatz: Issue #18
+
+- **Aufgabe:** prüfen, ob die Streckenverspätung von der Soll-Fahrzeit abhängt (Annahme A7).
+- **Mine:** das Issue mit Erwartung, Klassen und Basis (schwagia); Hypothese im Wortlaut des Issues, ohne Zusätze
+  (Haonan).
+- **Delegated:** das Notebook, der Hypothesen-Eintrag, beide Tabellen, Befund und dieser Eintrag. Entscheide des
+  Agenten: Basis aus `03_erste_rangliste.py` im Notebook wiederholt, weil `src/` laut Issue nicht geändert wird;
+  Mittel je Klasse über alle Abschnittsfahrten; Soll-Fahrzeit eines Abschnitts als Median über seine Fahrten.
+- **Prüfung:** Die Summe der Fahrten über die Klassen ergibt die 148'772 aus #14, und die Top 10 stimmen mit dem
+  Eintrag zu #14 überein (Abschnitte, Fahrten, Mittel). Tests, `ruff` und `marimo check` laufen durch.
+- **Übernommen/verworfen:** Von `feat/assumption-checks` nichts übernommen: Die Prüfung dort rechnet über die ganze
+  Schweiz und den ganzen September mit eigener Abschnittsbildung und wäre nicht dieselbe Basis wie #14.
