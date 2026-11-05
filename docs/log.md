@@ -614,3 +614,17 @@ gemessene Abschnittsfahrten auf 400 Abschnitten, davon 373 mit mindestens 20 Fah
   stand vorher nur als Vermutung im Review («könnte die 25 Fahrten erklären»); sie hat sich nicht bestätigt.
 - **Übernommen/verworfen:** Verworfen wurde eine «Rechenprobe» im Notebook, die nur dieselbe Summe zweimal rechnete
   und nicht scheitern konnte; die Zelle zeigt jetzt nur die Grösse der Basis.
+
+## 2026-11-03 — Hypothese: Annahme A7, Streckenverspätung nach Soll-Fahrzeit (Issue #18, vor der Analyse notiert)
+
+Anlass: Entscheidung zu Issue #14 (Rangliste noch nicht interpretieren) und Annahme A7 «Rundung neutral für
+Abschnitte» (`docs/assumptions.md`). Basis wie Issue #14: Mo 7.9. bis So 13.9.2026, Kanton Zürich.
+
+- **Erwartung (schwagia, im Issue):**
+  - Abschnitte mit 1 Minute Soll-Fahrzeit haben im Mittel eine um mindestens 0.3 Minuten höhere Streckenverspätung als
+    Abschnitte mit 5 Minuten und mehr.
+  - Mindestens 5 der Top 10 Abschnitte aus Issue #14 haben eine Soll-Fahrzeit von höchstens 2 Minuten.
+- **Klassen der Soll-Fahrzeit (aus dem Issue):** 1, 2, 3, 4, 5 und mehr Minuten, mit Anzahl Abschnittsfahrten je
+  Klasse.
+- *Folge bei Widerlegung:* Die Rangliste aus #14 braucht keinen Referenzwert je Soll-Fahrzeit. Sonst wird der
+  Referenzwert ein eigenes Issue.
