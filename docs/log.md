@@ -941,7 +941,10 @@ Mo 7.9. bis So 13.9.2026, Kanton Zürich).
   (1.4 s für September); Änderungen in anderen Dateien, die auf die Abschnitte wirken (z. B. die Typisierung in
   `load.py`), erkennt sie nicht.
 - **Abweichung vom Issue:** Das Issue nennt `data/processed/sections.parquet`; der Name enthält jetzt den Zeitraum
-  (siehe oben). Das README beschreibt den dritten Schritt, weil es sonst «zwei Schritte» nennen würde.
+  (siehe oben). Das README beschreibt den dritten Schritt, weil es sonst «zwei Schritte» nennen würde. `.gitignore`
+  enthält neu `.tmp/`: Dorthin lagert DuckDB aus, wenn eine Abfrage den Speicher übersteigt (relativ zum
+  Arbeitsverzeichnis). Ein abgebrochener Gegenversuch hatte dort 120 GB hinterlassen, und `git add -A` blieb daran
+  hängen (siehe KI-Einsatz).
 - **Prüfung gegen #14** (`notebooks/05_abschnitte_pruefung.py`, ausserhalb der Tests): Mo 7.9. bis So 13.9.2026,
   beide Halte im Kanton Zürich (Kanton aus `service_points_snapshot()`, fester Schnappschuss vom 2026-10-05).
   Erwartung vor dem Lauf, aus dem Issue und dem Befund zu #14: 148'772 Abschnittsfahrten auf 400 Abschnitten.
@@ -969,7 +972,8 @@ Mo 7.9. bis So 13.9.2026, Kanton Zürich).
   Nach Review PR #29 (schwagia, nach Review Hn1016): eine Prüfsumme (8 Zeichen) über `sections.py` und `quality.py` im
   Dateinamen, damit der Build Regeländerungen selbst erkennt, ältere Dateien desselben Zeitraums werden gelöscht, mit
   Test und angepasstem README; in Notebook 05 der Zeilenvergleich mit der Logik aus Notebook 03, Abweichungen in beide
-  Richtungen, Erwartung 0, statt der Grenze «vergleicht nur Anzahlen».
+  Richtungen, Erwartung 0, statt der Grenze «vergleicht nur Anzahlen». Danach (schwagia): `.tmp/` in `.gitignore`
+  aufnehmen, Vorschlag des Agenten nach den 120 GB DuckDB-Zwischendateien im Repository.
 - **Delegated:** Claude Code hat den Plan, die Fixture-Datei aus den sechs Fällen (Spalten wie in
   `load.SELECT_TYPED`, Füllwerte für Betreiber, Linie und Namen), den Test, den Stub, `sections.py`, den
   Build-Schritt, die Anpassung von `tests/test_build.py`, Notebook 05, den README-Abschnitt und diese Einträge

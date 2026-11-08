@@ -18,6 +18,8 @@ data/processed/*
 !data/processed/.gitkeep
 *.duckdb
 *.duckdb.wal
+# DuckDB spills here when a query exceeds memory (relative to the working directory)
+.tmp/
 *.part
 
 # marimo
