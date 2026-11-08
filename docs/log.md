@@ -727,7 +727,7 @@ Mo 7.9. bis So 13.9.2026, Kanton Zürich).
 
 ## 2026-11-08 — Entscheidung: Reihenfolge der nächsten Prüfungen, zuerst «Regeln festlegen» (Issue #20)
 
-- **Entscheidung (Team, nach Review PR #20):** Von den Annahmen mit hoher Wichtigkeit sind A10, A9 und A5 offen mit
+- **Entscheidung (Team, nach Review PR #21):** Von den Annahmen mit hoher Wichtigkeit sind A10, A9 und A5 offen mit
   Evidenz «tief». Die Reihenfolge:
   1. Zeitraum und Zeitfenster festlegen, im Paket «Regeln festlegen».
   2. Beim Laden der zwölf Monate A3 und A4 mitprüfen; beide brauchen nur die neuen Monate.
@@ -751,7 +751,7 @@ Mo 7.9. bis So 13.9.2026, Kanton Zürich).
   abgestuft werden, weil die Einschätzungen vom 17.10. ohne Daten waren; die vorgeschlagene Tabelle übernommen; nächste
   Hypothese A10, dann A9, dann A5, mit Begründung (der Agent hatte nur A5 und A9 als Gleichstand genannt und A10
   übersehen); Eintragstyp «Entscheidung» statt «Hypothese», weil v3 bei einer Hypothese eine Erwartung verlangt;
-  Gleichstand nach dieser Prüfreihenfolge statt nach Nummer sortiert. Nach Review PR #20 (schwagia, nach Review
+  Gleichstand nach dieser Prüfreihenfolge statt nach Nummer sortiert. Nach Review PR #21 (schwagia, nach Review
   Hn1016): zuerst Zeitraum und Zeitfenster im Paket «Regeln festlegen», dann A3 und A4 beim Laden der zwölf Monate,
   danach A10, A9, A5, weil A10 erst mit festgelegtem Zeitraum und geladenen Monaten prüfbar ist; Begründung für A5
   nach den Folgen eines Scheiterns statt nach den 145 rückwärts laufenden Abschnitten, die nur Umleitungen mit
