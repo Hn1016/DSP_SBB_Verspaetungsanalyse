@@ -59,6 +59,21 @@ def test_zip_to_rail_parquet_keeps_only_trains_and_types_columns(tmp_path):
     assert list(out_dir.iterdir()) == written  # no temporary files left behind
 
 
+def test_daily_file_without_sloid_gets_the_same_schema(tmp_path):
+    # files before 13.10.2025 have 21 columns, without SLOID
+    old_header = HEADER.removesuffix(";SLOID")
+    old_train = TRAIN.removesuffix(";ch:1:sloid:7000")
+    zip_path = tmp_path / "ist-daten-v2-2025-09.zip"
+    with zipfile.ZipFile(zip_path, "w") as archive:
+        archive.writestr("2025-09-01_IstDaten.csv", "\n".join([old_header, old_train]))
+    new = zip_to_rail_parquet(make_archive(tmp_path), tmp_path / "new")[0]
+
+    old = zip_to_rail_parquet(zip_path, tmp_path / "old")[0]
+
+    assert duckdb.sql(f"describe '{old}'").fetchall() == duckdb.sql(f"describe '{new}'").fetchall()
+    assert duckdb.sql(f"select BPUIC, SLOID from '{old}'").fetchall() == [(8507000, None)]
+
+
 def test_zip_to_rail_parquet_skips_existing_days(tmp_path):
     zip_path = make_archive(tmp_path)
     out_dir = tmp_path / "rail"

@@ -58,6 +58,9 @@ def env(tmp_path, monkeypatch):
     monkeypatch.setattr(build, "SERVICE_POINTS_RAW", raw / "service_points")
     monkeypatch.setattr(build, "ISTDATEN_RAIL", processed / "istdaten_rail")
     monkeypatch.setattr(build, "PROCESSED", processed)
+    # the test archive is September 2026, independent of the period in period.py
+    monkeypatch.setattr(build, "START", (2026, 9))
+    monkeypatch.setattr(build, "END", (2026, 9))
     stops = b"number;designation\n"
     monkeypatch.setattr(download, "SERVICE_POINTS_SHA256", hashlib.sha256(stops).hexdigest())
 
