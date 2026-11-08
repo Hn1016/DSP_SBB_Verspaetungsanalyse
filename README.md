@@ -17,6 +17,7 @@ uv 0.13.6 ist Pflicht (`required-version` in `pyproject.toml`, dieselbe Version 
 git clone <repo-url>
 cd DSP
 uv sync
+uv run build      # Rohdaten laden und Parquet erzeugen (siehe Datenbeschaffung)
 uv run pytest
 ```
 
@@ -27,6 +28,21 @@ Bei jedem Pull Request und jedem Push auf `main` laufen die Tests automatisch (G
 Rohdaten liegen in `data/raw/` und werden nicht verändert und nicht versioniert. Jeder Download
 wird mit Quelle, Abrufdatum und SHA-256-Prüfsumme in `data/raw/manifest.csv` protokolliert
 (`src/sbb_delays/download.py`).
+
+Ein Befehl baut alles aus den Rohdaten:
+
+```bash
+uv run build            # baut, was fehlt
+uv run build --force    # baut data/processed für den Zeitraum neu; data/raw bleibt unangetastet
+```
+
+- Der Zeitraum steht nur in `src/sbb_delays/period.py` (vorerst September 2026).
+- `build` führt die zwei Schritte unten der Reihe nach aus und druckt pro Schritt eine Zeile, `gebaut` oder
+  `übersprungen`. Ein Schritt wird übersprungen, wenn alle seine Zieldateien für den Zeitraum existieren (ZIP und
+  Haltestellen bzw. eine Parquet-Datei pro Kalendertag). Fortschrittsbalken erscheinen zusätzlich auf stderr.
+- Ein zweiter Lauf lädt nichts neu.
+
+Die Schritte einzeln:
 
 ```bash
 # 1. Rohdaten laden: Monatsarchive IstDaten (v2) und Haltestellen (Service Points)
@@ -52,6 +68,7 @@ uv run python -m sbb_delays.load
 
 | Ergebnis | Befehl |
 |---|---|
+| Alles aus den Rohdaten bauen | `uv run build` (`--force`: `data/processed` neu) |
 | Rohdaten laden | `uv run python -m sbb_delays.download --from YYYY-MM --to YYYY-MM` |
 | Parquet erzeugen | `uv run python -m sbb_delays.load` |
 | Stichprobe ansehen | `uv run marimo edit notebooks/01_sample.py` |
