@@ -6,7 +6,8 @@ the period, one Parquet file named after the period, issue #24). Before each ste
 of the period are checked: if all exist, the step is skipped. Otherwise the step runs, and the
 existing functions skip single files that already exist, so an interrupted build continues.
 The targets of load are the daily files in the archives; calendar days of the period that an
-archive lacks are reported as a warning. sections is also rebuilt when load built something.
+archive lacks are reported as a warning. sections is also rebuilt when load built something,
+and when its rules change: a short checksum of sections.py and quality.py is in the file name.
 
 Each step prints one line on stdout; progress bars and warnings go to stderr.
 
@@ -16,6 +17,7 @@ Usage:
 """
 
 import argparse
+import hashlib
 import sys
 import zipfile
 from calendar import monthrange
@@ -90,10 +92,26 @@ def build_load(force: bool = False) -> str:
     return "gebaut"
 
 
-def sections_parquet() -> Path:
-    """Target of sections; the period is in the name, so a new period builds a new file."""
+# The files that hold the section rules; a change in either builds sections anew.
+RULE_FILES = [Path(sections.__file__), Path(quality.__file__)]
+
+
+def rules_hash() -> str:
+    """First 8 hex characters of SHA-256 over the contents of RULE_FILES, in order."""
+    digest = hashlib.sha256()
+    for path in RULE_FILES:
+        digest.update(path.read_bytes())
+    return digest.hexdigest()[:8]
+
+
+def sections_prefix() -> str:
     (y1, m1), (y2, m2) = START, END
-    return PROCESSED / f"sections_{y1}-{m1:02d}_{y2}-{m2:02d}.parquet"
+    return f"sections_{y1}-{m1:02d}_{y2}-{m2:02d}"
+
+
+def sections_parquet() -> Path:
+    """Target of sections; period and rules are in the name, so a change of either builds anew."""
+    return PROCESSED / f"{sections_prefix()}_{rules_hash()}.parquet"
 
 
 def build_sections(force: bool = False) -> str:
@@ -104,6 +122,10 @@ def build_sections(force: bool = False) -> str:
     tmp = target.with_suffix(".parquet.part")
     sections.sections(con, START, END).write_parquet(str(tmp), compression="zstd")
     tmp.rename(target)
+    # older files of the same period (other rules, or from before the checksum was in the name)
+    for old in PROCESSED.glob(f"{sections_prefix()}*.parquet"):
+        if old != target:
+            old.unlink()
     return "gebaut"
 
 

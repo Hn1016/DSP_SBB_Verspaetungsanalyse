@@ -930,10 +930,16 @@ Mo 7.9. bis So 13.9.2026, Kanton Zürich).
   `data/processed/istdaten_rail/`. Sonst nähme der Schritt nach dem Laden der zwölf Monate auch den September 2026
   mit.
 - **Build-Schritt:** `uv run build` hat am Ende einen dritten Schritt `sections`; `download` und `load` sind
-  unverändert. Ziel ist `data/processed/sections_<Start>_<Ende>.parquet` (zurzeit `sections_2026-09_2026-09.parquet`).
-  Der Zeitraum steht im Namen, damit eine Änderung in `period.py` einen neuen Build auslöst, statt alte Abschnitte zu
-  überspringen. `sections` wird übersprungen, wenn die Datei existiert, ausser bei `--force` oder wenn `load` im
+  unverändert. Ziel ist `data/processed/sections_<Start>_<Ende>_<Prüfsumme>.parquet` (zurzeit
+  `sections_2026-09_2026-09_0171af71.parquet`). Der Zeitraum steht im Namen, damit eine Änderung in `period.py` einen
+  neuen Build auslöst, statt alte Abschnitte zu überspringen. Die Prüfsumme (die ersten 8 Zeichen von SHA-256 über den
+  Inhalt von `src/sbb_delays/sections.py` und `src/sbb_delays/quality.py`) steht im Namen, damit der Build
+  Regeländerungen selbst erkennt (Review PR #29); nach einem Neubau werden ältere Abschnittsdateien desselben
+  Zeitraums gelöscht. `sections` wird übersprungen, wenn die Datei existiert, ausser bei `--force` oder wenn `load` im
   selben Lauf etwas gebaut hat (sonst blieben die Abschnitte nach neu geladenen Tagen veraltet).
+  Grenze der Prüfsumme: Sie erkennt jede Änderung der zwei Dateien, auch Kommentare, und baut dann unnötig neu
+  (1.4 s für September); Änderungen in anderen Dateien, die auf die Abschnitte wirken (z. B. die Typisierung in
+  `load.py`), erkennt sie nicht.
 - **Abweichung vom Issue:** Das Issue nennt `data/processed/sections.parquet`; der Name enthält jetzt den Zeitraum
   (siehe oben). Das README beschreibt den dritten Schritt, weil es sonst «zwei Schritte» nennen würde.
 - **Prüfung gegen #14** (`notebooks/05_abschnitte_pruefung.py`, ausserhalb der Tests): Mo 7.9. bis So 13.9.2026,
@@ -941,8 +947,11 @@ Mo 7.9. bis So 13.9.2026, Kanton Zürich).
   Erwartung vor dem Lauf, aus dem Issue und dem Befund zu #14: 148'772 Abschnittsfahrten auf 400 Abschnitten.
   Ergebnis: 148'772 Abschnittsfahrten, 400 Abschnitte, davon 22 Fahrten mit Durchfahrt (wie Review PR #17). Für den
   ganzen September 2026 und die ganze Schweiz ergibt der Schritt 4'094'329 Abschnittsfahrten an 30 Tagen.
-- **Grenze:** Die Prüfung vergleicht Anzahlen, nicht einzelne Zeilen. Dass dieselben Abschnitte entstehen, folgt aus
-  derselben Logik und den 400 Abschnitten, ist aber nicht Zeile für Zeile gegen Notebook 03 verglichen.
+- **Zeilenvergleich mit der Logik aus Notebook 03** (Review PR #29, im selben Notebook): Betriebstag, `ZEILE` von A
+  und B, Halt A und B, Streckenverspätung, in beide Richtungen mit `except all`. Erwartung vor dem Lauf: 0
+  Abweichungen in beiden Richtungen. Ergebnis: 148'772 Zeilen auf beiden Seiten, 0 nur im neuen Schritt, 0 nur in der
+  Logik aus Notebook 03. Der Vergleich kann scheitern: Ohne Durchfahrten auf der Seite von Notebook 03 (Regel b)
+  zeigt er 22 Zeilen nur im neuen Schritt.
 
 ## 2026-11-08 — KI-Einsatz: Issue #24
 
@@ -957,6 +966,10 @@ Mo 7.9. bis So 13.9.2026, Kanton Zürich).
   nicht an einem fehlenden Modul; `sections` filtert auf den Zeitraum aus `period.py`, mit einem Test, dass ein Tag
   ausserhalb keine Abschnitte ergibt; der Zeitraum steht im Dateinamen. Nach der Umsetzung (schwagia): `sections`
   wird auch neu gebaut, wenn `load` im selben Lauf etwas gebaut hat (Vorschlag des Agenten, bewusst übernommen).
+  Nach Review PR #29 (schwagia, nach Review Hn1016): eine Prüfsumme (8 Zeichen) über `sections.py` und `quality.py` im
+  Dateinamen, damit der Build Regeländerungen selbst erkennt, ältere Dateien desselben Zeitraums werden gelöscht, mit
+  Test und angepasstem README; in Notebook 05 der Zeilenvergleich mit der Logik aus Notebook 03, Abweichungen in beide
+  Richtungen, Erwartung 0, statt der Grenze «vergleicht nur Anzahlen».
 - **Delegated:** Claude Code hat den Plan, die Fixture-Datei aus den sechs Fällen (Spalten wie in
   `load.SELECT_TYPED`, Füllwerte für Betreiber, Linie und Namen), den Test, den Stub, `sections.py`, den
   Build-Schritt, die Anpassung von `tests/test_build.py`, Notebook 05, den README-Abschnitt und diese Einträge
@@ -971,7 +984,12 @@ Mo 7.9. bis So 13.9.2026, Kanton Zürich).
   Filter auf den Zeitraum entfernt) schlug je mindestens ein Test fehl. `tests/test_build.py`: die drei Zeilen auf
   stdout, 30 Abschnittsfahrten im Archiv des Tests, Überspringen beim zweiten Lauf und eine neue Datei bei anderem
   Zeitraum. Prüfung gegen #14 auf den echten Daten: 148'772 und 400 wie erwartet (siehe Entscheidung). Tests, `ruff`
-  und `marimo check` laufen durch.
+  und `marimo check` laufen durch. Nach Review PR #29: neuer Test (gleiche Regeln: übersprungen; geänderte Kopie von
+  `quality.py`: neu gebaut, alte Datei gelöscht, danach wieder übersprungen); er schlägt fehl, wenn die Prüfsumme
+  nicht im Namen steht oder die alte Datei nicht gelöscht wird. `uv run build` auf den lokalen Daten hat die Datei
+  ohne Prüfsumme durch `sections_2026-09_2026-09_0171af71.parquet` ersetzt. Zeilenvergleich: 0 und 0 wie erwartet,
+  Gegenprobe ohne Durchfahrten 22 (siehe Entscheidung). Ein erster Gegenversuch (Notebook 03 ohne die Regel zur
+  rückwärts laufenden Soll-Zeit) lief nach über 15 CPU-Minuten nicht durch und wurde abgebrochen.
 - **Übernommen/verworfen:** Verworfen im Plan: ein `ModuleNotFoundError` als erstes Scheitern (ersetzt durch den Stub,
   Entscheid schwagia) und `data/processed/sections.parquet` ohne Zeitraum (Entscheid schwagia). Der Vorschlag, die
   Ordnergrenze nur im Log zu nennen, ist durch den Filter auf den Zeitraum ersetzt.

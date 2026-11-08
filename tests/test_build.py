@@ -7,6 +7,8 @@ download.fetch_service_points, load.zip_to_rail_parquet and sections.sections ru
 import functools
 import hashlib
 import io
+import re
+import shutil
 import zipfile
 
 import duckdb
@@ -112,7 +114,8 @@ def test_first_run_downloads_then_loads(env, capsys):
     # the archive build checks is the one fetch_istdaten writes
     assert build.istdaten_zip(2026, 9).exists()
     # one section (Zürich HB -> Bern) per day, in a file named after the period
-    assert build.sections_parquet().name == "sections_2026-09_2026-09.parquet"
+    assert build.sections_parquet().name == f"sections_2026-09_2026-09_{build.rules_hash()}.parquet"
+    assert re.fullmatch(r"[0-9a-f]{8}", build.rules_hash())
     assert duckdb.read_parquet(str(build.sections_parquet())).count("*").fetchone()[0] == 30
 
 
@@ -183,6 +186,29 @@ def test_new_period_builds_a_new_sections_file(env, monkeypatch, capsys):
 
     monkeypatch.setattr(build, "START", (2026, 8))  # period.py changed; the old file stays
 
-    assert build.sections_parquet().name == "sections_2026-08_2026-09.parquet"
+    assert build.sections_parquet().name == f"sections_2026-08_2026-09_{build.rules_hash()}.parquet"
     assert build.build_sections() == "gebaut"
     assert old.exists() and build.sections_parquet().exists()
+
+
+def test_changed_rules_rebuild_sections_and_drop_the_old_file(env, tmp_path, monkeypatch, capsys):
+    rules = []
+    for path in build.RULE_FILES:  # copies, so the test can change the rules
+        copy = tmp_path / "rules" / path.name
+        copy.parent.mkdir(exist_ok=True)
+        shutil.copy(path, copy)
+        rules.append(copy)
+    monkeypatch.setattr(build, "RULE_FILES", rules)
+    build.build()
+    capsys.readouterr()
+    old = build.sections_parquet()
+
+    assert build.build_sections() == "übersprungen"  # same rules
+
+    rules[1].write_text(rules[1].read_text() + "\n# changed rule\n")
+
+    assert build.sections_parquet() != old
+    assert build.build_sections() == "gebaut"
+    assert build.sections_parquet().exists()
+    assert not old.exists()
+    assert build.build_sections() == "übersprungen"
