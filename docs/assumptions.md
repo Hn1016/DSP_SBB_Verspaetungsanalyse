@@ -13,7 +13,7 @@ bzw. «tief».
 
 Sortiert nach Wichtigkeit (hoch zuerst), dann Evidenz (tief zuerst), dann Status («offen» zuerst), dann Nummer:
 Wichtiges mit wenig Evidenz steht oben. Ausnahme: A10, A9 und A5 stehen in der Reihenfolge, in der sie geprüft werden
-(Log 2026-11-08, «nächste Hypothese ist Annahme A10»).
+(Log 2026-11-08, «Reihenfolge der nächsten Prüfungen»).
 
 | # | Annahme | Wichtigkeit | Evidenz | Status |
 |---|---|---|---|---|

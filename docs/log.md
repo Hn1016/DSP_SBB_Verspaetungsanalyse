@@ -725,14 +725,21 @@ Mo 7.9. bis So 13.9.2026, Kanton Zürich).
 - **Erledigt:** der offene Punkt aus dem Eintrag 2026-10-28 («Evidenz wird nachgeführt») und das Paket aus dem Eintrag
   2026-10-29.
 
-## 2026-11-08 — Entscheidung: nächste Hypothese ist Annahme A10 (Issue #20)
+## 2026-11-08 — Entscheidung: Reihenfolge der nächsten Prüfungen, zuerst «Regeln festlegen» (Issue #20)
 
-- **Entscheidung (Team):** Von den Annahmen mit hoher Wichtigkeit sind A10, A9 und A5 offen mit Evidenz «tief». Geprüft
-  wird zuerst A10, dann A9, zuletzt A5.
-- **Begründung:** Scheitert A10 (zu wenige gemessene Fahrten je Abschnitt und Zeitfenster), ändern sich Region oder
-  Zeitfenster und damit die Regeln für die Rangliste. A10 ist zudem günstig zu prüfen. A9 folgt danach. A5 zuletzt,
-  weil laut Log 2026-10-06 nur wenige Abschnitte betroffen sind (145 rückwärts laufende Abschnitte, 0.003 %).
-- Die Erwartung wird im eigenen Issue vor der Analyse notiert.
+- **Entscheidung (Team, nach Review PR #20):** Von den Annahmen mit hoher Wichtigkeit sind A10, A9 und A5 offen mit
+  Evidenz «tief». Die Reihenfolge:
+  1. Zeitraum und Zeitfenster festlegen, im Paket «Regeln festlegen».
+  2. Beim Laden der zwölf Monate A3 und A4 mitprüfen; beide brauchen nur die neuen Monate.
+  3. A10, dann A9, zuletzt A5.
+- **Begründung:** A10 lässt sich erst prüfen, wenn Zeitraum und Zeitfenster festgelegt und die zwölf Monate geladen
+  sind. Scheitert A10 (zu wenige gemessene Fahrten je Abschnitt und Zeitfenster), ändern sich Region oder Zeitfenster
+  und damit die Regeln für die Rangliste; A10 ist danach günstig zu prüfen. A9 und A5 nach den Folgen eines
+  Scheiterns: Scheitern A10 oder A9, betrifft es die ganze Rangliste; scheitert A5, betrifft es einzelne Abschnitte
+  mit Umleitungen.
+- Die Erwartung wird jeweils im eigenen Issue vor der Analyse notiert.
+- **Abweichung vom Issue:** Das Issue verlangte, die oberste offene Annahme mit hoher Wichtigkeit als nächste
+  Hypothese zu nennen. A10 bleibt die erste der drei, aber vor ihr kommen «Regeln festlegen» und A3 und A4.
 
 ## 2026-11-08 — KI-Einsatz: Issue #20
 
@@ -744,7 +751,11 @@ Mo 7.9. bis So 13.9.2026, Kanton Zürich).
   abgestuft werden, weil die Einschätzungen vom 17.10. ohne Daten waren; die vorgeschlagene Tabelle übernommen; nächste
   Hypothese A10, dann A9, dann A5, mit Begründung (der Agent hatte nur A5 und A9 als Gleichstand genannt und A10
   übersehen); Eintragstyp «Entscheidung» statt «Hypothese», weil v3 bei einer Hypothese eine Erwartung verlangt;
-  Gleichstand nach dieser Prüfreihenfolge statt nach Nummer sortiert.
+  Gleichstand nach dieser Prüfreihenfolge statt nach Nummer sortiert. Nach Review PR #20 (schwagia, nach Review
+  Hn1016): zuerst Zeitraum und Zeitfenster im Paket «Regeln festlegen», dann A3 und A4 beim Laden der zwölf Monate,
+  danach A10, A9, A5, weil A10 erst mit festgelegtem Zeitraum und geladenen Monaten prüfbar ist; Begründung für A5
+  nach den Folgen eines Scheiterns statt nach den 145 rückwärts laufenden Abschnitten, die nur Umleitungen mit
+  rückwärts laufender Zeit zeigen.
 - **Delegated:** Claude Code hat die Regel für Status und Evidenz, die Tabelle mit Status, Evidenz und Begründung je
   Annahme, die Sortierschlüssel Status und Nummer, die Kopfzeile und diese Einträge vorgeschlagen und geschrieben.
 - **Prüfung:** Jede Zeile gegen den zitierten Log-Eintrag gelesen (schwagia im Plan); jeder Verweis in der Tabelle
