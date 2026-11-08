@@ -4,11 +4,11 @@
 import pytest
 
 from sbb_delays import quality
-from sbb_delays.download import latest_service_points
+from sbb_delays.download import service_points_snapshot
 from sbb_delays.paths import ISTDATEN_RAIL
 
 pytestmark = pytest.mark.skipif(
-    not any(ISTDATEN_RAIL.glob("*.parquet")) or latest_service_points() is None,
+    not any(ISTDATEN_RAIL.glob("*.parquet")) or not service_points_snapshot().exists(),
     reason="derived data not built",
 )
 

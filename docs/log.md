@@ -833,3 +833,81 @@ Mo 7.9. bis So 13.9.2026, Kanton Zürich).
   Lauf «gebaut») ist mit Review PR #25 behoben. Dafür liest `build` die Tagesdateien im ZIP mit derselben Regel wie
   `zip_to_rail_parquet` (Endung `.csv`, die ersten zehn Zeichen des Namens); ändert sich die Regel in `load.py`,
   muss `build.py` mitgehen.
+
+## 2026-11-08 — Entscheidung: Haltestellenliste als fester Schnappschuss, Manifest ohne doppelte Zeilen (Issue #26)
+
+- **Ausgangslage:** Der Permalink der Haltestellenliste liefert nur die Fassung des Tages
+  (`actual-date-swiss-service-point.csv`); frühere Fassungen bietet der Anbieter nicht an. Ein frischer Klon lud darum
+  eine andere Liste als die bisherigen Auswertungen (Review PR #25: 2026-11-08 statt 2026-10-05).
+- **Entscheidung:** Der Build verwendet einen festen Schnappschuss. Datum und Prüfsumme stehen nur in
+  `src/sbb_delays/period.py` (`SERVICE_POINTS_DATE`, `SERVICE_POINTS_SHA256`). Die Datei ist ein Auszug der Liste vom
+  2026-10-05 (Schweizer Halte, `uicCountryCode` 85, nur die Spalten, die der Code liest, nach Nummer sortiert; 33'031
+  Zeilen, 2.8 MB), erzeugt mit `download.extract_service_points` und als Release `service-points-2026-10-05` dieses
+  Repositorys veröffentlicht. `build` lädt ihn von dort, prüft die Prüfsumme und bricht mit einer Meldung ab, wenn er
+  fehlt oder abweicht. Die Prüfsumme steht auch im Manifest; ein Test prüft, dass beide übereinstimmen.
+- **Alternativen:**
+  - Rohdatei unverändert als Release: verworfen. Grundlage sind die Nutzungsbedingungen Open Data von
+    opentransportdata.swiss (abgerufen 2026-11-08), im Wortlaut:
+    - §1: «Der Zugang zu den Daten erfolgt über opentransportdata.swiss. Die bezogenen Daten dürfen aufbereitet,
+      analysiert und publiziert werden, inkl. Einbezug weiterer Daten.»
+    - §5.1: «In Publikationen und Analysen, die auf ODMCH-Daten basieren, ist die URL opentransportdata.swiss als
+      Bezugsort der Rohdaten anzugeben.»
+    - §5.2: «ODMCH-Daten müssen regelmässig aktualisiert werden, entsprechend dem zugrundeliegenden Aktualisierungstakt
+      der Rohdaten.»
+
+    Auslegung (vom Agenten, vom Team übernommen, nicht rechtlich geprüft): Eine unveränderte Kopie ist keine
+    Aufbereitung nach §1 und umgeht den Zugang über opentransportdata.swiss; der Auszug ist eine Aufbereitung, mit
+    opentransportdata.swiss als Bezugsort (§5.1, im README und im Release).
+  - Gemeinsamer Ablageort nur für das Team (Richtlinien v3, Abschnitt 9) statt öffentlichem Release (Review PR #27):
+    verworfen (Entscheid Haonan). Ein frischer Klon, auch der des Betreuers, bräuchte dann einen Zugang oder einen
+    manuellen Schritt (Richtlinien v3, Abschnitt 6: «Keine manuellen Zwischenschritte»). Das Release lässt sich
+    jederzeit löschen, falls die Auslegung nicht hält.
+  - Versionsgeschichte des Anbieters (`full-swiss-service-point.csv`, alle Fassungen mit Gültigkeit), je Betriebstag
+    die gültige Fassung: verworfen, weil auch sie nicht reproduzierbar ist. Abgerufen am 2026-11-08: 604 Fassungen von
+    565 Halten, die vor dem 2026-10-05 gültig wurden, sind nach dem 2026-10-05 bearbeitet worden; für den 2026-10-05
+    weicht sie vom Schnappschuss ab (219 Koordinaten, 76 Gültigkeiten, 2 Namen; 261 bzw. 53 Halte nur in einer der
+    beiden). Einmalige Abfrage, nicht im Repository.
+  - Nur die Prüfsumme der Tagesfassung prüfen: verworfen, weil danach jeder frische Klon abbricht.
+- **Was die Wahl für die bisherigen Ergebnisse bedeutet:** nichts. Für die Bahnhalte im September 2026 ergibt die
+  Versionsgeschichte keinen anderen Kanton als der Schnappschuss (0 von 48'609 Halt-Tagen); im Zeitraum Juli 2025 bis
+  Juni 2026 wechseln nur 25 Halte in Moutier den Kanton (BE → JU), keiner in Zürich. Notebook 04 ergibt mit dem Auszug
+  dieselben Zahlen wie im Befund zu #18. Die Koordinaten unterscheiden sich an 2'566 Halt-Tagen; das betrifft die Karte.
+- **Annahme:** Ein Schnappschuss genügt für den ganzen Zeitraum ab 2025-07, solange nur der Kanton verwendet wird. Für
+  die Karte wird das neu geprüft.
+- **Offene Prüfung für das Paket «Zwölf Monate laden» (Review PR #27, schwagia):** Enthält der Schnappschuss vom
+  Oktober 2026 alle Halte, die von Juli 2025 bis Juni 2026 bedient wurden, auch inzwischen aufgehobene? Fehlt ein Halt,
+  fehlt sein Kanton, und seine Abschnitte fallen still weg. Prüfung auf den echten Daten: jede `BPUIC` der zwölf Monate
+  steht im Auszug. Vorab aus der Versionsgeschichte (einmalige Abfrage, nicht im Repository): 229 Schweizer Halte waren
+  im Zeitraum gültig und fehlen im Schnappschuss, davon ein Bahnhalt (Aigle-Hôpital, VD, gültig bis 13.12.2025), keiner
+  im Kanton Zürich.
+- **Grenze:** §5.2 der Nutzungsbedingungen verlangt, Daten «regelmässig» zu aktualisieren. Für eine Auswertung eines
+  festen vergangenen Zeitraums halten wir einen festen Schnappschuss für vertretbar; geklärt mit dem Anbieter ist das
+  nicht.
+- **Manifest (offener Punkt aus Issue #22):** `append_manifest` fügt keine Zeile hinzu, wenn Datei und Prüfsumme schon
+  im Manifest stehen. Ein frischer Klon lässt `data/raw/manifest.csv` so unverändert. Committet werden die Zeilen der
+  Dateien, die der Build braucht, im Pull Request, der sie einführt; die Zeile der Rohdatei vom 2026-10-05 bleibt als
+  Herkunft des Auszugs stehen.
+
+## 2026-11-08 — KI-Einsatz: Issue #26
+
+- **Aufgabe:** Der Build verwendet eine feste Haltestellenliste mit Prüfsumme; Entscheidung zum Manifest.
+- **Mine:** das Issue (schwagia); die Entscheide (Haonan): ein eigener fester Schnappschuss statt nur Prüfsumme,
+  zuerst als Rohdatei im Release, nach dem Befund zu den Nutzungsbedingungen als Auszug; doppelte Manifest-Zeilen
+  überspringen; kein neues Issue, weil die Versionsgeschichte das Problem nicht löst; nach Review PR #27 das
+  öffentliche Release behalten statt eines Ablageorts nur für das Team. Die Nutzungsbedingungen hat das Team nur in den
+  vom Agenten zitierten Stellen gelesen, nicht die ganze Seite.
+- **Delegated:** Claude Code hat die Quellen des Anbieters und die Nutzungsbedingungen gelesen und ausgelegt (Kopie
+  keine Aufbereitung nach §1, Auszug schon; darauf baut das öffentliche Release auf), die Versionsgeschichte
+  ausgewertet, die drei Wege vorgeschlagen und den Code, die Tests, den Auszug, den README-Abschnitt und diese
+  Einträge geschrieben. Entscheide des Agenten: Spalten des Auszugs (die, die `quality.connect` und die Notebooks
+  lesen, mit den Namen des Anbieters); Name `service-points-ch_<Datum>.csv`; `latest_service_points` ersetzt durch
+  `service_points_snapshot`, auch in `quality.py`, `tests/test_data.py` und den Notebooks 03 und 04, weil sie sonst die
+  neueste Datei im Ordner lesen statt den Schnappschuss.
+- **Prüfung:** Fünf neue Tests ohne Netzwerk: Download des festen Schnappschusses, auch wenn eine neuere Liste im
+  Ordner liegt, und kein zweiter Download und keine zweite Manifest-Zeile beim zweiten Lauf; Abbruch bei anderer
+  Prüfsumme (keine Datei, kein `.part`, keine Manifest-Zeile); Abbruch, wenn das Release fehlt; Abbruch bei lokal
+  geänderter Datei; Prüfsumme in `period.py` gleich der im Manifest. Die Tests scheitern, wenn die Prüfung der
+  Prüfsumme oder das Überspringen doppelter Zeilen entfernt wird. Notebook 04 mit dem Auszug: Klassen, Top 10 und
+  beide Erwartungen wie im Befund zu #18. Tests, `ruff` und `marimo check` laufen durch.
+- **Übernommen/verworfen:** Verworfen: die Rohdatei als Release (Nutzungsbedingungen §1) und die Versionsgeschichte
+  (nachträglich bearbeitet, siehe Entscheidung).

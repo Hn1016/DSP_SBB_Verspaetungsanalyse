@@ -1,16 +1,23 @@
 import csv
+import functools
 import hashlib
 
 import pytest
+import requests
+from test_build import FakeResponse
 
+from sbb_delays import download, period
 from sbb_delays.download import (
     ISTDATEN_URL,
+    SnapshotUnavailable,
     append_manifest,
     fetch_service_points,
     months_between,
     parse_month,
+    service_points_snapshot,
     sha256sum,
 )
+from sbb_delays.paths import MANIFEST
 
 
 def test_sha256sum_matches_hashlib(tmp_path):
@@ -51,8 +58,89 @@ def test_istdaten_url_pads_month():
     assert url.endswith("/istdaten/2026/ist-daten-v2-2026-09.zip")
 
 
-def test_fetch_service_points_reuses_latest_snapshot(tmp_path):
-    for day in ["2026-10-04", "2026-10-05"]:
-        (tmp_path / f"service-points_{day}.csv").write_text("sloid\n")
-    # no network call: an existing snapshot is returned as is
-    assert fetch_service_points(tmp_path).name == "service-points_2026-10-05.csv"
+def test_append_manifest_skips_same_file_and_checksum(tmp_path):
+    manifest = tmp_path / "manifest.csv"
+    f = tmp_path / "a.csv"
+    f.write_text("one")
+    append_manifest(f, "https://example.org/a.csv", manifest=manifest)
+    append_manifest(f, "https://example.org/a.csv", manifest=manifest)
+    f.write_text("two")  # same name, other content: a new row
+    append_manifest(f, "https://example.org/a.csv", manifest=manifest)
+
+    rows = list(csv.DictReader(manifest.open()))
+    assert len(rows) == 2
+    assert rows[0]["sha256"] != rows[1]["sha256"]
+
+
+SNAPSHOT = b"number;designationOfficial\n8503000;Z\xc3\xbcrich HB\n"
+
+
+@pytest.fixture
+def mirror(tmp_path, monkeypatch):
+    """Network replaced by a release that serves `served["content"]` (None: not found)."""
+    manifest = tmp_path / "manifest.csv"
+    monkeypatch.setattr(
+        download, "append_manifest", functools.partial(download.append_manifest, manifest=manifest)
+    )
+    monkeypatch.setattr(download, "SERVICE_POINTS_SHA256", hashlib.sha256(SNAPSHOT).hexdigest())
+    served = {"content": SNAPSHOT, "urls": []}
+
+    def fake_get(url, **kwargs):
+        served["urls"].append(url)
+        if served["content"] is None:
+            raise requests.HTTPError("404 Not Found")
+        return FakeResponse(served["content"])
+
+    monkeypatch.setattr(download.requests, "get", fake_get)
+    return {"dir": tmp_path / "service_points", "manifest": manifest, "served": served}
+
+
+def test_fetch_service_points_downloads_the_pinned_snapshot(mirror):
+    directory = mirror["dir"]
+    directory.mkdir()
+    (directory / "service-points_2026-11-08.csv").write_text("newer list\n")  # ignored
+
+    path = fetch_service_points(directory)
+
+    assert path == service_points_snapshot(directory)
+    assert path.read_bytes() == SNAPSHOT
+    assert mirror["served"]["urls"] == [
+        download.SERVICE_POINTS_RELEASE_URL.format(date=period.SERVICE_POINTS_DATE)
+    ]
+    # a second clone on another day: no download, same file, no second manifest row
+    assert fetch_service_points(directory) == path
+    assert len(mirror["served"]["urls"]) == 1
+    assert len(list(csv.DictReader(mirror["manifest"].open()))) == 1
+
+
+def test_fetch_service_points_aborts_on_other_checksum(mirror):
+    mirror["served"]["content"] = b"number;designationOfficial\n8503000;Zuerich\n"
+
+    with pytest.raises(SnapshotUnavailable, match="nicht verfügbar"):
+        fetch_service_points(mirror["dir"])
+    assert not any(mirror["dir"].iterdir())  # neither the file nor a .part is left
+    assert not mirror["manifest"].exists()
+
+
+def test_fetch_service_points_aborts_when_release_is_missing(mirror):
+    mirror["served"]["content"] = None
+
+    with pytest.raises(SnapshotUnavailable, match="nicht verfügbar"):
+        fetch_service_points(mirror["dir"])
+    assert not service_points_snapshot(mirror["dir"]).exists()
+
+
+def test_fetch_service_points_rejects_a_changed_local_file(mirror):
+    mirror["dir"].mkdir()
+    service_points_snapshot(mirror["dir"]).write_bytes(b"edited\n")
+
+    with pytest.raises(SnapshotUnavailable, match="Prüfsumme"):
+        fetch_service_points(mirror["dir"])
+    assert mirror["served"]["urls"] == []
+
+
+def test_pinned_checksum_is_the_one_in_the_manifest():
+    rows = {r["file"]: r for r in csv.DictReader(MANIFEST.open())}
+    row = rows[f"service_points/service-points-ch_{period.SERVICE_POINTS_DATE}.csv"]
+    assert row["sha256"] == period.SERVICE_POINTS_SHA256
+    assert row["url"] == download.SERVICE_POINTS_RELEASE_URL.format(date=period.SERVICE_POINTS_DATE)

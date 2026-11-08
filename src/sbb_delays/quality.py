@@ -8,7 +8,7 @@ from pathlib import Path
 
 import duckdb
 
-from sbb_delays.download import latest_service_points
+from sbb_delays.download import service_points_snapshot
 from sbb_delays.paths import ISTDATEN_RAIL
 
 # UIC country code 85 = Switzerland; BPUIC is country code + five-digit stop number.
@@ -26,8 +26,8 @@ def connect(
     con.execute(
         f"create view rail as select *, {IN_CH} as IN_CH from read_parquet('{rail_dir}/*.parquet')"
     )
-    service_points = service_points or latest_service_points()
-    if service_points:
+    service_points = service_points or service_points_snapshot()
+    if service_points.exists():
         con.execute(
             f"""
             create view service_points as

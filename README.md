@@ -47,10 +47,16 @@ uv run build --force    # baut data/processed für den Zeitraum neu; data/raw bl
 
 - Quelle IstDaten: Monatsarchiv `https://archive.opentransportdata.swiss/istdaten/<Jahr>/ist-daten-v2-<Jahr>-<Monat>.zip`
   (v2-Format, verfügbar ab 2025-07). Ein Monat ist ca. 1.4 GB als ZIP und ca. 19 GB entpackt.
-- Quelle Haltestellen: Permalink `https://data.opentransportdata.swiss/dataset/service-point-v2/permalink`.
-  Die Datei wird vom Anbieter täglich aktualisiert; jeder Download ist ein Schnappschuss mit Abrufdatum im
-  Dateinamen (`data/raw/service_points/service-points_<Datum>.csv`). Ein vorhandener Schnappschuss wird
-  wiederverwendet; zum Aktualisieren die Datei löschen und `uv run build` erneut ausführen.
+- Haltestellen: ein fester Schnappschuss, Datum und Prüfsumme in `src/sbb_delays/period.py` (zurzeit 2026-10-05).
+  Quelle ist der Permalink `https://data.opentransportdata.swiss/dataset/service-point-v2/permalink`; der Anbieter
+  aktualisiert die Datei täglich und bietet frühere Fassungen nicht mehr an. Darum lädt `build` einen Auszug des
+  Schnappschusses (Schweizer Halte, nur die verwendeten Spalten) aus dem Release
+  [`service-points-2026-10-05`](https://github.com/Hn1016/DSP_SBB_Verspaetungsanalyse/releases/tag/service-points-2026-10-05)
+  dieses Repositorys nach `data/raw/service_points/service-points-ch_<Datum>.csv` und prüft die Prüfsumme. Fehlt
+  der Auszug oder weicht die Prüfsumme ab, bricht `build` mit einer Meldung ab. Erzeugt wurde der Auszug mit
+  `download.extract_service_points` (Log 2026-11-08, Issue #26).
+- Manifest: Ein Download fügt nur dann eine Zeile hinzu, wenn Datei und Prüfsumme noch nicht im Manifest stehen.
+  Ein frischer Klon lässt `data/raw/manifest.csv` darum unverändert.
 - `load` entpackt jeweils nur einen Tag temporär, filtert auf `PRODUKT_ID = 'Zug'` und schreibt
   typisierte Parquet-Dateien nach `data/processed/istdaten_rail/` (September 2026: 61 MB).
 - Die Spalte `ZEILE` (Zeilennummer in der Tages-CSV) hält die Haltreihenfolge einer Fahrt fest.
@@ -83,7 +89,9 @@ tests/            pytest (Unit- und Datentests)
 | Datensatz | Anbieter | Lizenz |
 |---|---|---|
 | IstDaten (Soll-/Ist-Zeiten je Halt) | [opentransportdata.swiss](https://opentransportdata.swiss) | Nutzungsbedingungen opentransportdata.swiss |
-| Haltestellen (Koordinaten) | opentransportdata.swiss | Nutzungsbedingungen opentransportdata.swiss |
+| Haltestellen (Koordinaten, Kanton) | opentransportdata.swiss; Auszug im Release dieses Repositorys | Nutzungsbedingungen opentransportdata.swiss |
 | Zugzahlen pro Streckenabschnitt, Linie, Kilometrierung | [data.sbb.ch](https://data.sbb.ch) | Nutzungsbedingungen data.sbb.ch |
 
-> Lizenzangaben beim ersten Download je Datensatz prüfen und präzisieren.
+> Lizenzangaben beim ersten Download je Datensatz prüfen und präzisieren. Haltestellen: Die Nutzungsbedingungen
+> Open Data von opentransportdata.swiss erlauben, die Daten aufbereitet zu publizieren, mit opentransportdata.swiss
+> als Bezugsort der Rohdaten (§1, §5.1). Der Auszug im Release ist eine solche Aufbereitung.

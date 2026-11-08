@@ -9,10 +9,10 @@ def _():
     import marimo as mo
 
     from sbb_delays import quality
-    from sbb_delays.download import latest_service_points
+    from sbb_delays.download import service_points_snapshot
 
     con = quality.connect()
-    return con, latest_service_points, mo, quality
+    return con, service_points_snapshot, mo, quality
 
 
 @app.cell
@@ -28,7 +28,7 @@ def _(mo):
 
 
 @app.cell
-def _(con, latest_service_points, quality):
+def _(con, service_points_snapshot, quality):
     WEEK = "BETRIEBSTAG between date '2026-09-07' and date '2026-09-13'"
     MIN_TRIPS = 20
 
@@ -37,7 +37,7 @@ def _(con, latest_service_points, quality):
         f"""
         create or replace view zh as
         select number::integer as BPUIC, designationOfficial as name
-        from read_csv('{latest_service_points()}', delim=';', header=true, all_varchar=true)
+        from read_csv('{service_points_snapshot()}', delim=';', header=true, all_varchar=true)
         where cantonAbbreviation = 'ZH'
         """
     )
