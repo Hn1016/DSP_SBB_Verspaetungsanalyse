@@ -20,13 +20,14 @@ def _(mo):
     mo.md("""
     # Prüfung des Schritts `sections` gegen Issue #14
 
-    Issue #24. Der Build-Schritt `sections` bildet die Abschnittsfahrten für die ganze Schweiz und den
-    ganzen Zeitraum aus `period.py`. Eingeschränkt auf Mo 7.9. bis So 13.9.2026 und auf Abschnitte mit
-    beiden Halten im Kanton Zürich (fester Schnappschuss der Haltestellenliste) muss er dieselbe Basis
-    ergeben wie `notebooks/03_erste_rangliste.py`.
+    Issue #24. Der Build-Schritt `sections` bildet die Abschnittsfahrten für die ganze Schweiz
+    und den ganzen Zeitraum aus `period.py`. Eingeschränkt auf Mo 7.9. bis So 13.9.2026 und auf
+    Abschnitte mit beiden Halten im Kanton Zürich (fester Schnappschuss der Haltestellenliste)
+    muss er dieselbe Basis ergeben wie `notebooks/03_erste_rangliste.py`.
 
-    Erwartung, vor dem Lauf notiert (Befund zu Issue #14 im Log): **148'772 Abschnittsfahrten auf
-    400 Abschnitten**. Weicht eine der beiden Zahlen ab, bildet der Schritt die Abschnitte anders als #14.
+    Erwartung, vor dem Lauf notiert (Befund zu Issue #14 im Log): **148'772 Abschnittsfahrten
+    auf 400 Abschnitten**. Weicht eine der beiden Zahlen ab, bildet der Schritt die Abschnitte
+    anders als #14.
 
     Voraussetzung: `uv run build`.
     """)

@@ -911,3 +911,65 @@ Mo 7.9. bis So 13.9.2026, Kanton Zürich).
   beide Erwartungen wie im Befund zu #18. Tests, `ruff` und `marimo check` laufen durch.
 - **Übernommen/verworfen:** Verworfen: die Rohdatei als Release (Nutzungsbedingungen §1) und die Versionsgeschichte
   (nachträglich bearbeitet, siehe Entscheidung).
+
+## 2026-11-08 — Entscheidung: Abschnitte als Pipeline-Schritt mit Fixture (Issue #24)
+
+- **Entscheidung:** `sections.sections(con)` (`src/sbb_delays/sections.py`) bildet die Abschnittsfahrten aus der
+  View `rail` der Verbindung, wie die Funktionen in `quality.py`, und gibt eine Tabelle zurück. Regeln wie in
+  `notebooks/03_erste_rangliste.py` (Issue #14) und Review PR #17: Nachbarn nach `ZEILE` über die ganze Fahrt (alle
+  Zeilen, auch ausländische und ausgefallene Halte), Halt A und B aus `quality.delays()`, Abfahrt an A und Ankunft
+  an B gemessen (`REAL`), Abschnitte mit rückwärts laufender Soll-Zeit verworfen. Keine Einschränkung auf eine
+  Region. Spalten: Betriebstag, Fahrt, Linie, `ZEILE` von A und B, Halt A und B, Abfahrtsverspätung A,
+  Ankunftsverspätung B, Streckenverspätung, Soll-Fahrzeit (min), Durchfahrt an A oder B.
+- **Durchfahrten zählen als Punkt (Regel a, wie #14):** Eine Durchfahrt (`DURCHFAHRT_TF`) kann Halt A oder B eines
+  Abschnitts sein. Festgehalten in Fall 6 der Fixture (`tests/fixtures/sections_cases.csv`).
+  - Alternative (b): Durchfahrten auslassen und über sie hinweg einen Abschnitt bilden (in Fall 6 8500120 →
+    8500140). Verworfen, weil sonst die Prüfung gegen #14 nicht stimmt; laut Review PR #17 betrifft die Regel nur
+    22 von 148'772 Abschnittsfahrten, und ohne sie ändert sich kein Mittel um mehr als 0.006 min.
+- **Zeitraum:** `sections` filtert auf die Betriebstage von `START` bis `END` aus `period.py`, nicht auf alles in
+  `data/processed/istdaten_rail/`. Sonst nähme der Schritt nach dem Laden der zwölf Monate auch den September 2026
+  mit.
+- **Build-Schritt:** `uv run build` hat am Ende einen dritten Schritt `sections`; `download` und `load` sind
+  unverändert. Ziel ist `data/processed/sections_<Start>_<Ende>.parquet` (zurzeit `sections_2026-09_2026-09.parquet`).
+  Der Zeitraum steht im Namen, damit eine Änderung in `period.py` einen neuen Build auslöst, statt alte Abschnitte zu
+  überspringen. `sections` wird übersprungen, wenn die Datei existiert, ausser bei `--force` oder wenn `load` im
+  selben Lauf etwas gebaut hat (sonst blieben die Abschnitte nach neu geladenen Tagen veraltet).
+- **Abweichung vom Issue:** Das Issue nennt `data/processed/sections.parquet`; der Name enthält jetzt den Zeitraum
+  (siehe oben). Das README beschreibt den dritten Schritt, weil es sonst «zwei Schritte» nennen würde.
+- **Prüfung gegen #14** (`notebooks/05_abschnitte_pruefung.py`, ausserhalb der Tests): Mo 7.9. bis So 13.9.2026,
+  beide Halte im Kanton Zürich (Kanton aus `service_points_snapshot()`, fester Schnappschuss vom 2026-10-05).
+  Erwartung vor dem Lauf, aus dem Issue und dem Befund zu #14: 148'772 Abschnittsfahrten auf 400 Abschnitten.
+  Ergebnis: 148'772 Abschnittsfahrten, 400 Abschnitte, davon 22 Fahrten mit Durchfahrt (wie Review PR #17). Für den
+  ganzen September 2026 und die ganze Schweiz ergibt der Schritt 4'094'329 Abschnittsfahrten an 30 Tagen.
+- **Grenze:** Die Prüfung vergleicht Anzahlen, nicht einzelne Zeilen. Dass dieselben Abschnitte entstehen, folgt aus
+  derselben Logik und den 400 Abschnitten, ist aber nicht Zeile für Zeile gegen Notebook 03 verglichen.
+
+## 2026-11-08 — KI-Einsatz: Issue #24
+
+- **Aufgabe:** Abschnittsbildung aus Notebook 03 als Funktion in `src/sbb_delays/sections.py` und als Schritt
+  `sections` in `uv run build`, mit handgeschriebener Fixture, Test, Prüfung gegen #14 und Log.
+- **Mine:** das Issue (Hn1016). Die Vorgaben (schwagia): die sechs Fälle der Fixture; Erwartungswerte der Fixture von
+  schwagia nachgerechnet und festgelegt; Regel a für Durchfahrten; Test vor der Funktion, zuerst rot, Erwartungswerte
+  nicht ändern; Regeln wie Notebook 03 und Review PR #17, Bereinigung über `quality.delays()`; Funktion nimmt eine
+  Tabelle und gibt eine Tabelle zurück; in `build.py` nur am Ende einen Schritt anhängen; Prüfung gegen #14
+  ausserhalb der Tests mit dem Kanton aus dem festen Schnappschuss. Die Entscheide zum Plan (schwagia): Eingabe ist
+  die View `rail` der Verbindung, wie in `quality.py`; ein Stub, damit der Test an den Erwartungswerten scheitert und
+  nicht an einem fehlenden Modul; `sections` filtert auf den Zeitraum aus `period.py`, mit einem Test, dass ein Tag
+  ausserhalb keine Abschnitte ergibt; der Zeitraum steht im Dateinamen.
+- **Delegated:** Claude Code hat den Plan, die Fixture-Datei aus den sechs Fällen (Spalten wie in
+  `load.SELECT_TYPED`, Füllwerte für Betreiber, Linie und Namen), den Test, den Stub, `sections.py`, den
+  Build-Schritt, die Anpassung von `tests/test_build.py`, Notebook 05, den README-Abschnitt und diese Einträge
+  geschrieben. Entscheide des Agenten: Ausgabespalten; Fall-Namen als `FAHRT_BEZEICHNER` (z. B.
+  `fall6_durchfahrt_zaehlt_als_punkt`) und Kommentarkopf in der Fixture; `sections` wird auch neu gebaut, wenn `load`
+  etwas gebaut hat; die 400 Abschnitte als zweite Zahl in der Prüfung gegen #14.
+- **Prüfung:** Der Test lief zuerst gegen den Stub (leere Tabelle mit den Ausgabespalten) und schlug in beiden Fällen
+  an den Erwartungswerten fehl; mit `sections.py` lief er durch, ohne dass ein Erwartungswert geändert wurde. Ob er
+  scheitern kann: mit drei eingebauten Fehlern (Nachbarn aus `delays()` statt aus `rail`, was in Fall 2 und 5
+  Abschnitte über den ausgefallenen bzw. ausländischen Halt bildet; Regel zur rückwärts laufenden Soll-Zeit entfernt;
+  Filter auf den Zeitraum entfernt) schlug je mindestens ein Test fehl. `tests/test_build.py`: die drei Zeilen auf
+  stdout, 30 Abschnittsfahrten im Archiv des Tests, Überspringen beim zweiten Lauf und eine neue Datei bei anderem
+  Zeitraum. Prüfung gegen #14 auf den echten Daten: 148'772 und 400 wie erwartet (siehe Entscheidung). Tests, `ruff`
+  und `marimo check` laufen durch.
+- **Übernommen/verworfen:** Verworfen im Plan: ein `ModuleNotFoundError` als erstes Scheitern (ersetzt durch den Stub,
+  Entscheid schwagia) und `data/processed/sections.parquet` ohne Zeitraum (Entscheid schwagia). Der Vorschlag, die
+  Ordnergrenze nur im Log zu nennen, ist durch den Filter auf den Zeitraum ersetzt.
