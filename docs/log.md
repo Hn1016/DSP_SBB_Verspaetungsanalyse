@@ -806,11 +806,14 @@ Mo 7.9. bis So 13.9.2026, Kanton Zürich).
   weil das direkter und leichter zu erklären ist. Nach Review PR #25 (schwagia, nach Review Hn1016): Zieldateien
   von `load` aus den Tagesdateien im ZIP statt aus allen Kalendertagen, fehlender Kalendertag als Warnung auf stderr,
   mit Test; im README nur noch `uv run build`, ohne Einzelbefehle; beim offenen Punkt zum Manifest die neue
-  Haltestellenliste eines frischen Klons ergänzen.
+  Haltestellenliste eines frischen Klons ergänzen. Ebenfalls nach Review PR #25 (schwagia): `AGENTS.md` nennt
+  `uv run build` als Quelle der Parquet-Dateien, mit Hinweis auf `period.py`, und `notebooks/01_sample.py` nennt
+  `uv run build` statt der Einzelbefehle, damit der Agent und das Notebook nicht auf die alten Befehle verweisen.
 - **Delegated:** Claude Code hat den Plan mit den Stellen, an denen die Funktionen überspringen
   (`download.py:63`, `download.py:114`, `load.py:91`), `period.py`, `build.py`, `tests/test_build.py`, den Eintrag
   in `pyproject.toml`, die README-Abschnitte und diese Einträge vorgeschlagen und geschrieben; nach Review PR #25
-  die Umsetzung der Korrekturen (`archive_days`, `missing_days`, Test mit fehlendem Tag, README, Log).
+  die Umsetzung der Korrekturen (`archive_days`, `missing_days`, Test mit fehlendem Tag, README, `AGENTS.md`,
+  `notebooks/01_sample.py`, Log).
 - **Prüfung:** Drei Tests (erster Lauf in Reihenfolge Haltestellen, ZIP, `load`; zweiter Lauf überspringt beide
   Schritte ohne Netzwerkaufruf, ohne neue Manifest-Zeile und ohne neu geschriebene Parquet-Dateien; `--force` baut
   `load` neu und lässt `data/raw` byte-gleich). Nur `requests.get` und die Pfade sind ersetzt, die bestehenden

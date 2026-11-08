@@ -13,7 +13,7 @@ Full requirements: `docs/requirements.md` (German). Read it before non-trivial w
   (records URL, date, SHA-256 in `data/raw/manifest.csv`).
 - Derived data as Parquet or DuckDB in `data/processed/`.
 - Analysis reads the rail-only daily Parquet files in `data/processed/istdaten_rail/`
-  (built by `uv run python -m sbb_delays.load`), not the raw CSVs.
+  (built by `uv run build`; the period is set only in `src/sbb_delays/period.py`), not the raw CSVs.
 - Before finishing: `uv run pytest` and `uv run ruff check . && uv run ruff format --check .` must pass.
 
 ## Domain rules (from requirements)
