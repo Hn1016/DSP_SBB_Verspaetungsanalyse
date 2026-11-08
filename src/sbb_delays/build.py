@@ -4,8 +4,10 @@ Runs the existing steps in order: download (monthly archives and stops into data
 load (rail Parquet per operating day into data/processed). Before each step the target files
 of the period are checked: if all exist, the step is skipped. Otherwise the step runs, and the
 existing functions skip single files that already exist, so an interrupted build continues.
+The targets of load are the daily files in the archives; calendar days of the period that an
+archive lacks are reported as a warning.
 
-Each step prints one line on stdout; progress bars of the steps go to stderr.
+Each step prints one line on stdout; progress bars and warnings go to stderr.
 
 Usage:
     uv run build            # build what is missing
@@ -13,6 +15,8 @@ Usage:
 """
 
 import argparse
+import sys
+import zipfile
 from calendar import monthrange
 from datetime import date
 from pathlib import Path
@@ -32,13 +36,31 @@ def istdaten_zip(year: int, month: int) -> Path:
     return ISTDATEN_RAW / name
 
 
+def archive_days(zip_path: Path) -> list[str]:
+    """Operating days (YYYY-MM-DD) of the daily CSVs in an archive, read as load reads them."""
+    with zipfile.ZipFile(zip_path) as archive:
+        members = [m for m in archive.namelist() if m.lower().endswith(".csv")]
+    return sorted(Path(m).name[:10] for m in members)
+
+
 def rail_parquets() -> list[Path]:
-    """One file per calendar day of the period, named as load.zip_to_rail_parquet names them."""
+    """One file per daily CSV in the period's archives, named as load.zip_to_rail_parquet does."""
     return [
-        ISTDATEN_RAIL / f"{date(year, month, day):%Y-%m-%d}.parquet"
+        ISTDATEN_RAIL / f"{day}.parquet"
+        for year, month in period_months()
+        for day in archive_days(istdaten_zip(year, month))
+    ]
+
+
+def missing_days(parquets: list[Path]) -> list[str]:
+    """Calendar days of the period without a daily file in the archives."""
+    present = {path.stem for path in parquets}
+    calendar = [
+        f"{date(year, month, day):%Y-%m-%d}"
         for year, month in period_months()
         for day in range(1, monthrange(year, month)[1] + 1)
     ]
+    return [day for day in calendar if day not in present]
 
 
 def build_download() -> str:
@@ -53,6 +75,10 @@ def build_download() -> str:
 
 def build_load(force: bool = False) -> str:
     parquets = rail_parquets()
+    if missing := missing_days(parquets):
+        print(
+            f"Warnung: im Archiv fehlen Tage des Zeitraums: {', '.join(missing)}", file=sys.stderr
+        )
     if force:
         for path in parquets:
             path.unlink(missing_ok=True)

@@ -14,11 +14,11 @@ from test_load import HEADER, TRAIN, TRAIN_ORIGIN
 from sbb_delays import build, download, load
 
 
-def month_archive() -> bytes:
-    """A September 2026 archive with one train for each of the 30 days."""
+def month_archive(missing: frozenset[int] = frozenset()) -> bytes:
+    """A September 2026 archive with one train per day, except for the missing days."""
     buffer = io.BytesIO()
     with zipfile.ZipFile(buffer, "w") as archive:
-        for day in range(1, 31):
+        for day in sorted(set(range(1, 31)) - missing):
             rows = [r.replace("01.09.2026", f"{day:02d}.09.2026") for r in (TRAIN_ORIGIN, TRAIN)]
             archive.writestr(f"2026-09-{day:02d}_IstDaten.csv", "\n".join([HEADER, *rows]))
     return buffer.getvalue()
@@ -54,12 +54,13 @@ def env(tmp_path, monkeypatch):
     monkeypatch.setattr(build, "SERVICE_POINTS_RAW", raw / "service_points")
     monkeypatch.setattr(build, "ISTDATEN_RAIL", processed / "istdaten_rail")
 
-    archive = month_archive()
+    served = {"archive": month_archive()}  # a test may replace it before the first run
     requests_made = []
 
     def fake_get(url, **kwargs):
         requests_made.append(url)
-        return FakeResponse(archive if url.endswith(".zip") else b"number;designation\n")
+        content = served["archive"] if url.endswith(".zip") else b"number;designation\n"
+        return FakeResponse(content)
 
     monkeypatch.setattr(download.requests, "get", fake_get)
 
@@ -77,18 +78,30 @@ def env(tmp_path, monkeypatch):
 
         monkeypatch.setattr(module, name, spy)
 
-    return {"raw": raw, "manifest": manifest, "requests": requests_made, "calls": calls}
+    return {
+        "raw": raw,
+        "manifest": manifest,
+        "requests": requests_made,
+        "calls": calls,
+        "served": served,
+    }
 
 
 def stdout_lines(capsys) -> list[str]:
     return capsys.readouterr().out.splitlines()
 
 
+def warnings(stderr: str) -> list[str]:
+    return [line for line in stderr.splitlines() if line.startswith("Warnung")]
+
+
 def test_first_run_downloads_then_loads(env, capsys):
     build.build()
 
     assert env["calls"] == ["fetch_service_points", "fetch_istdaten", "zip_to_rail_parquet"]
-    assert stdout_lines(capsys) == ["download: gebaut", "load: gebaut"]
+    out, err = capsys.readouterr()
+    assert out.splitlines() == ["download: gebaut", "load: gebaut"]
+    assert warnings(err) == []
     assert all(path.exists() for path in build.rail_parquets())
     assert len(build.rail_parquets()) == 30
     # the archive build checks is the one fetch_istdaten writes
@@ -124,3 +137,20 @@ def test_force_rebuilds_processed_but_not_raw(env, capsys):
     assert len(env["requests"]) == 2
     assert {p: p.read_bytes() for p in env["raw"].rglob("*") if p.is_file()} == raw_before
     assert all(path.exists() for path in build.rail_parquets())
+
+
+def test_missing_day_in_archive_warns_and_still_skips(env, capsys):
+    env["served"]["archive"] = month_archive(missing=frozenset({15}))
+    build.build()
+    out, err = capsys.readouterr()
+    assert out.splitlines() == ["download: gebaut", "load: gebaut"]
+    assert warnings(err) == ["Warnung: im Archiv fehlen Tage des Zeitraums: 2026-09-15"]
+    assert len(build.rail_parquets()) == 29
+    env["calls"].clear()
+
+    build.build()
+
+    out, err = capsys.readouterr()
+    assert out.splitlines() == ["download: übersprungen", "load: übersprungen"]
+    assert warnings(err) == ["Warnung: im Archiv fehlen Tage des Zeitraums: 2026-09-15"]
+    assert env["calls"] == []

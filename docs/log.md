@@ -772,19 +772,26 @@ Mo 7.9. bis So 13.9.2026, Kanton Zürich).
   der Reihe nach auf, ohne deren Logik zu ändern. Der Zeitraum steht nur in `src/sbb_delays/period.py`
   (`START`, `END`), vorerst September 2026.
 - **Gebaut oder übersprungen:** Vor jedem Schritt prüft `build`, ob alle Zieldateien des Zeitraums existieren:
-  Haltestellen-Schnappschuss und ein ZIP pro Monat für `download`, eine Parquet-Datei pro Kalendertag für `load`.
+  Haltestellen-Schnappschuss und ein ZIP pro Monat für `download`, eine Parquet-Datei pro Tagesdatei im ZIP für
+  `load` (Namen aus der Dateiliste des ZIPs, ohne zu entpacken; Review PR #25).
   Existieren alle, wird der Schritt nicht aufgerufen («übersprungen»). Fehlt eine, läuft der Schritt («gebaut»), und
   die bestehenden Funktionen überspringen einzelne vorhandene Dateien selbst (`fetch`, `fetch_service_points`,
   `zip_to_rail_parquet`). Ein abgebrochener Lauf setzt so dort fort, wo er stand.
 - **Ausgabe:** «Eine Zeile pro Schritt» gilt für stdout. Die Fortschrittsbalken der Schritte (tqdm) bleiben auf
   stderr, weil sie beim Download von 1.4 GB pro Monat nützlich sind und ein Ausblenden die Schritte ändern würde.
-- **`--force`:** löscht nur die Parquet-Dateien der Kalendertage im Zeitraum und baut sie neu. `data/raw` bleibt
+- **`--force`:** löscht nur die Parquet-Dateien der Tagesdateien im Zeitraum und baut sie neu. `data/raw` bleibt
   unangetastet; `download` meldet dann «übersprungen».
-- **Grenze:** Fehlt im Monatsarchiv ein Kalendertag, meldet `load` bei jedem Lauf «gebaut», obwohl
-  `zip_to_rail_parquet` nichts mehr schreibt. Für September 2026 liegen alle 30 Tage vor.
+- **Fehlende Tage:** Fehlt im Monatsarchiv ein Kalendertag des Zeitraums, druckt `build` eine Warnung auf stderr;
+  «übersprungen» stimmt trotzdem, weil die Zieldateien aus den Tagesdateien im ZIP kommen (Review PR #25). Für
+  September 2026 liegen alle 30 Tage vor.
+- **README:** nennt nur noch `uv run build` als Weg zu den Daten; die Einzelbefehle `download` und `load` stehen
+  nicht mehr darin, damit der Zeitraum nur in `period.py` steht (Review PR #25). `download.py` und `load.py` bleiben
+  unverändert und lassen sich weiterhin einzeln aufrufen.
 - **Offen:** Lokale Downloads hängen Zeilen an das versionierte `data/raw/manifest.csv` an (zurzeit zwei
   uncommittete Zeilen vom 3.11.2026: ein neuer Haltestellen-Schnappschuss und das September-ZIP noch einmal, mit
   gleicher Prüfsumme). Wie wir damit umgehen, wird ein eigenes Paket; die Zeilen sind nicht Teil dieses Pakets.
+  Ebenfalls Teil desselben Pakets: Ein frischer Klon lädt eine neue Haltestellenliste (2026-11-08 statt
+  2026-10-05), damit hängt die Zuordnung zum Kanton vom Zeitpunkt des Klons ab (Review PR #25).
 
 ## 2026-11-08 — KI-Einsatz: Issue #22
 
@@ -796,20 +803,30 @@ Mo 7.9. bis So 13.9.2026, Kanton Zürich).
   Überspringen; im Log nur Verweise auf das Issue. Die Entscheide zum Plan (schwagia): Fortschrittsbalken bleiben auf
   stderr, «eine Zeile» gilt für stdout; das Beispiel `--from 2026-09` im README bleibt; `manifest.csv` wird nicht
   committet, der Umgang damit wird ein eigenes Paket; «gebaut/übersprungen» wird vorher an den Zieldateien erkannt,
-  weil das direkter und leichter zu erklären ist.
+  weil das direkter und leichter zu erklären ist. Nach Review PR #25 (schwagia, nach Review Hn1016): Zieldateien
+  von `load` aus den Tagesdateien im ZIP statt aus allen Kalendertagen, fehlender Kalendertag als Warnung auf stderr,
+  mit Test; im README nur noch `uv run build`, ohne Einzelbefehle; beim offenen Punkt zum Manifest die neue
+  Haltestellenliste eines frischen Klons ergänzen.
 - **Delegated:** Claude Code hat den Plan mit den Stellen, an denen die Funktionen überspringen
   (`download.py:63`, `download.py:114`, `load.py:91`), `period.py`, `build.py`, `tests/test_build.py`, den Eintrag
-  in `pyproject.toml`, die README-Abschnitte und diese Einträge vorgeschlagen und geschrieben.
+  in `pyproject.toml`, die README-Abschnitte und diese Einträge vorgeschlagen und geschrieben; nach Review PR #25
+  die Umsetzung der Korrekturen (`archive_days`, `missing_days`, Test mit fehlendem Tag, README, Log).
 - **Prüfung:** Drei Tests (erster Lauf in Reihenfolge Haltestellen, ZIP, `load`; zweiter Lauf überspringt beide
   Schritte ohne Netzwerkaufruf, ohne neue Manifest-Zeile und ohne neu geschriebene Parquet-Dateien; `--force` baut
   `load` neu und lässt `data/raw` byte-gleich). Nur `requests.get` und die Pfade sind ersetzt, die bestehenden
   Funktionen laufen echt. Ob die Tests scheitern können: mit drei absichtlich eingebauten Fehlern (Prüfung vor `load`
   entfernt, `load` vor `download`, `download` nie übersprungen) schlug je mindestens ein Test fehl. `uv run build`
   auf den lokalen Septemberdaten: zweimal «übersprungen», Manifest unverändert. `--force` auf echten Daten nicht
-  ausgeführt (entpackt den ganzen Monat); das deckt der Test ab. Tests und `ruff` laufen durch.
+  ausgeführt (entpackt den ganzen Monat); das deckt der Test ab. Tests und `ruff` laufen durch. Nach Review PR #25:
+  vierter Test (Archiv ohne den 15.9.: zweiter Lauf «übersprungen» und eine Warnung); er schlägt mit der alten
+  Fassung (Zieldateien aus allen Kalendertagen) fehl und läuft mit der neuen durch. `uv run build` auf den lokalen
+  Daten: zweimal «übersprungen», keine Warnung.
 - **Übernommen/verworfen:** Übernommen: Aufbau, Test und README. Verworfen: der Vorschlag im Plan, «gebaut» an einer
   neuen Zeile im Manifest bzw. an der Rückgabe von `zip_to_rail_parquet` zu erkennen und beide Schritte immer
   aufzurufen. Ersetzt durch die Prüfung der Zieldateien vor dem Schritt (Entscheid schwagia): Sie ist direkter, und
   ein übersprungener Schritt wird gar nicht aufgerufen. Dafür muss `build` die Dateinamen der Schritte kennen; der
   ZIP-Name wird aus `download.ISTDATEN_URL` abgeleitet, und der Test prüft, dass es dieselbe Datei ist, die
-  `fetch_istdaten` schreibt. Neu dazugekommen ist die Grenze bei fehlenden Kalendertagen (siehe Entscheidung).
+  `fetch_istdaten` schreibt. Die Grenze bei fehlenden Kalendertagen aus der ersten Fassung (`load` meldete bei jedem
+  Lauf «gebaut») ist mit Review PR #25 behoben. Dafür liest `build` die Tagesdateien im ZIP mit derselben Regel wie
+  `zip_to_rail_parquet` (Endung `.csv`, die ersten zehn Zeichen des Namens); ändert sich die Regel in `load.py`,
+  muss `build.py` mitgehen.
