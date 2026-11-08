@@ -37,11 +37,17 @@ uv run build --force    # baut data/processed für den Zeitraum neu; data/raw bl
 ```
 
 - Der Zeitraum steht nur in `src/sbb_delays/period.py` (vorerst September 2026).
-- `build` führt zwei Schritte der Reihe nach aus und druckt pro Schritt eine Zeile, `gebaut` oder `übersprungen`:
+- `build` führt drei Schritte der Reihe nach aus und druckt pro Schritt eine Zeile, `gebaut` oder `übersprungen`:
   1. `download` lädt die Monatsarchive IstDaten (v2) und die Haltestellen (Service Points) nach `data/raw/`.
   2. `load` wandelt die Monatsarchive in Parquet um (eine Datei pro Betriebstag, nur Züge).
+  3. `sections` bildet die Abschnittsfahrten des Zeitraums für die ganze Schweiz
+     (`data/processed/sections_<Start>_<Ende>_<Prüfsumme>.parquet`, z. B.
+     `sections_2026-09_2026-09_1a2b3c4d.parquet`; Regeln in `src/sbb_delays/sections.py`, Issue #24).
 - Ein Schritt wird übersprungen, wenn alle seine Zieldateien für den Zeitraum existieren (ZIP und Haltestellen bzw.
-  eine Parquet-Datei pro Tagesdatei im ZIP). Fehlt im Archiv ein Kalendertag des Zeitraums, erscheint eine Warnung.
+  eine Parquet-Datei pro Tagesdatei im ZIP bzw. die Abschnittsdatei des Zeitraums und der Regeln). Die Prüfsumme
+  (8 Zeichen) geht über den Inhalt von `src/sbb_delays/sections.py` und `src/sbb_delays/quality.py`: Ändert sich eine
+  der Dateien, baut `sections` neu und löscht ältere Abschnittsdateien desselben Zeitraums. `sections` läuft auch,
+  wenn `load` etwas gebaut hat. Fehlt im Archiv ein Kalendertag des Zeitraums, erscheint eine Warnung.
   Fortschrittsbalken und Warnungen erscheinen auf stderr.
 - Ein zweiter Lauf lädt nichts neu.
 

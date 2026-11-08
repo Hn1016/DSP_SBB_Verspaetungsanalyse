@@ -1,0 +1,24 @@
+# Hand-written section cases for tests/test_sections.py (issue #24). Columns as in load.SELECT_TYPED.
+# One trip per case on 2026-09-07; scheduled times in minutes, actual times in seconds.
+# Expected (schwagia): exactly three sections, cases 2 to 5 give none:
+#   8500010 -> 8500020  +1.5 min, scheduled 5 min
+#   8500120 -> 8500130  -0.5 min, scheduled 3 min
+#   8500130 -> 8500140  +1.0 min, scheduled 4 min
+# Rule a: a pass-through (DURCHFAHRT_TF, case 6) counts as a point and can be stop A or B of a
+# section, as in issue #14. Rule b (skip it, 8500120 -> 8500140) is not used.
+ZEILE,BETRIEBSTAG,FAHRT_BEZEICHNER,BETREIBER_ID,BETREIBER_ABK,BETREIBER_NAME,PRODUKT_ID,LINIEN_ID,LINIEN_TEXT,UMLAUF_ID,VERKEHRSMITTEL_TEXT,ZUSATZFAHRT_TF,FAELLT_AUS_TF,BPUIC,HALTESTELLEN_NAME,ANKUNFTSZEIT,AN_PROGNOSE,AN_PROGNOSE_STATUS,ABFAHRTSZEIT,AB_PROGNOSE,AB_PROGNOSE_STATUS,DURCHFAHRT_TF,SLOID
+1,2026-09-07,fall1_normal,85:11,SBB,Schweizerische Bundesbahnen SBB,Zug,1,S1,,S,false,false,8500010,Halt 8500010,,,,2026-09-07 08:00:00,2026-09-07 08:01:00,REAL,false,
+2,2026-09-07,fall1_normal,85:11,SBB,Schweizerische Bundesbahnen SBB,Zug,1,S1,,S,false,false,8500020,Halt 8500020,2026-09-07 08:05:00,2026-09-07 08:07:30,REAL,,,,false,
+11,2026-09-07,fall2_ausgefallener_halt_dazwischen,85:11,SBB,Schweizerische Bundesbahnen SBB,Zug,2,S2,,S,false,false,8500030,Halt 8500030,,,,2026-09-07 09:00:00,2026-09-07 09:00:30,REAL,false,
+12,2026-09-07,fall2_ausgefallener_halt_dazwischen,85:11,SBB,Schweizerische Bundesbahnen SBB,Zug,2,S2,,S,false,true,8500040,Halt 8500040,2026-09-07 09:04:00,,UNBEKANNT,2026-09-07 09:04:00,,UNBEKANNT,false,
+13,2026-09-07,fall2_ausgefallener_halt_dazwischen,85:11,SBB,Schweizerische Bundesbahnen SBB,Zug,2,S2,,S,false,false,8500050,Halt 8500050,2026-09-07 09:08:00,2026-09-07 09:09:00,REAL,,,,false,
+21,2026-09-07,fall3_halt_ohne_real,85:11,SBB,Schweizerische Bundesbahnen SBB,Zug,3,S3,,S,false,false,8500060,Halt 8500060,,,,2026-09-07 10:00:00,2026-09-07 10:02:00,REAL,false,
+22,2026-09-07,fall3_halt_ohne_real,85:11,SBB,Schweizerische Bundesbahnen SBB,Zug,3,S3,,S,false,false,8500070,Halt 8500070,2026-09-07 10:06:00,2026-09-07 10:08:00,PROGNOSE,,,,false,
+31,2026-09-07,fall4_soll_zeit_rueckwaerts,85:11,SBB,Schweizerische Bundesbahnen SBB,Zug,4,S4,,S,false,false,8500080,Halt 8500080,,,,2026-09-07 11:10:00,2026-09-07 11:10:00,REAL,false,
+32,2026-09-07,fall4_soll_zeit_rueckwaerts,85:11,SBB,Schweizerische Bundesbahnen SBB,Zug,4,S4,,S,false,false,8500090,Halt 8500090,2026-09-07 11:05:00,2026-09-07 11:06:00,REAL,,,,false,
+41,2026-09-07,fall5_halt_im_ausland_dazwischen,85:11,SBB,Schweizerische Bundesbahnen SBB,Zug,5,S5,,S,false,false,8500100,Halt 8500100,,,,2026-09-07 12:00:00,2026-09-07 12:00:00,REAL,false,
+42,2026-09-07,fall5_halt_im_ausland_dazwischen,85:11,SBB,Schweizerische Bundesbahnen SBB,Zug,5,S5,,S,false,false,8000105,Halt 8000105,2026-09-07 12:09:00,2026-09-07 12:10:00,REAL,2026-09-07 12:10:00,2026-09-07 12:11:00,REAL,false,
+43,2026-09-07,fall5_halt_im_ausland_dazwischen,85:11,SBB,Schweizerische Bundesbahnen SBB,Zug,5,S5,,S,false,false,8500110,Halt 8500110,2026-09-07 12:20:00,2026-09-07 12:23:00,REAL,,,,false,
+51,2026-09-07,fall6_durchfahrt_zaehlt_als_punkt,85:11,SBB,Schweizerische Bundesbahnen SBB,Zug,6,S6,,S,false,false,8500120,Halt 8500120,,,,2026-09-07 13:00:00,2026-09-07 13:01:00,REAL,false,
+52,2026-09-07,fall6_durchfahrt_zaehlt_als_punkt,85:11,SBB,Schweizerische Bundesbahnen SBB,Zug,6,S6,,S,false,false,8500130,Halt 8500130,2026-09-07 13:03:00,2026-09-07 13:03:30,REAL,2026-09-07 13:03:00,2026-09-07 13:04:00,REAL,true,
+53,2026-09-07,fall6_durchfahrt_zaehlt_als_punkt,85:11,SBB,Schweizerische Bundesbahnen SBB,Zug,6,S6,,S,false,false,8500140,Halt 8500140,2026-09-07 13:07:00,2026-09-07 13:09:00,REAL,,,,false,
