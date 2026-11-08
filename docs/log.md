@@ -846,10 +846,22 @@ Mo 7.9. bis So 13.9.2026, Kanton Zürich).
   Repositorys veröffentlicht. `build` lädt ihn von dort, prüft die Prüfsumme und bricht mit einer Meldung ab, wenn er
   fehlt oder abweicht. Die Prüfsumme steht auch im Manifest; ein Test prüft, dass beide übereinstimmen.
 - **Alternativen:**
-  - Rohdatei unverändert als Release: verworfen. Die Nutzungsbedingungen Open Data von opentransportdata.swiss sagen
-    «Der Zugang zu den Daten erfolgt über opentransportdata.swiss. Die bezogenen Daten dürfen aufbereitet, analysiert
-    und publiziert werden» (§1); eine unveränderte Kopie ist keine Aufbereitung. Der Auszug ist eine, mit
-    opentransportdata.swiss als Bezugsort (§5.1, im README).
+  - Rohdatei unverändert als Release: verworfen. Grundlage sind die Nutzungsbedingungen Open Data von
+    opentransportdata.swiss (abgerufen 2026-11-08), im Wortlaut:
+    - §1: «Der Zugang zu den Daten erfolgt über opentransportdata.swiss. Die bezogenen Daten dürfen aufbereitet,
+      analysiert und publiziert werden, inkl. Einbezug weiterer Daten.»
+    - §5.1: «In Publikationen und Analysen, die auf ODMCH-Daten basieren, ist die URL opentransportdata.swiss als
+      Bezugsort der Rohdaten anzugeben.»
+    - §5.2: «ODMCH-Daten müssen regelmässig aktualisiert werden, entsprechend dem zugrundeliegenden Aktualisierungstakt
+      der Rohdaten.»
+
+    Auslegung (vom Agenten, vom Team übernommen, nicht rechtlich geprüft): Eine unveränderte Kopie ist keine
+    Aufbereitung nach §1 und umgeht den Zugang über opentransportdata.swiss; der Auszug ist eine Aufbereitung, mit
+    opentransportdata.swiss als Bezugsort (§5.1, im README und im Release).
+  - Gemeinsamer Ablageort nur für das Team (Richtlinien v3, Abschnitt 9) statt öffentlichem Release (Review PR #27):
+    verworfen (Entscheid Haonan). Ein frischer Klon, auch der des Betreuers, bräuchte dann einen Zugang oder einen
+    manuellen Schritt (Richtlinien v3, Abschnitt 6: «Keine manuellen Zwischenschritte»). Das Release lässt sich
+    jederzeit löschen, falls die Auslegung nicht hält.
   - Versionsgeschichte des Anbieters (`full-swiss-service-point.csv`, alle Fassungen mit Gültigkeit), je Betriebstag
     die gültige Fassung: verworfen, weil auch sie nicht reproduzierbar ist. Abgerufen am 2026-11-08: 604 Fassungen von
     565 Halten, die vor dem 2026-10-05 gültig wurden, sind nach dem 2026-10-05 bearbeitet worden; für den 2026-10-05
@@ -862,6 +874,12 @@ Mo 7.9. bis So 13.9.2026, Kanton Zürich).
   dieselben Zahlen wie im Befund zu #18. Die Koordinaten unterscheiden sich an 2'566 Halt-Tagen; das betrifft die Karte.
 - **Annahme:** Ein Schnappschuss genügt für den ganzen Zeitraum ab 2025-07, solange nur der Kanton verwendet wird. Für
   die Karte wird das neu geprüft.
+- **Offene Prüfung für das Paket «Zwölf Monate laden» (Review PR #27, schwagia):** Enthält der Schnappschuss vom
+  Oktober 2026 alle Halte, die von Juli 2025 bis Juni 2026 bedient wurden, auch inzwischen aufgehobene? Fehlt ein Halt,
+  fehlt sein Kanton, und seine Abschnitte fallen still weg. Prüfung auf den echten Daten: jede `BPUIC` der zwölf Monate
+  steht im Auszug. Vorab aus der Versionsgeschichte (einmalige Abfrage, nicht im Repository): 229 Schweizer Halte waren
+  im Zeitraum gültig und fehlen im Schnappschuss, davon ein Bahnhalt (Aigle-Hôpital, VD, gültig bis 13.12.2025), keiner
+  im Kanton Zürich.
 - **Grenze:** §5.2 der Nutzungsbedingungen verlangt, Daten «regelmässig» zu aktualisieren. Für eine Auswertung eines
   festen vergangenen Zeitraums halten wir einen festen Schnappschuss für vertretbar; geklärt mit dem Anbieter ist das
   nicht.
@@ -875,8 +893,11 @@ Mo 7.9. bis So 13.9.2026, Kanton Zürich).
 - **Aufgabe:** Der Build verwendet eine feste Haltestellenliste mit Prüfsumme; Entscheidung zum Manifest.
 - **Mine:** das Issue (schwagia); die Entscheide (Haonan): ein eigener fester Schnappschuss statt nur Prüfsumme,
   zuerst als Rohdatei im Release, nach dem Befund zu den Nutzungsbedingungen als Auszug; doppelte Manifest-Zeilen
-  überspringen; kein neues Issue, weil die Versionsgeschichte das Problem nicht löst.
-- **Delegated:** Claude Code hat die Quellen des Anbieters und die Nutzungsbedingungen geprüft, die Versionsgeschichte
+  überspringen; kein neues Issue, weil die Versionsgeschichte das Problem nicht löst; nach Review PR #27 das
+  öffentliche Release behalten statt eines Ablageorts nur für das Team. Die Nutzungsbedingungen hat das Team nur in den
+  vom Agenten zitierten Stellen gelesen, nicht die ganze Seite.
+- **Delegated:** Claude Code hat die Quellen des Anbieters und die Nutzungsbedingungen gelesen und ausgelegt (Kopie
+  keine Aufbereitung nach §1, Auszug schon; darauf baut das öffentliche Release auf), die Versionsgeschichte
   ausgewertet, die drei Wege vorgeschlagen und den Code, die Tests, den Auszug, den README-Abschnitt und diese
   Einträge geschrieben. Entscheide des Agenten: Spalten des Auszugs (die, die `quality.connect` und die Notebooks
   lesen, mit den Namen des Anbieters); Name `service-points-ch_<Datum>.csv`; `latest_service_points` ersetzt durch
