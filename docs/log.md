@@ -693,3 +693,75 @@ Mo 7.9. bis So 13.9.2026, Kanton Zürich).
   laut GitHub seither nicht bearbeitet. Ab dem nächsten Paket wird die Hypothese committet, bevor gerechnet wird.
 - **Übernommen/verworfen:** Von `feat/assumption-checks` nichts übernommen: Die Prüfung dort rechnet über die ganze
   Schweiz und den ganzen September mit eigener Abschnittsbildung und wäre nicht dieselbe Basis wie #14.
+
+## 2026-11-08 — Entscheidung: Status und Evidenz der Annahmen nachgeführt (Issue #20)
+
+- **Entscheidung:** `docs/assumptions.md` hat eine Spalte «Status» (offen, gestützt, teilweise, widerlegt) mit Verweis
+  auf den Log-Eintrag. Status und Evidenz stammen nur aus Einträgen in diesem Log auf `main`; wo keiner etwas belegt,
+  gilt «offen» bzw. «tief». Evidenz heisst, wie stark das Log dafür spricht, dass die Annahme gilt (so verwendet in
+  #18 für A7); der Status zeigt, ob «tief» «nicht geprüft» oder «widerlegt» bedeutet (Review PR #19).
+- **Alternative:** Wo kein Log-Eintrag existiert, die Evidenz vom 17.10. stehen lassen. Verworfen: Diese Einschätzungen
+  wurden ohne Daten gemacht (Kopf von `assumptions.md`, Eintrag 2026-10-29).
+- **Änderungen (Evidenz bisher → neu, Status, Beleg):**
+
+| # | Evidenz | Status | Beleg im Log |
+|---|---|---|---|
+| 1 | hoch → mittel | offen | 2026-10-06, H5: Werte plausibel; ob `REAL` gemessen und nicht interpoliert ist, nie geprüft |
+| 2 | tief → mittel | teilweise | 2026-10-25, H6; 2026-10-28, Korrektur H6b: unabhängig von der Verspätung gestützt, vom Ort widerlegt |
+| 3 | tief → tief | offen | 2026-10-28, Zuordnung: nur September |
+| 4 | hoch → mittel | offen | 2026-10-06, H2: nur am 8.9.2026 geprüft; andere Monate nie |
+| 5 | mittel → tief | offen | 2026-10-06, H2: 145 rückwärts laufende Abschnitte, «vermutlich Umleitungen», nur ein Hinweis |
+| 6 | hoch → tief | offen | kein Eintrag |
+| 7 | tief → tief | widerlegt | 2026-11-05, Befund A7 (#18): hängt von der Soll-Fahrzeit ab; Ursache offen |
+| 8 | mittel → tief | offen | 2026-10-06, Nebenbefund: zeigt nur die Verzerrung, nicht dass ein Referenzwert sie behebt |
+| 9 | hoch → tief | offen | 2026-10-29: H3 hat Ausfälle nur gezählt |
+| 10 | hoch → tief | offen | 2026-10-29: Fahrten je Abschnitt und Zeitfenster nie gezählt |
+
+- **Nicht verwendet:** die Prüfungen auf `feat/assumption-checks` (Hinweis im Eintrag 2026-10-29), weil sie nicht auf
+  `main` liegen. Der Befund aus #14, dass ein Abschnitt durch die bedienten Halte bestimmt ist, betrifft verschiedene
+  Haltepaare auf derselben Strecke und nicht A5.
+- **Sortierung:** Wichtigkeit, Evidenz, Status («offen» zuerst), Nummer; A10, A9 und A5 (alle hoch, tief, offen) in der
+  Prüfreihenfolge aus dem nächsten Eintrag. Die Wichtigkeit bleibt die Einschätzung vom 17.10.
+- **Erledigt:** der offene Punkt aus dem Eintrag 2026-10-28 («Evidenz wird nachgeführt») und das Paket aus dem Eintrag
+  2026-10-29.
+
+## 2026-11-08 — Entscheidung: Reihenfolge der nächsten Prüfungen, zuerst «Regeln festlegen» (Issue #20)
+
+- **Entscheidung (Team, nach Review PR #21):** Von den Annahmen mit hoher Wichtigkeit sind A10, A9 und A5 offen mit
+  Evidenz «tief». Die Reihenfolge:
+  1. Zeitraum und Zeitfenster festlegen, im Paket «Regeln festlegen».
+  2. Beim Laden der zwölf Monate A3 und A4 mitprüfen; beide brauchen nur die neuen Monate.
+  3. A10, dann A9, zuletzt A5.
+- **Begründung:** A10 lässt sich erst prüfen, wenn Zeitraum und Zeitfenster festgelegt und die zwölf Monate geladen
+  sind. Scheitert A10 (zu wenige gemessene Fahrten je Abschnitt und Zeitfenster), ändern sich Region oder Zeitfenster
+  und damit die Regeln für die Rangliste; A10 ist danach günstig zu prüfen. A9 und A5 nach den Folgen eines
+  Scheiterns: Scheitern A10 oder A9, betrifft es die ganze Rangliste; scheitert A5, betrifft es einzelne Abschnitte
+  mit Umleitungen.
+- Die Erwartung wird jeweils im eigenen Issue vor der Analyse notiert.
+- **Abweichung vom Issue:** Das Issue verlangte, die oberste offene Annahme mit hoher Wichtigkeit als nächste
+  Hypothese zu nennen. A10 bleibt die erste der drei, aber vor ihr kommen «Regeln festlegen» und A3 und A4.
+
+## 2026-11-08 — KI-Einsatz: Issue #20
+
+- **Aufgabe:** Status und Evidenz der zehn Annahmen in `docs/assumptions.md` nach dem Log nachführen und die Tabelle neu
+  sortieren.
+- **Mine:** das Issue (Hn1016); die Vorgaben (schwagia): Status und Evidenz nur aus Log-Einträgen auf `main`, pro
+  Annahme der Eintrag, ohne Eintrag «offen»; Tabelle zuerst im Plan; Hypothesen-Hinweis und KI-Einsatz als eigene
+  Einträge. Die Entscheide zum Plan (schwagia): Die Regel «nur aus dem Log» gilt, auch wenn A1, A4, A5, A6 und A8
+  abgestuft werden, weil die Einschätzungen vom 17.10. ohne Daten waren; die vorgeschlagene Tabelle übernommen; nächste
+  Hypothese A10, dann A9, dann A5, mit Begründung (der Agent hatte nur A5 und A9 als Gleichstand genannt und A10
+  übersehen); Eintragstyp «Entscheidung» statt «Hypothese», weil v3 bei einer Hypothese eine Erwartung verlangt;
+  Gleichstand nach dieser Prüfreihenfolge statt nach Nummer sortiert. Nach Review PR #21 (schwagia, nach Review
+  Hn1016): zuerst Zeitraum und Zeitfenster im Paket «Regeln festlegen», dann A3 und A4 beim Laden der zwölf Monate,
+  danach A10, A9, A5, weil A10 erst mit festgelegtem Zeitraum und geladenen Monaten prüfbar ist; Begründung für A5
+  nach den Folgen eines Scheiterns statt nach den 145 rückwärts laufenden Abschnitten, die nur Umleitungen mit
+  rückwärts laufender Zeit zeigen.
+- **Delegated:** Claude Code hat die Regel für Status und Evidenz, die Tabelle mit Status, Evidenz und Begründung je
+  Annahme, die Sortierschlüssel Status und Nummer, die Kopfzeile und diese Einträge vorgeschlagen und geschrieben.
+- **Prüfung:** Jede Zeile gegen den zitierten Log-Eintrag gelesen (schwagia im Plan); jeder Verweis in der Tabelle
+  steht als Eintrag im Log auf `main`; Fertig-Kriterien aus dem Issue (A2 teilweise, A7 widerlegt, A9 und A10 offen,
+  alle zehn mit Status); Tests und `ruff` laufen durch.
+- **Übernommen/verworfen:** Tabelle übernommen. Verworfen: die Sortierung des Gleichstands nach Nummer, die A5 zur
+  nächsten Hypothese gemacht hätte; die Nummer ist kein fachlicher Grund. Gegenüber der Tabelle im Plan stehen A1 und A4
+  vor A2: Das folgt aus dem Status als drittem Sortierschlüssel, den der Plan nannte, aber in der Tabelle nicht
+  angewendet hatte.
