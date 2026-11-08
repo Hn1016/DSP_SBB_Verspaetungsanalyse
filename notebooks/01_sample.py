@@ -19,9 +19,7 @@ def _(mo):
     mo.md("""
     # Stichprobe IstDaten — September 2026, nur Züge
 
-    Datenbasis: `data/processed/istdaten_rail/*.parquet`, erzeugt mit
-    `uv run python -m sbb_delays.download --from 2026-09 --to 2026-09` und
-    `uv run python -m sbb_delays.load`.
+    Datenbasis: `data/processed/istdaten_rail/*.parquet`, erzeugt mit `uv run build`.
     """)
     return
 
