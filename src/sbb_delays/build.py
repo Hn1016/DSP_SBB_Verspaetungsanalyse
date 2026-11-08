@@ -1,11 +1,12 @@
 """Build all derived data from the raw files with one command.
 
 Runs the existing steps in order: download (monthly archives and stops into data/raw), then
-load (rail Parquet per operating day into data/processed). Before each step the target files
+load (rail Parquet per operating day into data/processed), then sections (section passages of
+the period, one Parquet file named after the period, issue #24). Before each step the target files
 of the period are checked: if all exist, the step is skipped. Otherwise the step runs, and the
 existing functions skip single files that already exist, so an interrupted build continues.
 The targets of load are the daily files in the archives; calendar days of the period that an
-archive lacks are reported as a warning.
+archive lacks are reported as a warning. sections is also rebuilt when load built something.
 
 Each step prints one line on stdout; progress bars and warnings go to stderr.
 
@@ -21,8 +22,8 @@ from calendar import monthrange
 from datetime import date
 from pathlib import Path
 
-from sbb_delays import download, load
-from sbb_delays.paths import ISTDATEN_RAIL, ISTDATEN_RAW, SERVICE_POINTS_RAW
+from sbb_delays import download, load, quality, sections
+from sbb_delays.paths import ISTDATEN_RAIL, ISTDATEN_RAW, PROCESSED, SERVICE_POINTS_RAW
 from sbb_delays.period import END, START
 
 
@@ -89,9 +90,28 @@ def build_load(force: bool = False) -> str:
     return "gebaut"
 
 
+def sections_parquet() -> Path:
+    """Target of sections; the period is in the name, so a new period builds a new file."""
+    (y1, m1), (y2, m2) = START, END
+    return PROCESSED / f"sections_{y1}-{m1:02d}_{y2}-{m2:02d}.parquet"
+
+
+def build_sections(force: bool = False) -> str:
+    target = sections_parquet()
+    if target.exists() and not force:
+        return "übersprungen"
+    con = quality.connect(ISTDATEN_RAIL)
+    tmp = target.with_suffix(".parquet.part")
+    sections.sections(con, START, END).write_parquet(str(tmp), compression="zstd")
+    tmp.rename(target)
+    return "gebaut"
+
+
 def build(force: bool = False) -> None:
     print(f"download: {build_download()}", flush=True)
-    print(f"load: {build_load(force)}", flush=True)
+    loaded = build_load(force)
+    print(f"load: {loaded}", flush=True)
+    print(f"sections: {build_sections(force or loaded == 'gebaut')}", flush=True)
 
 
 def main() -> None:

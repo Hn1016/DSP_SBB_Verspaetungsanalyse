@@ -1,7 +1,7 @@
 """Order and skipping of `uv run build`, without network and without real data.
 
 Only the network (requests.get) and the paths are replaced. download.fetch,
-download.fetch_service_points and load.zip_to_rail_parquet run unchanged.
+download.fetch_service_points, load.zip_to_rail_parquet and sections.sections run unchanged.
 """
 
 import functools
@@ -9,6 +9,7 @@ import hashlib
 import io
 import zipfile
 
+import duckdb
 import pytest
 from test_load import HEADER, TRAIN, TRAIN_ORIGIN
 
@@ -54,6 +55,7 @@ def env(tmp_path, monkeypatch):
     monkeypatch.setattr(build, "ISTDATEN_RAW", raw / "istdaten")
     monkeypatch.setattr(build, "SERVICE_POINTS_RAW", raw / "service_points")
     monkeypatch.setattr(build, "ISTDATEN_RAIL", processed / "istdaten_rail")
+    monkeypatch.setattr(build, "PROCESSED", processed)
     stops = b"number;designation\n"
     monkeypatch.setattr(download, "SERVICE_POINTS_SHA256", hashlib.sha256(stops).hexdigest())
 
@@ -103,28 +105,39 @@ def test_first_run_downloads_then_loads(env, capsys):
 
     assert env["calls"] == ["fetch_service_points", "fetch_istdaten", "zip_to_rail_parquet"]
     out, err = capsys.readouterr()
-    assert out.splitlines() == ["download: gebaut", "load: gebaut"]
+    assert out.splitlines() == ["download: gebaut", "load: gebaut", "sections: gebaut"]
     assert warnings(err) == []
     assert all(path.exists() for path in build.rail_parquets())
     assert len(build.rail_parquets()) == 30
     # the archive build checks is the one fetch_istdaten writes
     assert build.istdaten_zip(2026, 9).exists()
+    # one section (Zürich HB -> Bern) per day, in a file named after the period
+    assert build.sections_parquet().name == "sections_2026-09_2026-09.parquet"
+    assert duckdb.read_parquet(str(build.sections_parquet())).count("*").fetchone()[0] == 30
 
 
 def test_second_run_skips_every_step(env, capsys):
     build.build()
     capsys.readouterr()
     manifest_before = env["manifest"].read_text()
-    mtimes = [path.stat().st_mtime_ns for path in build.rail_parquets()]
+    mtimes = [
+        path.stat().st_mtime_ns for path in [*build.rail_parquets(), build.sections_parquet()]
+    ]
     env["calls"].clear()
 
     build.build()
 
-    assert stdout_lines(capsys) == ["download: übersprungen", "load: übersprungen"]
+    assert stdout_lines(capsys) == [
+        "download: übersprungen",
+        "load: übersprungen",
+        "sections: übersprungen",
+    ]
     assert env["calls"] == []
     assert len(env["requests"]) == 2  # only the first run
     assert env["manifest"].read_text() == manifest_before
-    assert [path.stat().st_mtime_ns for path in build.rail_parquets()] == mtimes
+    assert [
+        path.stat().st_mtime_ns for path in [*build.rail_parquets(), build.sections_parquet()]
+    ] == mtimes
 
 
 def test_force_rebuilds_processed_but_not_raw(env, capsys):
@@ -135,7 +148,7 @@ def test_force_rebuilds_processed_but_not_raw(env, capsys):
 
     build.build(force=True)
 
-    assert stdout_lines(capsys) == ["download: übersprungen", "load: gebaut"]
+    assert stdout_lines(capsys) == ["download: übersprungen", "load: gebaut", "sections: gebaut"]
     assert env["calls"] == ["zip_to_rail_parquet"]
     assert len(env["requests"]) == 2
     assert {p: p.read_bytes() for p in env["raw"].rglob("*") if p.is_file()} == raw_before
@@ -146,7 +159,7 @@ def test_missing_day_in_archive_warns_and_still_skips(env, capsys):
     env["served"]["archive"] = month_archive(missing=frozenset({15}))
     build.build()
     out, err = capsys.readouterr()
-    assert out.splitlines() == ["download: gebaut", "load: gebaut"]
+    assert out.splitlines() == ["download: gebaut", "load: gebaut", "sections: gebaut"]
     assert warnings(err) == ["Warnung: im Archiv fehlen Tage des Zeitraums: 2026-09-15"]
     assert len(build.rail_parquets()) == 29
     env["calls"].clear()
@@ -154,6 +167,22 @@ def test_missing_day_in_archive_warns_and_still_skips(env, capsys):
     build.build()
 
     out, err = capsys.readouterr()
-    assert out.splitlines() == ["download: übersprungen", "load: übersprungen"]
+    assert out.splitlines() == [
+        "download: übersprungen",
+        "load: übersprungen",
+        "sections: übersprungen",
+    ]
     assert warnings(err) == ["Warnung: im Archiv fehlen Tage des Zeitraums: 2026-09-15"]
     assert env["calls"] == []
+
+
+def test_new_period_builds_a_new_sections_file(env, monkeypatch, capsys):
+    build.build()
+    capsys.readouterr()
+    old = build.sections_parquet()
+
+    monkeypatch.setattr(build, "START", (2026, 8))  # period.py changed; the old file stays
+
+    assert build.sections_parquet().name == "sections_2026-08_2026-09.parquet"
+    assert build.build_sections() == "gebaut"
+    assert old.exists() and build.sections_parquet().exists()
