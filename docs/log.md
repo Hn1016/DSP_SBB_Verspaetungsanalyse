@@ -997,3 +997,26 @@ Mo 7.9. bis So 13.9.2026, Kanton Zürich).
 - **Übernommen/verworfen:** Verworfen im Plan: ein `ModuleNotFoundError` als erstes Scheitern (ersetzt durch den Stub,
   Entscheid schwagia) und `data/processed/sections.parquet` ohne Zeitraum (Entscheid schwagia). Der Vorschlag, die
   Ordnergrenze nur im Log zu nennen, ist durch den Filter auf den Zeitraum ersetzt.
+
+## 2026-11-08 — Hypothese: Zwölf Monate, Annahmen A3 und A4, Halte im Schnappschuss (Issue #30, vor der Analyse notiert)
+
+Anlass: Entscheidung zu Issue #20 (A3 und A4 beim Laden der zwölf Monate prüfen) und offene Prüfung aus PR #27. Daten:
+1.7.2025 bis 30.6.2026 (`period.py`), Parquet aus `uv run build`. Fahrplan 2025 bis 13.12.2025, Fahrplan 2026 ab
+14.12.2025. Kanton aus dem festen Schnappschuss der Haltestellenliste (2026-10-05).
+
+- **Erwartung (schwagia, im Issue):**
+  - (A3) Der `REAL`-Anteil im Kanton Zürich liegt in jedem Monat über 95 % und unterscheidet sich zwischen den beiden
+    Fahrplänen um weniger als 1 Prozentpunkt (H1: September 2026 Schweiz 96.2 %, Tage 95.5–96.7 %).
+  - (A4) In jedem Monat widerspricht die `ZEILE`-Reihenfolge bei weniger als 0.1 % der Fahrten der Soll-Zeit (H2:
+    0 Widersprüche am 8.9.2026).
+  - (Halte) Kein im Kanton Zürich bedienter Halt fehlt im Schnappschuss (Vorprüfung mit der Versionsgeschichte in
+    PR #27, jetzt auf den echten Daten).
+- **Wie gezählt wird (Entscheid des Agenten, im Review zu bestätigen):**
+  - (A3) wie H1 (`quality.status_coverage`): je Ankunft und Abfahrt mit Soll-Zeit an einem nicht ausgefallenen Halt
+    eine Zeile, Anteil mit Status `REAL`; nur Halte, die im Schnappschuss im Kanton Zürich liegen. Der Vergleich der
+    Fahrpläne nimmt alle Ereignisse je Fahrplan zusammen.
+  - (A4) Eine Fahrt widerspricht, wenn bei zwei aufeinanderfolgenden Zeilen (nach `ZEILE`) die erste Soll-Zeit der
+    späteren Zeile vor der letzten Soll-Zeit der früheren liegt. Gezählt über alle Fahrten des Monats, wie geladen.
+  - (Halte) Ob ein Halt, der im Schnappschuss fehlt, in Zürich liegt, steht gerade nicht im Schnappschuss. Darum wird
+    geprüft, ob jede Schweizer `BPUIC` (85…) der zwölf Monate im Schnappschuss steht; fehlende Halte stehen mit Anzahl
+    Fahrten und Name im Befund, und es wird dort festgestellt, ob einer davon in Zürich liegt.
