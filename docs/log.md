@@ -765,3 +765,51 @@ Mo 7.9. bis So 13.9.2026, Kanton Zürich).
   nächsten Hypothese gemacht hätte; die Nummer ist kein fachlicher Grund. Gegenüber der Tabelle im Plan stehen A1 und A4
   vor A2: Das folgt aus dem Status als drittem Sortierschlüssel, den der Plan nannte, aber in der Tabelle nicht
   angewendet hatte.
+
+## 2026-11-08 — Entscheidung: Ein Befehl `uv run build` baut alles aus den Rohdaten (Issue #22)
+
+- **Entscheidung:** `uv run build` (`src/sbb_delays/build.py`) ruft die bestehenden Schritte `download` und `load`
+  der Reihe nach auf, ohne deren Logik zu ändern. Der Zeitraum steht nur in `src/sbb_delays/period.py`
+  (`START`, `END`), vorerst September 2026.
+- **Gebaut oder übersprungen:** Vor jedem Schritt prüft `build`, ob alle Zieldateien des Zeitraums existieren:
+  Haltestellen-Schnappschuss und ein ZIP pro Monat für `download`, eine Parquet-Datei pro Kalendertag für `load`.
+  Existieren alle, wird der Schritt nicht aufgerufen («übersprungen»). Fehlt eine, läuft der Schritt («gebaut»), und
+  die bestehenden Funktionen überspringen einzelne vorhandene Dateien selbst (`fetch`, `fetch_service_points`,
+  `zip_to_rail_parquet`). Ein abgebrochener Lauf setzt so dort fort, wo er stand.
+- **Ausgabe:** «Eine Zeile pro Schritt» gilt für stdout. Die Fortschrittsbalken der Schritte (tqdm) bleiben auf
+  stderr, weil sie beim Download von 1.4 GB pro Monat nützlich sind und ein Ausblenden die Schritte ändern würde.
+- **`--force`:** löscht nur die Parquet-Dateien der Kalendertage im Zeitraum und baut sie neu. `data/raw` bleibt
+  unangetastet; `download` meldet dann «übersprungen».
+- **Grenze:** Fehlt im Monatsarchiv ein Kalendertag, meldet `load` bei jedem Lauf «gebaut», obwohl
+  `zip_to_rail_parquet` nichts mehr schreibt. Für September 2026 liegen alle 30 Tage vor.
+- **Offen:** Lokale Downloads hängen Zeilen an das versionierte `data/raw/manifest.csv` an (zurzeit zwei
+  uncommittete Zeilen vom 3.11.2026: ein neuer Haltestellen-Schnappschuss und das September-ZIP noch einmal, mit
+  gleicher Prüfsumme). Wie wir damit umgehen, wird ein eigenes Paket; die Zeilen sind nicht Teil dieses Pakets.
+
+## 2026-11-08 — KI-Einsatz: Issue #22
+
+- **Aufgabe:** Ein Befehl `uv run build`, der `download` und `load` für den Zeitraum der Reihe nach ausführt und
+  vorhandene Ergebnisse überspringt, mit Test, Eintrag in `pyproject.toml`, README und Log.
+- **Mine:** das Issue (Hn1016); die Vorgaben (schwagia): bestehende Funktionen aufrufen, ihre Logik nicht ändern,
+  und im Plan zeigen, wo sie schon überspringen; Zeitraum an genau einer Stelle; pro Schritt genau eine Zeile;
+  `--force` baut nur `data/processed` neu; Test ohne echte Daten und ohne Netzwerk, prüft Reihenfolge und
+  Überspringen; im Log nur Verweise auf das Issue. Die Entscheide zum Plan (schwagia): Fortschrittsbalken bleiben auf
+  stderr, «eine Zeile» gilt für stdout; das Beispiel `--from 2026-09` im README bleibt; `manifest.csv` wird nicht
+  committet, der Umgang damit wird ein eigenes Paket; «gebaut/übersprungen» wird vorher an den Zieldateien erkannt,
+  weil das direkter und leichter zu erklären ist.
+- **Delegated:** Claude Code hat den Plan mit den Stellen, an denen die Funktionen überspringen
+  (`download.py:63`, `download.py:114`, `load.py:91`), `period.py`, `build.py`, `tests/test_build.py`, den Eintrag
+  in `pyproject.toml`, die README-Abschnitte und diese Einträge vorgeschlagen und geschrieben.
+- **Prüfung:** Drei Tests (erster Lauf in Reihenfolge Haltestellen, ZIP, `load`; zweiter Lauf überspringt beide
+  Schritte ohne Netzwerkaufruf, ohne neue Manifest-Zeile und ohne neu geschriebene Parquet-Dateien; `--force` baut
+  `load` neu und lässt `data/raw` byte-gleich). Nur `requests.get` und die Pfade sind ersetzt, die bestehenden
+  Funktionen laufen echt. Ob die Tests scheitern können: mit drei absichtlich eingebauten Fehlern (Prüfung vor `load`
+  entfernt, `load` vor `download`, `download` nie übersprungen) schlug je mindestens ein Test fehl. `uv run build`
+  auf den lokalen Septemberdaten: zweimal «übersprungen», Manifest unverändert. `--force` auf echten Daten nicht
+  ausgeführt (entpackt den ganzen Monat); das deckt der Test ab. Tests und `ruff` laufen durch.
+- **Übernommen/verworfen:** Übernommen: Aufbau, Test und README. Verworfen: der Vorschlag im Plan, «gebaut» an einer
+  neuen Zeile im Manifest bzw. an der Rückgabe von `zip_to_rail_parquet` zu erkennen und beide Schritte immer
+  aufzurufen. Ersetzt durch die Prüfung der Zieldateien vor dem Schritt (Entscheid schwagia): Sie ist direkter, und
+  ein übersprungener Schritt wird gar nicht aufgerufen. Dafür muss `build` die Dateinamen der Schritte kennen; der
+  ZIP-Name wird aus `download.ISTDATEN_URL` abgeleitet, und der Test prüft, dass es dieselbe Datei ist, die
+  `fetch_istdaten` schreibt. Neu dazugekommen ist die Grenze bei fehlenden Kalendertagen (siehe Entscheidung).
