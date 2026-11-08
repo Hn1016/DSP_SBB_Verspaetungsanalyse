@@ -955,13 +955,15 @@ Mo 7.9. bis So 13.9.2026, Kanton Zürich).
   ausserhalb der Tests mit dem Kanton aus dem festen Schnappschuss. Die Entscheide zum Plan (schwagia): Eingabe ist
   die View `rail` der Verbindung, wie in `quality.py`; ein Stub, damit der Test an den Erwartungswerten scheitert und
   nicht an einem fehlenden Modul; `sections` filtert auf den Zeitraum aus `period.py`, mit einem Test, dass ein Tag
-  ausserhalb keine Abschnitte ergibt; der Zeitraum steht im Dateinamen.
+  ausserhalb keine Abschnitte ergibt; der Zeitraum steht im Dateinamen. Nach der Umsetzung (schwagia): `sections`
+  wird auch neu gebaut, wenn `load` im selben Lauf etwas gebaut hat (Vorschlag des Agenten, bewusst übernommen).
 - **Delegated:** Claude Code hat den Plan, die Fixture-Datei aus den sechs Fällen (Spalten wie in
   `load.SELECT_TYPED`, Füllwerte für Betreiber, Linie und Namen), den Test, den Stub, `sections.py`, den
   Build-Schritt, die Anpassung von `tests/test_build.py`, Notebook 05, den README-Abschnitt und diese Einträge
   geschrieben. Entscheide des Agenten: Ausgabespalten; Fall-Namen als `FAHRT_BEZEICHNER` (z. B.
   `fall6_durchfahrt_zaehlt_als_punkt`) und Kommentarkopf in der Fixture; `sections` wird auch neu gebaut, wenn `load`
-  etwas gebaut hat; die 400 Abschnitte als zweite Zahl in der Prüfung gegen #14.
+  etwas gebaut hat (von schwagia übernommen, siehe «Mine»); die 400 Abschnitte als zweite Zahl in der Prüfung gegen
+  #14.
 - **Prüfung:** Der Test lief zuerst gegen den Stub (leere Tabelle mit den Ausgabespalten) und schlug in beiden Fällen
   an den Erwartungswerten fehl; mit `sections.py` lief er durch, ohne dass ein Erwartungswert geändert wurde. Ob er
   scheitern kann: mit drei eingebauten Fehlern (Nachbarn aus `delays()` statt aus `rail`, was in Fall 2 und 5
