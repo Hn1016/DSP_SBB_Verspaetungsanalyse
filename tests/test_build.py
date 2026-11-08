@@ -5,6 +5,7 @@ download.fetch_service_points and load.zip_to_rail_parquet run unchanged.
 """
 
 import functools
+import hashlib
 import io
 import zipfile
 
@@ -53,13 +54,15 @@ def env(tmp_path, monkeypatch):
     monkeypatch.setattr(build, "ISTDATEN_RAW", raw / "istdaten")
     monkeypatch.setattr(build, "SERVICE_POINTS_RAW", raw / "service_points")
     monkeypatch.setattr(build, "ISTDATEN_RAIL", processed / "istdaten_rail")
+    stops = b"number;designation\n"
+    monkeypatch.setattr(download, "SERVICE_POINTS_SHA256", hashlib.sha256(stops).hexdigest())
 
     served = {"archive": month_archive()}  # a test may replace it before the first run
     requests_made = []
 
     def fake_get(url, **kwargs):
         requests_made.append(url)
-        content = served["archive"] if url.endswith(".zip") else b"number;designation\n"
+        content = served["archive"] if url.endswith(".zip") else stops
         return FakeResponse(content)
 
     monkeypatch.setattr(download.requests, "get", fake_get)

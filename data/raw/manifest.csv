@@ -1,3 +1,4 @@
 file,url,retrieved_at,sha256,bytes
 istdaten/ist-daten-v2-2026-09.zip,https://archive.opentransportdata.swiss/istdaten/2026/ist-daten-v2-2026-09.zip,2026-10-05T18:20:49+00:00,df4d5b1f5bf90d566833cf5fb4eb7d0863b6391ff1da58d94763b37610f0748c,1422722257
 service_points/service-points_2026-10-05.csv,https://data.opentransportdata.swiss/dataset/service-point-v2/permalink,2026-10-05T18:35:35+00:00,e0f139d09e7572068f961f9ce8dcab96bd12660819223cedca4b052da75a6ed6,26552245
+service_points/service-points-ch_2026-10-05.csv,https://github.com/Hn1016/DSP_SBB_Verspaetungsanalyse/releases/download/service-points-2026-10-05/service-points-ch_2026-10-05.csv,2026-11-08T13:55:51+00:00,9e3e9ebc2914b2e29d4da887f29383c540634932a1dc7cf08d4a18d2f5e5f4d8,2832500

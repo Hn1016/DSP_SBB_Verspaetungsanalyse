@@ -65,7 +65,7 @@ def missing_days(parquets: list[Path]) -> list[str]:
 
 def build_download() -> str:
     zips = [istdaten_zip(year, month) for year, month in period_months()]
-    if download.latest_service_points(SERVICE_POINTS_RAW) and all(z.exists() for z in zips):
+    if download.service_points_ok(SERVICE_POINTS_RAW) and all(z.exists() for z in zips):
         return "übersprungen"
     download.fetch_service_points(SERVICE_POINTS_RAW)
     for year, month in period_months():
@@ -101,7 +101,10 @@ def main() -> None:
         action="store_true",
         help="rebuild data/processed for the period; data/raw stays untouched",
     )
-    build(parser.parse_args().force)
+    try:
+        build(parser.parse_args().force)
+    except download.SnapshotUnavailable as e:
+        sys.exit(f"Abbruch: {e}")
 
 
 if __name__ == "__main__":
