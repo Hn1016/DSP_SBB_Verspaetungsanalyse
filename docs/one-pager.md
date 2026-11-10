@@ -61,6 +61,10 @@ zwischen den beiden Fahrplänen (Rangkorrelation).
 
 Offen:
 - Der Referenzwert je Soll-Haltezeit für die Haltverspätung (A8).
+- Bezugsgrösse für den Anteil der Top 10 am positiven Zuwachs: roh oder relativ zum Klassenmittel der Soll-Fahrzeit.
+  Mit Referenzwert ist die Summe über alle Fahrten null, und etwa die Hälfte der Abschnitte hat per Konstruktion
+  einen positiven Zuwachs (Log 2026-11-10, Befund #23: roh 28.8 %, mit Referenzwert 21.8 %). Entscheid im Paket
+  Kennzahlen.
 
 ## Wie (How)
 

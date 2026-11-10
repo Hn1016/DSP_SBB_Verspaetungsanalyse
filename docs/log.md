@@ -1496,3 +1496,16 @@ Berechnet in `notebooks/07_rangliste_referenzwert.py` nach der Hypothese (Commit
 - **Übernommen/verworfen:** Verworfen: die Mindestzahl innerhalb dieses Pakets nach dem ersten Lauf zu ändern; sie
   wurde in Issue #32 vom Team festgelegt. Verworfen (Haonan): der Vorschlag des Agenten, im zweiten Lauf weiter nach
   dem Mittelwert zu ordnen.
+
+## 2026-11-10 — Hypothese, zweiter Nachtrag: (a) und (b) auch nach dem Mittel pro Fahrt (Review PR #37, vor dem Rechnen notiert)
+
+Anlass: Frage von schwagia im Review. Die Erwartungen (a) und (b) betreffen die Bevorzugung kurzer Abschnitte beim
+Mittel pro Fahrt (A7, #18); nach Mittel × Fahrten bestimmen die viel befahrenen Abschnitte die Top 10.
+
+- **Regel:** (a) und (b) werden zusätzlich an den Top 10 nach dem Mittel pro Fahrt geprüft, roh und mit Referenzwert,
+  auf derselben Basis wie der zweite Lauf (1.8.2025 bis 31.7.2026, mindestens 100 Fahrten und 30 Betriebstage). Die
+  Erwartungen bleiben unverändert. Die Rangliste nach der Hauptkennzahl bleibt daneben stehen.
+- **Was schon bekannt ist:** die Top 10 nach dem Mittel aus dem ersten Lauf (alter Zeitraum, mindestens 20 Fahrten;
+  (a) 3 und 0, (b) 7). Einige dieser Abschnitte haben mehr als 100 Fahrten (z. B. Gibswil → Fischenthal, Thalwil →
+  Zürich Enge, Zürich Oerlikon → Zürich Affoltern). Die Top 10 nach dem Mittel mit der neuen Mindestzahl sind nicht
+  gerechnet.
