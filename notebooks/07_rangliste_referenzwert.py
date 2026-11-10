@@ -118,7 +118,10 @@ def _(MIN_DAYS, MIN_TRIPS, con):
                round(sum(s.section_delay)) as zuwachs_roh,
                round(sum(s.section_delay - c.mittel)) as zuwachs_referenz,
                rank() over (order by sum(s.section_delay) desc) as rang_roh,
-               rank() over (order by sum(s.section_delay - c.mittel) desc) as rang_referenz
+               rank() over (order by sum(s.section_delay - c.mittel) desc) as rang_referenz,
+               rank() over (order by avg(s.section_delay) desc) as rang_mittel_roh,
+               rank() over (order by avg(s.section_delay - c.mittel) desc)
+                   as rang_mittel_referenz
         from zh_sections s
         join class_means c using (klasse)
         join zh a on a.BPUIC = s.a_id
@@ -197,27 +200,67 @@ def _(pl, ranking, top_raw, top_ref):
 @app.cell
 def _(mo):
     mo.md("""
+    ## Beide Top 10 nach dem Mittel pro Fahrt (Review PR #37)
+
+    Dieselbe Basis und Mindestzahl, Rang nach dem Mittel pro Fahrt statt nach Mittel × Fahrten:
+    die Grösse, für die die Erwartungen (a) und (b) geschrieben wurden (zweiter Nachtrag im Log,
+    Commit `eb5b77f`, vor dem Rechnen gepusht).
+    """)
+    return
+
+
+@app.cell
+def _(pl, ranking):
+    _columns = ["abschnitt", "fahrten", "soll_min"]
+    top_mean_raw = ranking.filter(pl.col("rang_mittel_roh") <= 10).sort("rang_mittel_roh")
+    top_mean_ref = ranking.filter(pl.col("rang_mittel_referenz") <= 10).sort("rang_mittel_referenz")
+    pl.concat(
+        [
+            top_mean_raw.select(
+                pl.col("rang_mittel_roh").alias("rang"), *_columns, "mittel_roh"
+            ).rename({c: f"{c} (roh)" for c in _columns}),
+            top_mean_ref.select(*_columns, "mittel_referenz").rename(
+                {c: f"{c} (ref)" for c in _columns}
+            ),
+        ],
+        how="horizontal_extend",
+    )
+    return top_mean_raw, top_mean_ref
+
+
+@app.cell
+def _(mo):
+    mo.md("""
     ## Erwartungen (a) und (b)
     """)
     return
 
 
 @app.cell
-def _(pl, top_raw, top_ref):
-    _short_raw = top_raw.filter(pl.col("soll_min") <= 2).height
-    _short_ref = top_ref.filter(pl.col("soll_min") <= 2).height
-    _both = len(set(top_raw["abschnitt"]) & set(top_ref["abschnitt"]))
-    pl.DataFrame(
-        {
-            "pruefung": [
-                "(a) roh: Soll-Fahrzeit ≤ 2 min",
-                "(a) Referenz: Soll-Fahrzeit ≤ 2 min",
-                "(b) in beiden Top 10",
-            ],
-            "ergebnis": [_short_raw, _short_ref, _both],
-            "erwartung": ["≥ 4", "≤ 2", "≤ 5"],
-            "gehalten": [_short_raw >= 4, _short_ref <= 2, _both <= 5],
-        }
+def _(pl, top_mean_raw, top_mean_ref, top_raw, top_ref):
+    def _check(name, raw, ref):
+        short_raw = raw.filter(pl.col("soll_min") <= 2).height
+        short_ref = ref.filter(pl.col("soll_min") <= 2).height
+        both = len(set(raw["abschnitt"]) & set(ref["abschnitt"]))
+        return pl.DataFrame(
+            {
+                "rang_nach": [name] * 3,
+                "pruefung": [
+                    "(a) roh: Soll-Fahrzeit ≤ 2 min",
+                    "(a) Referenz: Soll-Fahrzeit ≤ 2 min",
+                    "(b) in beiden Top 10",
+                ],
+                "ergebnis": [short_raw, short_ref, both],
+                "erwartung": ["≥ 4", "≤ 2", "≤ 5"],
+                "gehalten": [short_raw >= 4, short_ref <= 2, both <= 5],
+            }
+        )
+
+    pl.concat(
+        [
+            _check("Mittel pro Fahrt", top_mean_raw, top_mean_ref),
+            _check("Mittel × Fahrten", top_raw, top_ref),
+        ]
     )
     return
 

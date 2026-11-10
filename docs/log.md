@@ -1509,3 +1509,44 @@ Mittel pro Fahrt (A7, #18); nach Mittel × Fahrten bestimmen die viel befahrenen
   (a) 3 und 0, (b) 7). Einige dieser Abschnitte haben mehr als 100 Fahrten (z. B. Gibswil → Fischenthal, Thalwil →
   Zürich Enge, Zürich Oerlikon → Zürich Affoltern). Die Top 10 nach dem Mittel mit der neuen Mindestzahl sind nicht
   gerechnet.
+
+## 2026-11-10 — Befund, Nachtrag: (a) und (b) nach dem Mittel pro Fahrt (Review PR #37)
+
+Berechnet in `notebooks/07_rangliste_referenzwert.py` (Abschnitt «Beide Top 10 nach dem Mittel pro Fahrt») nach dem
+zweiten Nachtrag (Commit `eb5b77f`, gepusht vor dem Rechnen). Basis wie der zweite Lauf: 394 Abschnitte mit mindestens
+100 Fahrten und 30 Betriebstagen, 1.8.2025 bis 31.7.2026.
+
+**Top 10 nach dem Mittel pro Fahrt (min), links roh, rechts mit Referenzwert**
+
+| Rang | Abschnitt (roh) | Fahrten | Soll | Mittel | Abschnitt (mit Referenzwert) | Fahrten | Soll | Mittel |
+|---|---|---|---|---|---|---|---|---|
+| 1 | Gibswil → Fischenthal | 10'926 | 1 | 1.45 | Zürich Oerlikon → Zürich Affoltern | 1'200 | 4 | 1.84 |
+| 2 | Zürich Oerlikon → Zürich Affoltern | 1'200 | 4 | 1.14 | Thalwil → Zürich Enge | 13'398 | 6 | 1.78 |
+| 3 | Thalwil → Zürich Enge | 13'398 | 6 | 1.00 | Stettbach → Uster | 134 | 6 | 1.51 |
+| 4 | Pfungen → Winterthur Wülflingen | 14'671 | 2 | 0.89 | Zürich Enge → Thalwil | 13'049 | 6 | 1.48 |
+| 5 | Stettbach → Uster | 134 | 6 | 0.73 | Bauma → Steg | 10'932 | 4 | 1.40 |
+| 6 | Eglisau → Glattfelden | 14'203 | 2 | 0.73 | Winterthur → Dietlikon | 375 | 9 | 1.30 |
+| 7 | Wetzikon ZH → Aathal | 14'678 | 2 | 0.71 | Wädenswil → Zürich HB | 5'474 | 17 | 1.30 |
+| 8 | Zürich Enge → Thalwil | 13'049 | 6 | 0.70 | Uster → Stettbach | 139 | 7 | 1.26 |
+| 9 | Bauma → Steg | 10'932 | 4 | 0.70 | Winterthur → Kemptthal | 14'235 | 4 | 1.25 |
+| 10 | Turbenthal → Rämismühle-Zell | 16'932 | 2 | 0.62 | Küsnacht ZH → Zürich Stadelhofen | 927 | 6 | 1.24 |
+
+| Rang nach | (a) roh ≤ 2 min (Erwartung ≥ 4) | (a) mit Referenzwert ≤ 2 min (≤ 2) | (b) in beiden Top 10 (≤ 5) |
+|---|---|---|---|
+| Mittel pro Fahrt | 5, gehalten | 0, gehalten | 5, gehalten (an der Grenze) |
+| Mittel × Fahrten (Befund oben) | 7, gehalten | 2, gehalten (an der Grenze) | 4, gehalten |
+
+- **(a) gehalten, an der Grösse, für die sie geschrieben war.** Roh haben 5 der Top 10 eine Soll-Fahrzeit von
+  höchstens 2 Minuten, mit Referenzwert keiner. Gibswil → Fischenthal (1 min), roh auf Rang 1, fällt mit Referenzwert
+  auf Rang 11. Der Referenzwert hebt die Bevorzugung kurzer Abschnitte beim Mittel pro Fahrt auf.
+- **(b) gehalten, an der Grenze.** 5 Abschnitte stehen in beiden Top 10: Zürich Oerlikon → Zürich Affoltern, Thalwil →
+  Zürich Enge, Zürich Enge → Thalwil, Stettbach → Uster, Bauma → Steg.
+- **Grenze:** Mit Referenzwert stehen drei Abschnitte mit 134 bis 375 Fahrten in den Top 10 nach dem Mittel (Stettbach
+  → Uster, Uster → Stettbach, Winterthur → Dietlikon). Sie erfüllen die Mindestzahl; nach Mittel × Fahrten fallen sie
+  nicht ins Gewicht.
+- **Entscheidung:** unverändert (Referenzwert je Soll-Fahrzeit gilt, Regeln aus Issue #32).
+- **Offen (Review PR #37, schwagia):** Bezugsgrösse für den Anteil der Top 10 am positiven Zuwachs, roh (28.8 %) oder
+  relativ zum Klassenmittel (21.8 %); als offener Punkt im One-Pager, Entscheid im Paket Kennzahlen.
+- **KI-Einsatz:** Mine: die Frage und der Vorschlag im Review (schwagia), übernommen (Haonan). Delegated: Claude Code
+  hat den zweiten Nachtrag, die Zellen im Notebook, diesen Eintrag und die Antworten im Review geschrieben. Prüfung:
+  Tests, `ruff` und `marimo check` laufen durch.
