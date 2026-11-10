@@ -1024,8 +1024,9 @@ Anlass: Entscheidung zu Issue #20 (A3 und A4 beim Laden der zwölf Monate prüfe
 ## 2026-11-08 — Entscheidung: Zeitraum 13.7.2025 bis 30.6.2026 (Issue #30)
 
 - **Entscheidung:** `period.py` setzt die Monate Juli 2025 bis Juni 2026. Die Daten beginnen am 13.7.2025: Das
-  Monatsarchiv Juli 2025 enthält nur die Tage 13. bis 31. Juli (Warnung von `uv run build`, Beleg: Dateiliste des
-  ZIPs). Damit 353 Tage, Fahrplan 2025 vom 13.7. bis 13.12.2025 (154 Tage), Fahrplan 2026 vom 14.12.2025 bis
+  Monatsarchiv Juli 2025 enthält nur die Tage 13. bis 31. Juli (Beleg: Dateiliste des ZIPs und die Warnung von
+  `uv run build` aus PR #25: «im Archiv fehlen Tage des Zeitraums: 2025-07-01, …, 2025-07-12»). Die Lücke liegt im
+  Archiv, nicht beim Laden. Damit 353 Tage, Fahrplan 2025 vom 13.7. bis 13.12.2025 (154 Tage), Fahrplan 2026 vom 14.12.2025 bis
   30.6.2026 (199 Tage). Das Issue nannte 166 Tage für den Fahrplan 2025, ausgehend vom 1.7.
 - **Begründung:** Beide Fahrpläne mit dem Fahrplanwechsel vom 14.12.2025 und alle Jahreszeiten, jeder Monat einmal.
 - **Alternativen:** Juli bis Juli (Juli doppelt) und Juli bis Mai (nur elf Monate), beide im Issue verworfen.
@@ -1077,11 +1078,11 @@ vor dem Laden). Daten aus `uv run build`, 13.7.2025 bis 30.6.2026.
     `ZEILE`-Reihenfolge nicht mit der gefahrenen Reihenfolge überein, nicht nur die Soll-Zeit.
   - Der Schritt `sections` verwirft Abschnitte mit rückwärts laufender Soll-Zeit bereits: Im Abschnitts-File des
     Zeitraums hat keine Abschnittsfahrt eine negative Soll-Fahrzeit. Ob eine falsche Reihenfolge andere Abschnitte
-    erzeugt, deren Soll-Zeit vorwärts läuft, ist nicht geprüft.
+    erzeugt, deren Soll-Zeit vorwärts läuft, ist im Review nachgeprüft (Eintrag 2026-11-10).
   - Der Datentest zur Reihenfolge (`tests/test_data.py`, höchstens 1 von 10'000 Schweizer Abschnitten rückwärts)
     zeigt dasselbe Muster: pro Monat 0.05 bis 0.5 von 10'000, im Mai 2026 1.1 und im Juni 2026 1.5. Er läuft jetzt pro
-    Monat und führt Mai und Juni als bekannten Befund mit einer Obergrenze von 2 von 10'000 (Entscheid Haonan); jeder
-    andere Monat bleibt bei 1 von 10'000.
+    Monat und führte Mai und Juni zuerst mit einer eigenen Obergrenze von 2 von 10'000 (Entscheid Haonan); im Review
+    ersetzt (Eintrag 2026-11-10).
 - **(Halte) gehalten.** Jede Schweizer `BPUIC` des Zeitraums steht im Schnappschuss vom 2026-10-05, auch ausserhalb
   von Zürich; es fehlt kein Halt. Die Vorprüfung in PR #27 (Aigle-Hôpital) betraf keinen Halt in den Bahndaten.
 - **Status in `docs/assumptions.md`:** A3 «gestützt», Evidenz «hoch» (für den Kanton Zürich); A4 «teilweise»,
@@ -1111,3 +1112,38 @@ vor dem Laden). Daten aus `uv run build`, 13.7.2025 bis 30.6.2026.
   `ruff` und `marimo check` laufen durch.
 - **Übernommen/verworfen:** Nicht übernommen: die Widersprüche nach dem Befund nur zwischen Schweizer Halten zu
   zählen; das hätte die Regel an das Ergebnis angepasst. Die Aufteilung steht nur beschreibend im Befund.
+
+## 2026-11-10 — Entscheidung: A4-Widersprüche sind meist Umleitungen, Datentest ohne eigene Obergrenze (Review PR #31)
+
+Anlass: zwei Fragen von schwagia im Review. Gerechnet nach dem Befund, beschreibend, in `notebooks/06_zwoelf_monate.py`
+(Abschnitt «A4: Widersprüche und Abschnitte»); keine neue Erwartung, darum keine Hypothese.
+
+- **Befund:** Die Widersprüche sind fast alle Umleitungen. Beispiel S7 Winterthur–Rapperswil am 14.6.2026: Zürich
+  Flughafen (Soll 10:27) steht als zusätzlicher Halt in der Fahrt, die ausgelassenen Halte Kloten (10:24) und Kloten
+  Balsberg (10:26) bleiben als ausgefallene Zeilen dahinter stehen. Von den 1'316 rückwärts laufenden Schritten
+  zwischen zwei Halten im Kanton Zürich haben 1'306 eine ausgefallene Zeile (im ganzen Zeitraum 2'351 von 4'614).
+  `sections` bildet über ausgefallene Halte keinen Abschnitt; die übrigen Abschnitte dieser Fahrten folgen dem
+  gefahrenen Weg. Von 7'510'318 Zürcher Abschnittsfahrten liegen 1'225 an einem solchen Schritt, davon 22 an einem
+  Schritt ohne ausgefallene Zeile (3 von 1 Mio.); nur diese 22 könnten in falscher Reihenfolge gebildet sein.
+- **Entscheidung (Haonan, Vorschlag des Agenten übernommen):** `sections` bleibt, wie es ist. Fahrten mit Widerspruch
+  auszuschliessen würde 15'383 Zürcher Abschnittsfahrten entfernen, fast nur die umgeleiteten S7-Fahrten im Mai und
+  Juni und damit gerade gestörte Fahrten, um 22 möglicherweise falsche zu vermeiden. Die Prüfung bei A5 («Gleicher
+  Weg») bleibt.
+- **Entscheidung (Haonan, Vorschlag des Agenten übernommen):** Der Datentest zur Reihenfolge hat für jeden Monat
+  dieselbe Grenze von 1 von 10'000. Die eigene Obergrenze von 2 von 10'000 für Mai und Juni war erst nach dem Befund
+  festgelegt und hätte den Test an das Ergebnis angepasst. Mai und Juni 2026 sind jetzt als erwarteter Fehlschlag
+  markiert (`xfail`, `strict`), mit Verweis auf diesen Eintrag. Läuft einer der beiden Monate wieder durch, wird der
+  Test rot; liegt ein anderer Monat über der Grenze, ebenfalls. Eine weitere Ausnahme gibt es nur mit Log-Eintrag
+  und Review. Die Prüfung «eine Fahrt hat einen Betreiber und eine Linie» ist ein eigener Test, damit die Markierung
+  sie nicht verdeckt.
+- **Status A4:** bleibt «teilweise», Evidenz «mittel»; ergänzt, dass die Widersprüche meist Umleitungen sind.
+
+## 2026-11-10 — KI-Einsatz: Review PR #31
+
+- **Mine:** die Fragen im Review (schwagia); die beiden Entscheide (Haonan).
+- **Delegated:** Claude Code hat die Zählungen, den Abschnitt im Notebook 06, die Änderung in `tests/test_data.py`,
+  diese Einträge und die Antworten im Review geschrieben. Entscheid des Agenten: als Grenze für «möglicherweise
+  falsch» gilt ein Abschnitt, dessen Halt A oder B an einem rückwärts laufenden Schritt ohne ausgefallene Zeile liegt.
+- **Prüfung:** Die Zahlen im Notebook stimmen mit einer getrennten Zählung pro Monat überein. Mit der alten Grenze
+  wären Mai und Juni rot; mit `xfail` laufen sie als erwarteter Fehlschlag, alle anderen Monate durch. Tests, `ruff`
+  und `marimo check` laufen durch.

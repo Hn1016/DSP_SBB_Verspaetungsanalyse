@@ -164,6 +164,73 @@ def _(by_timetable, per_month):
 @app.cell
 def _(mo):
     mo.md("""
+    ## A4: Widersprüche und Abschnitte (Review PR #31, nach dem Befund gerechnet)
+
+    Ein Widerspruch ist ein Schritt zwischen zwei Zeilen, bei dem die Soll-Zeit rückwärts läuft.
+    Bei einer Umleitung steht der zusätzliche Halt vor den ausgelassenen, die als ausgefallene
+    Zeilen stehen bleiben. Über ausgefallene Halte bildet `sections` keinen Abschnitt. Gezählt:
+    Schritte zwischen zwei Halten im Kanton Zürich, wie viele davon eine ausgefallene Zeile haben,
+    und Zürcher Abschnittsfahrten, deren Halt A oder B an einem solchen Schritt liegt.
+    """)
+    return
+
+
+@app.cell
+def _(con, first, last):
+    from sbb_delays import build
+
+    con.execute(
+        f"""
+        create or replace view backward_steps as
+        select BETRIEBSTAG, ZEILE as zeile_1, next_zeile as zeile_2,
+               FAELLT_AUS_TF or next_cancelled as cancelled,
+               BPUIC in (select BPUIC from zh) and next_bpuic in (select BPUIC from zh) as in_zh
+        from (
+            select BETRIEBSTAG, ZEILE, BPUIC, FAELLT_AUS_TF,
+                   coalesce(ABFAHRTSZEIT, ANKUNFTSZEIT) as this_last,
+                   lead(ZEILE) over trip as next_zeile, lead(BPUIC) over trip as next_bpuic,
+                   lead(FAELLT_AUS_TF) over trip as next_cancelled,
+                   lead(coalesce(ANKUNFTSZEIT, ABFAHRTSZEIT)) over trip as next_first
+            from rail
+            where BETRIEBSTAG between date '{first}' and date '{last}'
+            window trip as (partition by BETRIEBSTAG, FAHRT_BEZEICHNER order by ZEILE)
+        )
+        where next_first < this_last
+        """
+    )
+    con.sql(
+        f"""
+        with step_rows as (
+            select BETRIEBSTAG, zeile, bool_and(cancelled) as cancelled
+            from (
+                select BETRIEBSTAG, zeile_1 as zeile, cancelled from backward_steps
+                union all
+                select BETRIEBSTAG, zeile_2, cancelled from backward_steps
+            )
+            group by all
+        ),
+        zh_sections as (
+            select * from read_parquet('{build.sections_parquet()}')
+            where a_id in (select BPUIC from zh) and b_id in (select BPUIC from zh)
+        )
+        select
+            (select count(*) from backward_steps where in_zh) as schritte_zh,
+            (select count(*) from backward_steps where in_zh and cancelled)
+                as schritte_zh_mit_ausfall,
+            (select count(*) from zh_sections) as abschnittsfahrten_zh,
+            count(*) as abschnittsfahrten_an_schritt,
+            count(*) filter (where not r.cancelled) as an_schritt_ohne_ausfall
+        from zh_sections s
+        join step_rows r
+          on r.BETRIEBSTAG = s.BETRIEBSTAG and r.zeile in (s.zeile_a, s.zeile_b)
+        """
+    ).pl()
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md("""
     ## Halte, die im Schnappschuss fehlen
 
     Ob ein fehlender Halt in Zürich liegt, steht gerade nicht im Schnappschuss. Darum: jede
