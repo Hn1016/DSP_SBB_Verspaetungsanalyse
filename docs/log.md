@@ -1147,3 +1147,17 @@ Anlass: zwei Fragen von schwagia im Review. Gerechnet nach dem Befund, beschreib
 - **Prüfung:** Die Zahlen im Notebook stimmen mit einer getrennten Zählung pro Monat überein. Mit der alten Grenze
   wären Mai und Juni rot; mit `xfail` laufen sie als erwarteter Fehlschlag, alle anderen Monate durch. Tests, `ruff`
   und `marimo check` laufen durch.
+
+## 2026-11-10 — Hypothese: Zeitraum August 2025 bis Juli 2026, A3 und A4 im Juli 2026 (Issue #33, vor der Analyse notiert)
+
+Anlass: Entscheidung zum Analysezeitraum in Issue #32 (1.8.2025 bis 31.7.2026: zwölf volle Monate ohne fehlende
+Tage, jede Jahreszeit genau einmal, Fahrplanwechsel vom 14.12.2025 enthalten). Neu dazu kommt nur Juli 2026; die
+Monate August 2025 bis Juni 2026 sind im Befund vom 2026-11-08 (#30) schon geprüft. Gezählt wie dort
+(`notebooks/06_zwoelf_monate.py`, Hypothese vom 2026-11-08).
+
+- **Erwartung (schwagia, im Issue):**
+  - Im Archiv fehlt kein Tag des Zeitraums; `uv run build` gibt keine Warnung über fehlende Tage aus.
+  - (A3) Der `REAL`-Anteil im Kanton Zürich liegt im Juli 2026 über 99 %.
+  - (A4) Im Juli 2026 laufen höchstens 1 von 10'000 Schweizer Abschnitten in der Soll-Zeit rückwärts (Grenze des
+    Datentests in `tests/test_data.py`). Liegt der Monat darüber, kommt er als bekannter Befund mit Begründung im Log
+    zu Mai und Juni 2026 (`KNOWN_BACK_IN_TIME`).
