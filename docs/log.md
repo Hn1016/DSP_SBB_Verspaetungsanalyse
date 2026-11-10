@@ -1204,19 +1204,31 @@ Anlass: zwei Fragen von schwagia im Review. Gerechnet nach dem Befund, beschreib
 
 ## 2026-11-10 — Entscheidung: Systematisch (Issue #32)
 
-- **Entscheidung (Team: schwagia, Hn1016):**
-  - Bewertet wird ein Abschnitt mit mindestens 100 gemessenen Fahrten im Zeitraum, in einem Zeitfenster mit
-    mindestens 20. Beide Zahlen sind vorläufig, bis A10 («Genug Fahrten») geprüft ist.
-  - Verstärker, wenn das 95-%-Konfidenzintervall des Mittels ganz über 0 liegt; Absorber, wenn es ganz unter 0
-    liegt; sonst neutral.
+- **Entscheidung (Team: schwagia, Hn1016; Intervall und Mindestzahl nach Review Hn1016 korrigiert):**
+  - Mindestzahl: Bewertet wird ein Abschnitt mit mindestens 100 gemessenen Fahrten und mindestens 30 Betriebstagen mit
+    Messung im Zeitraum, in einem Zeitfenster mit mindestens 20 Betriebstagen mit Messung. Die Mindestzahlen sind
+    vorläufig, bis A10 («Genug Fahrten») geprüft ist.
+  - Schwelle: Pro Abschnitt und Betriebstag wird ein Tagesmittel der Streckenverspätung gebildet, das
+    95-%-Konfidenzintervall des Mittels über die Tagesmittel gerechnet. Verstärker, wenn das Intervall ganz über 0
+    liegt und das Mittel mindestens 0.25 min beträgt; Absorber, wenn es ganz unter 0 liegt und das Mittel höchstens
+    −0.25 min beträgt; sonst neutral.
+- **Begründung der Schwelle (Review Hn1016):** Fahrten am selben Tag sind nicht unabhängig, eine Störung trifft viele
+  Züge. Über Fahrten gerechnet wäre das Intervall bei Hunderten Fahrten zu schmal, und fast jeder Abschnitt wäre
+  Verstärker oder Absorber. Die 0.25 min verlangen einen praktisch relevanten Effekt.
 - **Begründung der Mindestzahl:** Hn1016 hat in Issue #32 kommentiert (aus Notebook 07 zu Issue #23): Mit der
   vorläufigen Mindestzahl von 20 Fahrten aus Issue #14 kommen über ein Jahr 411 Zürcher Abschnitte in die Rangliste,
   und etwa die Hälfte der Top 10 hat nur 23 bis 122 Fahrten mit seltenen Haltemustern (z. B. Extrazüge, S7 ohne
-  Zwischenhalt, Nacht-S-Bahn). Die 20 Fahrten waren für eine Woche gedacht. Deshalb mindestens 100 Fahrten im
-  Zeitraum. Die Mindestzahl ist festgelegt, bevor die Rangliste aus Issue #23 interpretiert wird, und nicht an ein
-  Ergebnis angepasst.
-- **Alternative:** eine feste Schwelle (z. B. Mittel > 0.1 min), verworfen, weil sie nicht von der Fahrtenzahl
-  abhängt.
+  Zwischenhalt, Nacht-S-Bahn). Die 20 Fahrten waren für eine Woche gedacht. 100 Fahrten im Jahr sind im Mittel rund
+  zwei pro Woche, darunter gibt es keinen regelmässigen Verkehr. Die Betriebstage braucht das Intervall über Tage.
+  Die 100 wurden festgelegt, nachdem die beschreibende Top 10 aus Issue #23 bekannt war (Kommentar Hn1016 in
+  Issue #32), vor der Interpretation, aber nicht ohne Blick auf ein Ergebnis.
+- **Alternativen:**
+  - Intervall über Fahrten: verworfen, siehe Begründung der Schwelle.
+  - Bootstrap über Tage: erwogen, verworfen, weil das Tagesmittel einfacher ist und denselben Punkt behandelt.
+  - Nur eine feste Schwelle (z. B. Mittel > 0.1 min): verworfen, weil sie allein nicht von der Zahl der Messungen
+    abhängt. Die 0.25 min gelten darum nur zusätzlich zum Intervall.
+  - Mindestzahl pro Zeitfenster in Fahrten (20 Fahrten, so im ersten Stand dieses Eintrags): ersetzt durch
+    Betriebstage, weil das Intervall über Tage gerechnet wird.
 
 ## 2026-11-10 — Entscheidung: Zeitfenster (Issue #32)
 
@@ -1260,6 +1272,10 @@ Anlass: zwei Fragen von schwagia im Review. Gerechnet nach dem Befund, beschreib
   Korrekturen am Plan (schwagia): Punkt «positiver Zuwachs» meint den Referenzwert je Soll-Fahrzeit (A7, Issue #23),
   nicht A8; zum Raum nur Alternativen aus dem Log; die Alternative zur Schwelle 80 % `REAL`; die Begründungen zu Raum
   und Mindestzahl (Kommentar Hn1016 in Issue #32).
+  Nach Review Hn1016 (Entscheide des Teams): das Konfidenzintervall über Tagesmittel statt über Fahrten, mit
+  mindestens ±0.25 min für Verstärker und Absorber; die Mindestzahl mit mindestens 30 Betriebstagen im Zeitraum und
+  20 Betriebstagen pro Zeitfenster statt 20 Fahrten; der Satz, dass die 100 nach Kenntnis der beschreibenden Top 10
+  aus Issue #23 festgelegt wurden.
 - **Delegated:** Claude Code hat den Plan, die Änderungen im One-Pager und diese Einträge geschrieben, aus den Vorgaben
   des Teams. Entscheide des Agenten: Gliederung der Einträge (ein Eintrag pro Regel), die Tageszahlen je Fahrplan im
   Eintrag «Zeitraum» (nachgerechnet), der Hinweis, dass `period.py` bis Issue #33 den alten Zeitraum setzt.

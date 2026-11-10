@@ -47,9 +47,11 @@ zwischen den beiden Fahrplänen (Rangkorrelation).
 - **Hauptkennzahl:** absolut, Minuten Zuwachs im ganzen Zeitraum (Mittel × Fahrten). Pro Fahrt und pro
   Streckenkilometer als Begleitspalten; der Vergleich mit der Baseline «sortiert nach Zugzahl» prüft, ob die
   Rangliste nur Volumen und Länge abbildet (Log «Hauptkennzahl»).
-- **Systematisch:** mindestens 100 gemessene Fahrten im Zeitraum und mindestens 20 pro Zeitfenster (*vorläufig bis
-  A10*). Verstärker, wenn das 95-%-Konfidenzintervall des Mittels ganz über 0 liegt, Absorber, wenn ganz unter 0,
-  sonst neutral (Log «Systematisch»).
+- **Systematisch:** mindestens 100 gemessene Fahrten und 30 Betriebstage mit Messung im Zeitraum, mindestens 20
+  Betriebstage pro Zeitfenster (*vorläufig bis A10*). Das 95-%-Konfidenzintervall des Mittels wird über die
+  Tagesmittel je Betriebstag gerechnet, nicht über Fahrten. Verstärker, wenn es ganz über 0 liegt und das Mittel
+  mindestens 0.25 min beträgt; Absorber, wenn es ganz unter 0 liegt und das Mittel höchstens −0.25 min beträgt; sonst
+  neutral (Log «Systematisch»).
 - **Zeitfenster** nach Soll-Abfahrt an A (*vorläufig bis A10*): Tageszeit Morgenspitze 6–9 Uhr, Tag 9–16,
   Abendspitze 16–19, Abend/Nacht 19–6; Wochentag Montag–Freitag und Samstag/Sonntag; Jahreszeit meteorologisch
   (Dez–Feb, Mär–Mai, Jun–Aug, Sep–Nov); Fahrplan 2025 (bis 13.12.2025) und 2026 (Log «Zeitfenster»).
