@@ -1304,10 +1304,15 @@ Monate August 2025 bis Juni 2026 sind im Befund vom 2026-11-08 (#30) schon gepr�
 
 ## 2026-11-10 — Befund: Zeitraum August 2025 bis Juli 2026, A3 und A4 im Juli 2026 (Issue #33)
 
-Gerechnet nach der Hypothese oben (Commit `bc33848`, gepusht vor dem Bauen), gezählt wie in
+Gerechnet nach der Hypothese oben (Commit `bc33848`, gepusht vor dem Laden und Zählen), gezählt wie in
 `notebooks/06_zwoelf_monate.py` (A3) und im Datentest zur Reihenfolge (`quality.trip_structure`, A4). `period.py` setzt
 August 2025 bis Juli 2026; `uv run build` hat Juli 2026 geladen und die Abschnitte für den neuen Zeitraum gebaut.
 
+- **Reihenfolge (Review PR #35, schwagia):** Das ZIP von Juli 2026 wurde schon vor dem Hypothesen-Commit geladen
+  (Manifest 18:50 UTC, also 19:50; Commit 19:54:03), direkt über `sbb_delays.download`, nicht über `uv run build`;
+  dabei wurde nichts geöffnet oder gezählt. `period.py` und der erste Lauf von `uv run build` kamen nach dem Commit:
+  Die Tagesdateien von Juli 2026 sind zwischen 19:54:23 und 19:56:35 geschrieben. Dieser Lauf und ein zweiter brachen
+  beim Schritt `sections` mit «No space left on device» ab; gezählt wurde erst nach dem dritten Lauf.
 - **Fehlende Tage: gehalten.** `uv run build` gibt keine Warnung aus; der Datentest verlangt neu, dass die Daten am
   1.8.2025 beginnen und am 31.7.2026 enden, und läuft durch (365 Tage).
 - **(A3) gehalten.** Juli 2026: 99.37 % `REAL` im Kanton Zürich (1'352'797 Ankünfte und Abfahrten an 31 Tagen),
@@ -1315,6 +1320,15 @@ August 2025 bis Juli 2026; `uv run build` hat Juli 2026 geladen und die Abschnit
 - **(A4) gehalten, knapp.** Juli 2026: 456 von 4'995'800 Schweizer Abschnitten laufen in der Soll-Zeit rückwärts,
   0.91 von 10'000 (Grenze 1). Juli 2026 kommt darum nicht in `KNOWN_BACK_IN_TIME`. Zum Vergleich die übrigen Monate:
   August 2025 bis April 2026 0.05 bis 0.52, Mai 2026 1.06, Juni 2026 1.49 (beide weiter als bekannter Befund markiert).
+  - Was die 456 sind (Review PR #35, beschreibend, nach dem Befund gezählt wie in Notebook 06, Abschnitt «A4:
+    Widersprüche und Abschnitte», auf Juli 2026 eingeschränkt, nicht im Notebook): nicht dieselben Umleitungen wie im
+    Mai und Juni. 417 der 456 Schritte haben eine ausgefallene Zeile; 331 davon sind IR Voralpen-Express (SOB)
+    zwischen Rotkreuz und Küssnacht am Rigi, 62 RE33 Lancy-Pont-Rouge → Genève-Aéroport, beide ausserhalb des
+    Kantons. Die 39 ohne ausgefallene Zeile liegen fast alle bei der RBS (S8 um Bern).
+  - Im Kanton Zürich: 20 Schritte zwischen zwei Zürcher Halten, alle 20 mit ausgefallener Zeile (10 davon S7 Zürich
+    Flughafen → Kloten, 8 S12 ab Zürich Oerlikon). Von 631'708 Zürcher Abschnittsfahrten im Juli liegen 20 an einem
+    solchen Schritt, keine an einem Schritt ohne ausgefallene Zeile. Die Begründung aus dem Eintrag zu PR #31
+    (`sections` bleibt unverändert) gilt damit auch für Juli 2026.
 - **Abschnittsfahrten im Kanton Zürich** (beide Halte im Kanton, aus `uv run build`): 7'739'652 im Zeitraum, davon
   631'708 im Juli 2026. Für 13.7.2025 bis 30.6.2026 waren es 7'510'318 (Eintrag vom 2026-11-10 zu PR #31).
 - **Status in `docs/assumptions.md`:** A3 bleibt «gestützt», A4 bleibt «teilweise»; beide mit Verweis auf diesen
@@ -1323,7 +1337,7 @@ August 2025 bis Juli 2026; `uv run build` hat Juli 2026 geladen und die Abschnit
 ## 2026-11-10 — KI-Einsatz: Issue #33
 
 - **Aufgabe:** `period.py` auf August 2025 bis Juli 2026 setzen, Juli 2026 laden und prüfen.
-- **Mine:** das Issue mit den Erwartungen (schwagia), der Zeitraum (Team, Issue #32); Hypothese vor dem Bauen gepusht;
+- **Mine:** das Issue mit den Erwartungen (schwagia), der Zeitraum (Team, Issue #32); Hypothese vor dem Laden und Zählen gepusht;
   Platz für den Bau (Haonan): ZIP und Tagesdateien vom Juli 2025 und das alte Abschnitts-File gelöscht, weil sie
   nicht mehr im Zeitraum liegen, und Neustart des Rechners, nachdem `uv run build` zweimal mit «No space left on
   device» abbrach.
