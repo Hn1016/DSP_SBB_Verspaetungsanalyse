@@ -1157,8 +1157,10 @@ Anlass: zwei Fragen von schwagia im Review. Gerechnet nach dem Befund, beschreib
   ausgeschlossen oder separat ausgewiesen werden. Beides entfällt: Laut Team fahren LEB, MBC und ZB nicht im Kanton
   Zürich, ein Ausschluss ist nicht nötig.
 - **Alternativen:** keine erwogen.
-- **Begründung:** im Issue nicht genannt. Im Kanton Zürich sind in jedem Monat über 99 % der Ankünfte und Abfahrten
-  `REAL` (Befund zu Issue #30).
+- **Begründung (Team):** Der Kanton Zürich hat das dichteste S-Bahn-Netz der Schweiz mit dem Knoten Zürich HB, also
+  viele kurze Abschnitte, auf denen Verspätungen entstehen und verschwinden. Zwölf Monate bleiben lokal rechenbar. Die
+  Region ist in Issue #14 und #30 geprüft: In jedem Monat sind über 99 % der Ankünfte und Abfahrten `REAL` (Befund zu
+  Issue #30).
 
 ## 2026-11-10 — Entscheidung: Zeitraum (Issue #32)
 
@@ -1207,6 +1209,12 @@ Anlass: zwei Fragen von schwagia im Review. Gerechnet nach dem Befund, beschreib
     mindestens 20. Beide Zahlen sind vorläufig, bis A10 («Genug Fahrten») geprüft ist.
   - Verstärker, wenn das 95-%-Konfidenzintervall des Mittels ganz über 0 liegt; Absorber, wenn es ganz unter 0
     liegt; sonst neutral.
+- **Begründung der Mindestzahl:** Hn1016 hat in Issue #32 kommentiert (aus Notebook 07 zu Issue #23): Mit der
+  vorläufigen Mindestzahl von 20 Fahrten aus Issue #14 kommen über ein Jahr 411 Zürcher Abschnitte in die Rangliste,
+  und etwa die Hälfte der Top 10 hat nur 23 bis 122 Fahrten mit seltenen Haltemustern (z. B. Extrazüge, S7 ohne
+  Zwischenhalt, Nacht-S-Bahn). Die 20 Fahrten waren für eine Woche gedacht. Deshalb mindestens 100 Fahrten im
+  Zeitraum. Die Mindestzahl ist festgelegt, bevor die Rangliste aus Issue #23 interpretiert wird, und nicht an ein
+  Ergebnis angepasst.
 - **Alternative:** eine feste Schwelle (z. B. Mittel > 0.1 min), verworfen, weil sie nicht von der Fahrtenzahl
   abhängt.
 
@@ -1250,7 +1258,8 @@ Anlass: zwei Fragen von schwagia im Review. Gerechnet nach dem Befund, beschreib
   Entscheidung zu Issue #24), Richtung, positiver Zuwachs, Hauptkennzahl, Systematisch, Zeitfenster, Stabilität, Wert
   oder Grund, Schwelle 80 % `REAL`, je mit Alternativen und Begründung; was offen bleibt (A8, A6, Hauptleserin); die
   Korrekturen am Plan (schwagia): Punkt «positiver Zuwachs» meint den Referenzwert je Soll-Fahrzeit (A7, Issue #23),
-  nicht A8; zum Raum nur Alternativen aus dem Log; die Alternative zur Schwelle 80 % `REAL`.
+  nicht A8; zum Raum nur Alternativen aus dem Log; die Alternative zur Schwelle 80 % `REAL`; die Begründungen zu Raum
+  und Mindestzahl (Kommentar Hn1016 in Issue #32).
 - **Delegated:** Claude Code hat den Plan, die Änderungen im One-Pager und diese Einträge geschrieben, aus den Vorgaben
   des Teams. Entscheide des Agenten: Gliederung der Einträge (ein Eintrag pro Regel), die Tageszahlen je Fahrplan im
   Eintrag «Zeitraum» (nachgerechnet), der Hinweis, dass `period.py` bis Issue #33 den alten Zeitraum setzt.
