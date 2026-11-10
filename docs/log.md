@@ -1401,3 +1401,98 @@ vom 2026-11-10 oben (Commit `f9e690f`) nennt noch den alten Zeitraum und die Min
     gehört zum Pipeline-Schritt.
   - Der Befund nennt beide Läufe, damit sichtbar bleibt, was der Wechsel von Zeitraum, Mindestzahl und Kennzahl
     verändert.
+
+## 2026-11-10 — Befund: Rangliste mit Referenzwert je Soll-Fahrzeit (Issue #23)
+
+Berechnet in `notebooks/07_rangliste_referenzwert.py` nach der Hypothese (Commit `f9e690f`) und dem Nachtrag (Commit
+`0563070`, gepusht vor dem zweiten Lauf). Basis: 7'739'652 Abschnittsfahrten im Kanton Zürich, 1.8.2025 bis
+31.7.2026; 394 Abschnitte mit mindestens 100 Fahrten und 30 Betriebstagen.
+
+**Klassenmittel der Streckenverspätung je Soll-Fahrzeit (min)**
+
+| Soll-Fahrzeit | Fahrten | Mittel | Median | Mittel #18 (eine Woche) |
+|---|---|---|---|---|
+| 0 min | 22 | +2.39 | +1.90 | – |
+| 1 min | 546'012 | +0.22 | +0.30 | +0.24 |
+| 2 min | 1'831'986 | −0.13 | −0.13 | −0.11 |
+| 3 min | 2'426'507 | −0.53 | −0.53 | −0.53 |
+| 4 min | 1'257'612 | −0.71 | −0.73 | −0.71 |
+| 5 min und mehr | 1'677'513 | −0.78 | −0.83 | −0.79 |
+
+**Top 10 roh, nach Minuten Zuwachs im Zeitraum (Mittel × Fahrten)**
+
+| Rang | Abschnitt | Fahrten | Soll-Fahrzeit | Mittel pro Fahrt | Zuwachs (min) |
+|---|---|---|---|---|---|
+| 1 | Zürich Oerlikon → Zürich Hardbrücke | 73'486 | 4 | 0.25 | 18'640 |
+| 2 | Zürich HB → Zürich Wiedikon | 41'688 | 2 | 0.45 | 18'565 |
+| 3 | Zürich Oerlikon → Glattbrugg | 29'489 | 2 | 0.55 | 16'199 |
+| 4 | Gibswil → Fischenthal | 10'926 | 1 | 1.45 | 15'813 |
+| 5 | Adliswil → Sihlau | 23'984 | 1 | 0.60 | 14'305 |
+| 6 | Zürich Enge → Zürich Wiedikon | 41'117 | 1 | 0.35 | 14'286 |
+| 7 | Zürich Altstetten → Zürich Hardbrücke | 42'553 | 2 | 0.33 | 14'169 |
+| 8 | Zürich HB → Zürich Oerlikon | 75'748 | 5 | 0.18 | 13'939 |
+| 9 | Thalwil → Zürich Enge | 13'398 | 6 | 1.00 | 13'424 |
+| 10 | Pfungen → Winterthur Wülflingen | 14'671 | 2 | 0.89 | 13'012 |
+
+**Top 10 mit Referenzwert, nach Minuten Zuwachs im Zeitraum (Mittel nach Abzug des Klassenmittels × Fahrten)**
+
+| Rang | Abschnitt | Fahrten | Soll-Fahrzeit | Mittel pro Fahrt | Zuwachs (min) |
+|---|---|---|---|---|---|
+| 1 | Zürich HB → Zürich Oerlikon | 75'748 | 5 | 0.94 | 70'872 |
+| 2 | Zürich Oerlikon → Zürich Hardbrücke | 73'486 | 4 | 0.89 | 65'570 |
+| 3 | Zürich Flughafen → Zürich Oerlikon | 58'589 | 4 | 0.82 | 47'814 |
+| 4 | Effretikon → Dietlikon | 36'704 | 4 | 0.84 | 30'857 |
+| 5 | Zürich HB → Zürich Wiedikon | 41'688 | 2 | 0.71 | 29'644 |
+| 6 | Winterthur → Stettbach | 26'710 | 11 | 0.99 | 26'406 |
+| 7 | Zürich HB → Zürich Hardbrücke | 128'172 | 2 | 0.19 | 24'095 |
+| 8 | Thalwil → Zürich Enge | 13'398 | 6 | 1.78 | 23'829 |
+| 9 | Uster → Zürich Stadelhofen | 27'321 | 11 | 0.87 | 23'694 |
+| 10 | Zürich Stadelhofen → Stettbach | 56'560 | 4 | 0.39 | 22'338 |
+
+- **Klassenmittel:** wie in #18. Über das ganze Jahr weicht keine Klasse um mehr als 0.02 min von der einen Woche ab;
+  das Mittel sinkt von +0.22 (1 min) auf −0.78 (5 min und mehr). Die Klasse 0 hat 22 Fahrten auf fünf Abschnitten,
+  je 2 bis 8 Fahrten.
+- **(a) gehalten.** In der rohen Top 10 haben 7 Abschnitte eine Soll-Fahrzeit von höchstens 2 Minuten (Erwartung
+  mindestens 4), in der Top 10 mit Referenzwert 2 (Erwartung höchstens 2, genau an der Grenze).
+- **(b) gehalten.** 4 Abschnitte stehen in beiden Top 10 (Erwartung höchstens 5): Zürich Oerlikon → Zürich
+  Hardbrücke, Zürich HB → Zürich Wiedikon, Zürich HB → Zürich Oerlikon, Thalwil → Zürich Enge.
+- **Erster Lauf zum Vergleich** (13.7.2025 bis 30.6.2026, mindestens 20 Fahrten, Rang nach Mittelwert; Zahlen im
+  Nachtrag): (a) roh 3 (nicht gehalten), mit Referenzwert 0 (gehalten); (b) 7 (nicht gehalten). Das alte
+  Abschnitts-File ist gelöscht, der erste Lauf lässt sich aus dem Repository nur mit dem alten Zeitraum und dem
+  Notebook-Stand von damals wiederholen (nicht committet).
+- **Grenzen:**
+  - Zwischen den Läufen haben sich Zeitraum, Mindestzahl und Kennzahl geändert. Die Erwartungen waren für Ranglisten
+    nach dem Mittelwert geschrieben; nach Mittel × Fahrten bestimmen die viel befahrenen Abschnitte um Zürich HB und
+    Oerlikon die Top 10. «Gehalten» ist darum nicht mit dem ersten Lauf vergleichbar. Was davon die Kennzahl und was
+    die Mindestzahl bewirkt, ist nicht getrennt.
+  - Der Zuwachs mit Referenzwert ist relativ: Abgezogen wird das Mittel aller Zürcher Abschnittsfahrten derselben
+    Klasse, die Summe über alle Fahrten ist null. Das Total des positiven Zuwachses (1'675'940 min auf 213
+    Abschnitten, Top 10 davon 21.8 %; roh 528'437 min auf 100 Abschnitten, Top 10 28.8 %) heisst «mehr Verspätung
+    als ein durchschnittlicher Abschnitt gleicher Soll-Fahrzeit», nicht gemessene Minuten Zuwachs.
+  - Rang 7 mit Referenzwert, Zürich HB → Zürich Hardbrücke, hat 0.19 min pro Fahrt, unter den 0.25 min für einen
+    Verstärker (Eintrag «Systematisch»); der Rang kommt von 128'172 Fahrten. Verstärker und Absorber sind hier nicht
+    bestimmt.
+  - Die seltenen Haltemuster aus dem ersten Lauf fehlen: Der kleinste Abschnitt in beiden Top 10 hat 10'926 Fahrten.
+  - Keine Prüfung der Stabilität, keine Zeitfenster, keine Ursache (laut Issue nicht Teil davon).
+- **Entscheidung (Haonan, 2026-11-10, Vorschlag des Agenten übernommen):** Der Referenzwert je Soll-Fahrzeit gilt für
+  die weitere Arbeit, mit den Regeln aus Issue #32. Ob die Rangliste vor allem Volumen abbildet, prüft der Vergleich
+  mit der Baseline «sortiert nach Zugzahl» (Eintrag «Hauptkennzahl»).
+
+## 2026-11-10 — KI-Einsatz: Issue #23
+
+- **Aufgabe:** zwei Ranglisten der Abschnitte rechnen, roh und mit Referenzwert je Soll-Fahrzeit.
+- **Mine:** das Issue mit den Erwartungen (a) und (b) (schwagia); die Entscheide (Haonan): Klasse 0 als eigene Klasse;
+  das Paket nach dem ersten Lauf anhalten und zuerst die Regeln festlegen lassen (Issue #32); der zweite Lauf nach
+  den Regeln aus Issue #32 mit Rang nach der Hauptkennzahl statt nach dem Mittelwert (Vorschlag des Agenten); die Entscheidung im Befund (Vorschlag des Agenten übernommen).
+- **Delegated:** Claude Code hat die Hypothese aus dem Issue, den Nachtrag, das Notebook 07, die Tabellen, den Befund
+  mit den Grenzen und diese Einträge geschrieben. Entscheide des Agenten: Soll-Fahrzeit eines Abschnitts als Median
+  (wie #18); die Erwartungen an den Top 10 nach der Hauptkennzahl zu prüfen; Verstärker und Absorber nicht zu
+  bestimmen; den Anteil der Top 10 am positiven Zuwachs zu zeigen; beide Läufe im Befund zu nennen.
+- **Prüfung:** Die Summe der Fahrten über die Klassen ergibt die 7'739'652 Zürcher Abschnittsfahrten aus dem Befund
+  zu #33. Die Klassenmittel stimmen mit #18 überein (Abweichung höchstens 0.02 min). Tests, `ruff` und `marimo
+  check` laufen durch.
+- **Reihenfolge:** Die Hypothese war vor dem ersten Lauf gepusht, der Nachtrag vor dem zweiten. Der erste Lauf war
+  beim Nachtrag bekannt; das steht dort. Die Erwartungen sind nicht geändert.
+- **Übernommen/verworfen:** Verworfen: die Mindestzahl innerhalb dieses Pakets nach dem ersten Lauf zu ändern; sie
+  wurde in Issue #32 vom Team festgelegt. Verworfen (Haonan): der Vorschlag des Agenten, im zweiten Lauf weiter nach
+  dem Mittelwert zu ordnen.
