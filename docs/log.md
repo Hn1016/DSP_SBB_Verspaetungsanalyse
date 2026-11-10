@@ -1369,3 +1369,35 @@ August 2025 bis Juli 2026; `uv run build` hat Juli 2026 geladen und die Abschnit
   nachgeführt (er nannte noch den alten Zeitraum in `period.py`, Stand PR #34).
 - **Prüfung:** Tests (A4-Datentest pro Monat, Mai und Juni als erwarteter Fehlschlag), `ruff` und `marimo check`
   laufen durch. Die Zahl der Tage stimmt mit dem Kalender überein (365).
+
+## 2026-11-10 — Hypothese, Nachtrag: Rangliste mit Referenzwert, zweiter Lauf (Issue #23, vor dem zweiten Lauf notiert)
+
+Anlass: Der Zeitraum ist neu 1.8.2025 bis 31.7.2026 (Issue #33), die Mindestzahl ist neu festgelegt (Eintrag
+«Systematisch», Issue #32), und schwagia hat im Issue #23 verlangt, erst auf den neuen Daten zu rechnen. Die Hypothese
+vom 2026-11-10 oben (Commit `f9e690f`) nennt noch den alten Zeitraum und die Mindestzahl 20.
+
+- **Was schon bekannt ist (erster Lauf, nach `f9e690f`):** Notebook 07 lief einmal auf 13.7.2025 bis 30.6.2026 mit
+  mindestens 20 Fahrten. Klassenmittel 0 min +2.39 (22 Fahrten), 1 min +0.22, 2 min −0.13, 3 min −0.53, 4 min −0.71,
+  5+ min −0.78; 411 Abschnitte. (a) roh 3 Abschnitte mit höchstens 2 Minuten (Erwartung mindestens 4), mit
+  Referenzwert 0 (Erwartung höchstens 2); (b) 7 Abschnitte in beiden Top 10 (Erwartung höchstens 5). Etwa die Hälfte
+  beider Top 10 waren seltene Haltemuster mit 23 bis 122 Fahrten (Kommentar in Issue #32). Die Mindestzahl 100 wurde
+  in Kenntnis dieses Laufs festgelegt (Eintrag «Systematisch»). Der zweite Lauf ist nicht gerechnet.
+- **Erwartung:** unverändert (a) und (b) aus dem Issue, nicht an den ersten Lauf angepasst.
+- **Regeln für den zweiten Lauf:**
+  - Zeitraum 1.8.2025 bis 31.7.2026 (`period.py`).
+  - In die Rangliste kommt ein Abschnitt mit mindestens 100 gemessenen Fahrten und mindestens 30 Betriebstagen mit
+    Messung im Zeitraum (Eintrag «Systematisch») statt mindestens 20 Fahrten.
+  - Rang nach der Hauptkennzahl aus Issue #32 (Eintrag «Hauptkennzahl», Entscheid Haonan): Minuten Zuwachs im ganzen
+    Zeitraum, Mittel × Fahrten, statt nach dem Mittelwert wie in #14. Roh: Mittel der Streckenverspätung × Fahrten.
+    Mit Referenzwert: Mittel nach Abzug des Klassenmittels × Fahrten (Eintrag «Positiver Zuwachs»). Das Mittel pro
+    Fahrt steht als Begleitspalte daneben; pro Streckenkilometer fehlt, weil die Zuordnung zu data.sbb.ch offen ist
+    (A6).
+  - Sonst wie in der Hypothese oben: Richtungen getrennt, Klassen 0, 1, 2, 3, 4, 5 und mehr Minuten, Klassenmittel
+    über alle Zürcher Abschnittsfahrten des Zeitraums, Soll-Fahrzeit eines Abschnitts als Median.
+- **Entscheide des Agenten (im Review zu bestätigen):**
+  - Die Erwartungen (a) und (b) werden an den Top 10 nach der Hauptkennzahl geprüft. Geschrieben wurden sie für
+    Ranglisten nach dem Mittelwert; der Befund sagt das dazu.
+  - Verstärker und Absorber (Intervall über Tagesmittel, Eintrag «Systematisch») werden hier nicht bestimmt; das
+    gehört zum Pipeline-Schritt.
+  - Der Befund nennt beide Läufe, damit sichtbar bleibt, was der Wechsel von Zeitraum, Mindestzahl und Kennzahl
+    verändert.
