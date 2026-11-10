@@ -80,8 +80,8 @@ Offen:
 - **Raum:** Kanton Zürich, beide Halte eines Abschnitts im Kanton. LEB, MBC und ZB fahren nicht im Kanton Zürich;
   ein Ausschluss ist nicht nötig (Log «Raum»).
 - **Zeitraum:** 1.8.2025 bis 31.7.2026, zwölf volle Monate ohne fehlende Tage, mit dem Fahrplanwechsel vom
-  14.12.2025 (Log «Zeitraum»). Umsetzung in `period.py`: Issue #33. Bis dahin setzt `period.py` noch 13.7.2025 bis
-  30.6.2026 (Log 2026-11-08, Issue #30).
+  14.12.2025 (Log «Zeitraum»). `period.py` setzt diesen Zeitraum seit Issue #33 (vorher 13.7.2025 bis 30.6.2026,
+  Log 2026-11-08, Issue #30).
 - **Durchfahrten** zählen als Punkt: Eine Durchfahrt kann Halt A oder B eines Abschnitts sein (Log 2026-11-08,
   Issue #24). Als Halt werden sie nicht ausgewertet.
 - **Schwelle 80 % `REAL`:** bleibt als Vergleich der Rangliste mit und ohne Abschnitte unter 80 % (Log «Schwelle

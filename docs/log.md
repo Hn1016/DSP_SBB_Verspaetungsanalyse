@@ -1301,3 +1301,34 @@ Monate August 2025 bis Juni 2026 sind im Befund vom 2026-11-08 (#30) schon gepr�
   - (A4) Im Juli 2026 laufen höchstens 1 von 10'000 Schweizer Abschnitten in der Soll-Zeit rückwärts (Grenze des
     Datentests in `tests/test_data.py`). Liegt der Monat darüber, kommt er als bekannter Befund mit Begründung im Log
     zu Mai und Juni 2026 (`KNOWN_BACK_IN_TIME`).
+
+## 2026-11-10 — Befund: Zeitraum August 2025 bis Juli 2026, A3 und A4 im Juli 2026 (Issue #33)
+
+Gerechnet nach der Hypothese oben (Commit `bc33848`, gepusht vor dem Bauen), gezählt wie in
+`notebooks/06_zwoelf_monate.py` (A3) und im Datentest zur Reihenfolge (`quality.trip_structure`, A4). `period.py` setzt
+August 2025 bis Juli 2026; `uv run build` hat Juli 2026 geladen und die Abschnitte für den neuen Zeitraum gebaut.
+
+- **Fehlende Tage: gehalten.** `uv run build` gibt keine Warnung aus; der Datentest verlangt neu, dass die Daten am
+  1.8.2025 beginnen und am 31.7.2026 enden, und läuft durch (365 Tage).
+- **(A3) gehalten.** Juli 2026: 99.37 % `REAL` im Kanton Zürich (1'352'797 Ankünfte und Abfahrten an 31 Tagen),
+  Erwartung über 99 %.
+- **(A4) gehalten, knapp.** Juli 2026: 456 von 4'995'800 Schweizer Abschnitten laufen in der Soll-Zeit rückwärts,
+  0.91 von 10'000 (Grenze 1). Juli 2026 kommt darum nicht in `KNOWN_BACK_IN_TIME`. Zum Vergleich die übrigen Monate:
+  August 2025 bis April 2026 0.05 bis 0.52, Mai 2026 1.06, Juni 2026 1.49 (beide weiter als bekannter Befund markiert).
+- **Abschnittsfahrten im Kanton Zürich** (beide Halte im Kanton, aus `uv run build`): 7'739'652 im Zeitraum, davon
+  631'708 im Juli 2026. Für 13.7.2025 bis 30.6.2026 waren es 7'510'318 (Eintrag vom 2026-11-10 zu PR #31).
+- **Status in `docs/assumptions.md`:** A3 bleibt «gestützt», A4 bleibt «teilweise»; beide mit Verweis auf diesen
+  Eintrag.
+
+## 2026-11-10 — KI-Einsatz: Issue #33
+
+- **Aufgabe:** `period.py` auf August 2025 bis Juli 2026 setzen, Juli 2026 laden und prüfen.
+- **Mine:** das Issue mit den Erwartungen (schwagia), der Zeitraum (Team, Issue #32); Hypothese vor dem Bauen gepusht;
+  Platz für den Bau (Haonan): ZIP und Tagesdateien vom Juli 2025 und das alte Abschnitts-File gelöscht, weil sie
+  nicht mehr im Zeitraum liegen, und Neustart des Rechners, nachdem `uv run build` zweimal mit «No space left on
+  device» abbrach.
+- **Delegated:** Claude Code hat den Hypothesen-Eintrag aus dem Issue, die Änderung in `period.py` und
+  `tests/test_data.py`, die Zählungen und diese Einträge geschrieben, dazu im One-Pager den Satz zum Zeitraum
+  nachgeführt (er nannte noch den alten Zeitraum in `period.py`, Stand PR #34).
+- **Prüfung:** Tests (A4-Datentest pro Monat, Mai und Juni als erwarteter Fehlschlag), `ruff` und `marimo check`
+  laufen durch. Die Zahl der Tage stimmt mit dem Kalender überein (365).
