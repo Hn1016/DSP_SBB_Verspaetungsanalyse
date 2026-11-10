@@ -1147,3 +1147,26 @@ Anlass: zwei Fragen von schwagia im Review. Gerechnet nach dem Befund, beschreib
 - **Prüfung:** Die Zahlen im Notebook stimmen mit einer getrennten Zählung pro Monat überein. Mit der alten Grenze
   wären Mai und Juni rot; mit `xfail` laufen sie als erwarteter Fehlschlag, alle anderen Monate durch. Tests, `ruff`
   und `marimo check` laufen durch.
+
+## 2026-11-10 — Hypothese: Rangliste mit Referenzwert je Soll-Fahrzeit (Issue #23, vor der Analyse notiert)
+
+Anlass: Entscheidung zu Issue #18 (A7 widerlegt, die rohe Rangliste bevorzugt kurze Abschnitte). Basis: 13.7.2025 bis
+30.6.2026 (`period.py`, Beginn laut Eintrag vom 2026-11-08), Abschnittsfahrten aus `uv run build`
+(`sections.sections`, Regeln wie #14), beide Halte im Kanton Zürich laut Schnappschuss vom 2026-10-05.
+
+- **Erwartung (schwagia, im Issue):**
+  - (a) In der rohen Top 10 haben mindestens 4 Abschnitte eine Soll-Fahrzeit von höchstens 2 Minuten, in der Top 10
+    mit Referenzwert höchstens 2.
+  - (b) Höchstens 5 der Abschnitte aus der rohen Top 10 stehen auch in der Top 10 mit Referenzwert.
+- **Regeln aus dem Issue und aus #14 und #18:**
+  - Abschnitt = Paar (Halt A, Halt B), je Richtung getrennt. In die Rangliste kommt ein Abschnitt mit mindestens 20
+    gemessenen Fahrten im Zeitraum (vorläufig wie #14, bis «Regeln festlegen» sie neu setzt). Rang nach Mittelwert,
+    `rank()`, absteigend.
+  - Roh: Mittel der Streckenverspätung je Abschnitt. Mit Referenzwert: von jeder Abschnittsfahrt wird das Mittel
+    ihrer Klasse der Soll-Fahrzeit abgezogen, dann gemittelt. Klassen 1, 2, 3, 4, 5 und mehr Minuten; die
+    Klassenmittel über alle Zürcher Abschnittsfahrten desselben Zeitraums.
+  - Soll-Fahrzeit eines Abschnitts in den Tabellen und für (a): Median über seine Fahrten (wie #18).
+- **Ergänzt vom Agenten (im Review zu bestätigen):** Fahrten mit 0 Minuten Soll-Fahrzeit (Ankunft B in derselben
+  Minute wie Abfahrt A) kamen in der Woche von #18 nicht vor. Kommen sie im Zeitraum vor, bilden sie eine eigene
+  Klasse 0 mit eigenem Mittel, statt mit der Klasse 1 vermischt zu werden; ihre Anzahl steht im Befund. Für (a)
+  zählen sie zu «höchstens 2 Minuten».
