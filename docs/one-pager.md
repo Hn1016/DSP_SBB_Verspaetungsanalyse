@@ -1,7 +1,7 @@
 # One-Pager: Wo entstehen und wo verschwinden Verspätungen im Schweizer Bahnnetz?
 
 Stand: 2026-10-17, Schritt 2 und «Fertig» nachgeführt am 2026-10-29, Prüfungen an die Richtlinien v3 angeglichen am
-2026-11-01. Quellen: Aufgabenstellung (`docs/requirements.md`) und die Entscheidungen im Projektlog (`docs/log.md`).
+2026-11-01, Regeln für die Rangliste festgelegt am 2026-11-10 (Issue #32). Quellen: Aufgabenstellung (`docs/requirements.md`) und die Entscheidungen im Projektlog (`docs/log.md`).
 Was dort nicht entschieden ist, steht hier als **offen**.
 
 ## Warum (Why)
@@ -38,28 +38,54 @@ getrennt ausgewertet.
 absolut, pro Fahrt und pro Streckenkilometer; Stabilität der Rangliste über zufällig gezogene Zeitfenster und
 zwischen den beiden Fahrplänen (Rangkorrelation).
 
-Offen (vor der ersten Rangliste festzulegen, in einem eigenen Pull Request ohne Code):
-- Gilt ein Abschnitt je Richtung (A→B und B→A getrennt) oder richtungsunabhängig?
-- Was «systematisch» heisst: Mindestzahl gemessener Fahrten je Abschnitt und Zeitfenster und die Schwelle, ab der
-  ein Abschnitt Verstärker oder Absorber ist.
-- Wie der positive Verspätungszuwachs gerechnet wird (pro Fahrt nur positive Werte oder positive Mittelwerte je
-  Abschnitt) und welche der drei Normierungen die Rangliste für den Bericht bestimmt.
-- Die Zeitfenster: Einteilung der Tageszeiten, Wochentage und Jahreszeiten.
-- Ab welcher Rangkorrelation die Rangliste als stabil gilt, und Grösse und Anzahl der zufälligen Zeitfenster.
-- Der Referenzwert je Soll-Haltezeit für die Haltverspätung.
+**Regeln für die Rangliste (entschieden vom Team, Log 2026-11-10, Issue #32):**
+
+- **Richtung:** getrennt; A→B und B→A sind verschiedene Abschnitte (Log «Richtung»).
+- **Positiver Zuwachs:** Pro Abschnitt zählt das Mittel der Streckenverspätung nach Referenzwert je Soll-Fahrzeit
+  (Issue #23). Ist das Mittel positiv, trägt der Abschnitt Mittel × Fahrten bei; das Total ist die Summe über alle
+  Abschnitte mit positivem Mittel (Log «Positiver Zuwachs»).
+- **Hauptkennzahl:** absolut, Minuten Zuwachs im ganzen Zeitraum (Mittel × Fahrten). Pro Fahrt und pro
+  Streckenkilometer als Begleitspalten; der Vergleich mit der Baseline «sortiert nach Zugzahl» prüft, ob die
+  Rangliste nur Volumen und Länge abbildet (Log «Hauptkennzahl»).
+- **Systematisch:** mindestens 100 gemessene Fahrten und 30 Betriebstage mit Messung im Zeitraum, mindestens 20
+  Betriebstage pro Zeitfenster (*vorläufig bis A10*). Das 95-%-Konfidenzintervall des Mittels wird über die
+  Tagesmittel je Betriebstag gerechnet, nicht über Fahrten. Verstärker, wenn es ganz über 0 liegt und das Mittel
+  mindestens 0.25 min beträgt; Absorber, wenn es ganz unter 0 liegt und das Mittel höchstens −0.25 min beträgt; sonst
+  neutral (Log «Systematisch»).
+- **Zeitfenster** nach Soll-Abfahrt an A (*vorläufig bis A10*): Tageszeit Morgenspitze 6–9 Uhr, Tag 9–16,
+  Abendspitze 16–19, Abend/Nacht 19–6; Wochentag Montag–Freitag und Samstag/Sonntag; Jahreszeit meteorologisch
+  (Dez–Feb, Mär–Mai, Jun–Aug, Sep–Nov); Fahrplan 2025 (bis 13.12.2025) und 2026 (Log «Zeitfenster»).
+- **Stabil**, wenn die Spearman-Rangkorrelation zwischen den beiden Fahrplänen mindestens 0.7 beträgt und mindestens
+  7 der Top 10 in beiden vorkommen; über 20 Paare zufälliger 4-Wochen-Fenster ist der Median der Korrelation
+  mindestens 0.7. Die Erwartung kommt ins Paket Stabilitätsprüfung (Log «Stabilität»).
+
+Offen:
+- Der Referenzwert je Soll-Haltezeit für die Haltverspätung (A8).
 
 ## Wie (How)
 
 **Quellen:**
 
-- SBB IstDaten v2 von opentransportdata.swiss, Monatsarchive (Log 2026-10-05), verfügbar ab 2025-07. Der Zeitraum
-  ab 2025-07 enthält den Fahrplanwechsel im Dezember 2025.
+- SBB IstDaten v2 von opentransportdata.swiss, Monatsarchive (Log 2026-10-05), verfügbar ab 13.7.2025. Der
+  Zeitraum (siehe Eingrenzung) enthält den Fahrplanwechsel vom 14.12.2025.
 - Haltestellenliste (Service Points) mit Koordinaten, Schnappschuss mit Abrufdatum (Log 2026-10-05).
 - Von data.sbb.ch: Züge pro Streckenabschnitt (Auslastungsmass), Linie (Betriebspunkte), Kilometrierungspunkte.
   Noch nicht geladen.
 
 **Eingrenzung (entschieden, Log 2026-10-05 und 2026-10-06):** nur `PRODUKT_ID = 'Zug'`; nur Halte in der Schweiz
 (BPUIC 85…); nur `REAL` gilt als gemessen; Ausfälle bleiben in den Daten und werden ausgewiesen.
+
+**Eingrenzung (entschieden vom Team, Log 2026-11-10, Issue #32):**
+
+- **Raum:** Kanton Zürich, beide Halte eines Abschnitts im Kanton. LEB, MBC und ZB fahren nicht im Kanton Zürich;
+  ein Ausschluss ist nicht nötig (Log «Raum»).
+- **Zeitraum:** 1.8.2025 bis 31.7.2026, zwölf volle Monate ohne fehlende Tage, mit dem Fahrplanwechsel vom
+  14.12.2025 (Log «Zeitraum»). `period.py` setzt diesen Zeitraum seit Issue #33 (vorher 13.7.2025 bis 30.6.2026,
+  Log 2026-11-08, Issue #30).
+- **Durchfahrten** zählen als Punkt: Eine Durchfahrt kann Halt A oder B eines Abschnitts sein (Log 2026-11-08,
+  Issue #24). Als Halt werden sie nicht ausgewertet.
+- **Schwelle 80 % `REAL`:** bleibt als Vergleich der Rangliste mit und ohne Abschnitte unter 80 % (Log «Schwelle
+  80 % `REAL`»).
 
 **Schritte:**
 
@@ -77,13 +103,7 @@ Offen (vor der ersten Rangliste festzulegen, in einem eigenen Pull Request ohne 
 7. Prüfungen nach Abschnitt 3 der Richtlinien, dann Karte und Bericht.
 
 Offen:
-- Der Raum: ganzes Netz oder eine Region; ob Betreiber mit tiefer `REAL`-Abdeckung (LEB, MBC, ZB) ausgeschlossen
-  oder separat ausgewiesen werden.
-- Der genaue Analysezeitraum (zwölf Monate oder alles ab 2025-07).
-- Wie Halte (BPUIC) auf die Streckenabschnitte und Kilometrierung von data.sbb.ch abgebildet werden.
-- Durchfahrten: vorerst wie Halte ohne Fahrgastwechsel behandelt, nicht als Halt ausgewertet (Annahme,
-  Log 2026-10-06).
-- Ob die Schwelle von 80 % `REAL` für den Vergleich passt (Log 2026-10-25, vom Team zu bestätigen).
+- Wie Halte (BPUIC) auf die Streckenabschnitte und Kilometrierung von data.sbb.ch abgebildet werden (A6).
 
 ## Nicht-Ziele (Non-goals)
 
@@ -105,8 +125,5 @@ Offen:
 - Der Bericht nennt zu jedem Top-10-Eintrag, welche Art Massnahme infrage kommt, und offen auch widerlegte
   Hypothesen.
 - Nach `git clone` ergeben `uv sync` und die Befehle im README dieselben Ergebnisse aus denselben Rohdaten.
-
-Offen:
-- Ob jeder Abschnitt und Halt entweder einen Wert oder einen genannten Grund bekommt, warum er nicht bewertet wird
-  (z. B. zu wenige gemessene Fahrten), statt still zu entfallen. Entschieden ist bisher nur der Grund «nie
-  gemessen»: Diese Halte werden als Abdeckungslücke genannt (Log 2026-10-25).
+- Jeder Abschnitt und Halt bekommt einen Wert oder einen genannten Grund, warum er nicht bewertet wird («nie
+  gemessen», «zu wenige Fahrten»); nichts fällt still weg (Log 2026-11-10, Issue #32, «Wert oder Grund»).

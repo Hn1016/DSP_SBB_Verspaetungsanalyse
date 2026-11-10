@@ -1170,3 +1170,202 @@ Anlass: Entscheidung zu Issue #18 (A7 widerlegt, die rohe Rangliste bevorzugt ku
   Minute wie Abfahrt A) kamen in der Woche von #18 nicht vor. Kommen sie im Zeitraum vor, bilden sie eine eigene
   Klasse 0 mit eigenem Mittel, statt mit der Klasse 1 vermischt zu werden; ihre Anzahl steht im Befund. Für (a)
   zählen sie zu «höchstens 2 Minuten».
+
+## 2026-11-10 — Entscheidung: Raum (Issue #32)
+
+- **Entscheidung (Team: schwagia, Hn1016):** Die Rangliste umfasst den Kanton Zürich; ein Abschnitt zählt, wenn beide
+  Halte im Kanton liegen (Kanton aus dem festen Schnappschuss der Haltestellenliste). Bisher war der Kanton Zürich nur
+  für einzelne Auswertungen gesetzt (Hypothese zu Issue #14, Befund zu Issue #30), nicht als Raum der Rangliste.
+- **Betreiber mit tiefer `REAL`-Abdeckung:** Der Eintrag vom 2026-10-05 (H1) liess offen, ob LEB, MBC und ZB
+  ausgeschlossen oder separat ausgewiesen werden. Beides entfällt: Laut Team fahren LEB, MBC und ZB nicht im Kanton
+  Zürich, ein Ausschluss ist nicht nötig.
+- **Alternativen:** keine erwogen.
+- **Begründung (Team):** Der Kanton Zürich hat das dichteste S-Bahn-Netz der Schweiz mit dem Knoten Zürich HB, also
+  viele kurze Abschnitte, auf denen Verspätungen entstehen und verschwinden. Zwölf Monate bleiben lokal rechenbar. Die
+  Region ist in Issue #14 und #30 geprüft: In jedem Monat sind über 99 % der Ankünfte und Abfahrten `REAL` (Befund zu
+  Issue #30).
+
+## 2026-11-10 — Entscheidung: Zeitraum (Issue #32)
+
+- **Entscheidung (Team: schwagia, Hn1016):** 1.8.2025 bis 31.7.2026: zwölf volle Monate ohne fehlende Tage (365 Tage),
+  jede Jahreszeit genau einmal, mit dem Fahrplanwechsel vom 14.12.2025. Fahrplan 2025 vom 1.8. bis 13.12.2025
+  (135 Tage), Fahrplan 2026 vom 14.12.2025 bis 31.7.2026 (230 Tage).
+- **Alternativen:**
+  - 13.7.2025 bis 30.6.2026 (Entscheidung zu Issue #30, zurzeit in `period.py`): verworfen, weil der 1. bis 12.7.2025
+    fehlen.
+  - 1.8.2025 bis 30.6.2026: verworfen, weil dann der Juli ganz fehlt.
+- **Umsetzung in `period.py`:** Issue #33. Bis dahin rechnen `uv run build` und `sections` mit 13.7.2025 bis
+  30.6.2026.
+- **Abweichung vom Issue:** Das Issue verlangte, den Zeitraum 13.7.2025 bis 30.6.2026 aus Issue #30 zu übernehmen.
+
+## 2026-11-10 — Entscheidung: Richtung (Issue #32)
+
+- **Entscheidung (Team: schwagia, Hn1016):** A→B und B→A sind verschiedene Abschnitte.
+- **Alternative:** beide Richtungen zusammenlegen, verworfen, weil die Unterschiede zwischen den Richtungen
+  verschwinden.
+- **Begründung:** In der ersten Rangliste unterschieden sich die Richtungen deutlich (Befund zu Issue #14: Thalwil →
+  Zürich Enge +1.09 min, Zürich Enge → Thalwil +0.74 min). Massnahmen wie Fahrzeitreserven gelten je Richtung.
+
+## 2026-11-10 — Entscheidung: Positiver Zuwachs (Issue #32)
+
+- **Entscheidung (Team: schwagia, Hn1016):** Pro Abschnitt zählt das Mittel der Streckenverspätung nach Referenzwert
+  je Soll-Fahrzeit (A7, berechnet in Issue #23). Ist das Mittel positiv, trägt der Abschnitt Mittel × Fahrten bei. Das
+  Total des positiven Verspätungszuwachses ist die Summe über alle Abschnitte mit positivem Mittel; der Anteil der
+  Top 10 bezieht sich auf dieses Total.
+- **Alternative:** pro Fahrt nur positive Werte zählen, verworfen, weil zufälliges Rauschen dann auch auf neutralen
+  Abschnitten als Zuwachs erscheint.
+- Für die Halte gilt der Referenzwert je Soll-Haltezeit (A8); er bleibt offen und gehört nicht zu Issue #23.
+
+## 2026-11-10 — Entscheidung: Hauptkennzahl (Issue #32)
+
+- **Entscheidung (Team: schwagia, Hn1016):** Die Rangliste ordnet absolut, nach Minuten Zuwachs im ganzen Zeitraum
+  (Mittel × Fahrten).
+- **Alternativen:** pro Fahrt oder pro Streckenkilometer als Hauptkennzahl. Beide kommen als Begleitspalten dazu, weil
+  die absolute Rangliste sonst nur Volumen und Länge abbilden könnte. Ob sie das tut, prüft später der Vergleich mit
+  der Baseline «sortiert nach Zugzahl».
+- **Begründung:** Die Aufgabenstellung fragt nach dem grössten Netzeffekt.
+
+## 2026-11-10 — Entscheidung: Systematisch (Issue #32)
+
+- **Entscheidung (Team: schwagia, Hn1016; Intervall und Mindestzahl nach Review Hn1016 korrigiert):**
+  - Mindestzahl: Bewertet wird ein Abschnitt mit mindestens 100 gemessenen Fahrten und mindestens 30 Betriebstagen mit
+    Messung im Zeitraum, in einem Zeitfenster mit mindestens 20 Betriebstagen mit Messung. Die Mindestzahlen sind
+    vorläufig, bis A10 («Genug Fahrten») geprüft ist.
+  - Schwelle: Pro Abschnitt und Betriebstag wird ein Tagesmittel der Streckenverspätung gebildet, das
+    95-%-Konfidenzintervall des Mittels über die Tagesmittel gerechnet. Verstärker, wenn das Intervall ganz über 0
+    liegt und das Mittel mindestens 0.25 min beträgt; Absorber, wenn es ganz unter 0 liegt und das Mittel höchstens
+    −0.25 min beträgt; sonst neutral.
+- **Begründung der Schwelle (Review Hn1016):** Fahrten am selben Tag sind nicht unabhängig, eine Störung trifft viele
+  Züge. Über Fahrten gerechnet wäre das Intervall bei Hunderten Fahrten zu schmal, und fast jeder Abschnitt wäre
+  Verstärker oder Absorber. Die 0.25 min verlangen einen praktisch relevanten Effekt.
+- **Begründung der Mindestzahl:** Hn1016 hat in Issue #32 kommentiert (aus Notebook 07 zu Issue #23): Mit der
+  vorläufigen Mindestzahl von 20 Fahrten aus Issue #14 kommen über ein Jahr 411 Zürcher Abschnitte in die Rangliste,
+  und etwa die Hälfte der Top 10 hat nur 23 bis 122 Fahrten mit seltenen Haltemustern (z. B. Extrazüge, S7 ohne
+  Zwischenhalt, Nacht-S-Bahn). Die 20 Fahrten waren für eine Woche gedacht. 100 Fahrten im Jahr sind im Mittel rund
+  zwei pro Woche, darunter gibt es keinen regelmässigen Verkehr. Die Betriebstage braucht das Intervall über Tage.
+  Die 100 wurden festgelegt, nachdem die beschreibende Top 10 aus Issue #23 bekannt war (Kommentar Hn1016 in
+  Issue #32), vor der Interpretation, aber nicht ohne Blick auf ein Ergebnis.
+- **Alternativen:**
+  - Intervall über Fahrten: verworfen, siehe Begründung der Schwelle.
+  - Bootstrap über Tage: erwogen, verworfen, weil das Tagesmittel einfacher ist und denselben Punkt behandelt.
+  - Nur eine feste Schwelle (z. B. Mittel > 0.1 min): verworfen, weil sie allein nicht von der Zahl der Messungen
+    abhängt. Die 0.25 min gelten darum nur zusätzlich zum Intervall.
+  - Mindestzahl pro Zeitfenster in Fahrten (20 Fahrten, so im ersten Stand dieses Eintrags): ersetzt durch
+    Betriebstage, weil das Intervall über Tage gerechnet wird.
+
+## 2026-11-10 — Entscheidung: Zeitfenster (Issue #32)
+
+- **Entscheidung (Team: schwagia, Hn1016), vorläufig bis A10:** Zeitfenster nach der Soll-Abfahrt an A.
+  - Tageszeit: Morgenspitze 6–9 Uhr, Tag 9–16, Abendspitze 16–19, Abend/Nacht 19–6.
+  - Wochentag: Montag–Freitag und Samstag/Sonntag.
+  - Jahreszeit, meteorologisch: Winter Dez–Feb, Frühling Mär–Mai, Sommer Jun–Aug, Herbst Sep–Nov.
+  - Fahrplan: 2025 (bis 13.12.2025) und 2026.
+- **Alternativen:** keine erwogen.
+
+## 2026-11-10 — Entscheidung: Stabilität (Issue #32)
+
+- **Entscheidung (Team: schwagia, Hn1016):** Die Rangliste gilt als stabil, wenn
+  - die Spearman-Rangkorrelation zwischen den beiden Fahrplänen mindestens 0.7 beträgt und mindestens 7 der Top 10 in
+    beiden vorkommen, und
+  - über 20 Paare zufälliger 4-Wochen-Fenster der Median der Korrelation mindestens 0.7 beträgt.
+- Hier wird nur die Schwelle festgelegt. Die Erwartung und wie die Fenster gezogen werden, gehören ins Paket
+  Stabilitätsprüfung.
+- **Alternativen:** keine erwogen.
+
+## 2026-11-10 — Entscheidung: Wert oder Grund (Issue #32)
+
+- **Entscheidung (Team: schwagia, Hn1016):** Jeder Abschnitt und Halt bekommt einen Wert oder einen genannten Grund,
+  warum er nicht bewertet wird («nie gemessen», «zu wenige Fahrten»). Nichts fällt still weg. Bisher war nur der Grund
+  «nie gemessen» entschieden (Log 2026-10-25).
+- **Alternativen:** keine erwogen.
+
+## 2026-11-10 — Entscheidung: Schwelle 80 % `REAL` (Issue #32)
+
+- **Entscheidung (Team: schwagia, Hn1016):** Die Schwelle aus dem Log vom 2026-10-25 bleibt: Die Rangliste wird mit
+  und ohne Abschnitte unter 80 % `REAL` verglichen.
+- **Alternative:** die Schwelle streichen, weil im Kanton Zürich über 99 % der Ankünfte und Abfahrten `REAL` sind
+  (Befund zu Issue #30). Verworfen, weil erst der Vergleich mit und ohne Schwelle belegt, dass sie nichts verändert.
+
+## 2026-11-10 — KI-Einsatz: Issue #32
+
+- **Aufgabe:** die Regeln für die Rangliste in den One-Pager und in je einen Log-Eintrag übernehmen, ohne Code.
+- **Mine:** das Issue; alle Entscheide (schwagia, Hn1016): Raum, Zeitraum, Durchfahrten als Punkt (Verweis auf die
+  Entscheidung zu Issue #24), Richtung, positiver Zuwachs, Hauptkennzahl, Systematisch, Zeitfenster, Stabilität, Wert
+  oder Grund, Schwelle 80 % `REAL`, je mit Alternativen und Begründung; was offen bleibt (A8, A6, Hauptleserin); die
+  Korrekturen am Plan (schwagia): Punkt «positiver Zuwachs» meint den Referenzwert je Soll-Fahrzeit (A7, Issue #23),
+  nicht A8; zum Raum nur Alternativen aus dem Log; die Alternative zur Schwelle 80 % `REAL`; die Begründungen zu Raum
+  und Mindestzahl (Kommentar Hn1016 in Issue #32).
+  Nach Review Hn1016 (Entscheide des Teams): das Konfidenzintervall über Tagesmittel statt über Fahrten, mit
+  mindestens ±0.25 min für Verstärker und Absorber; die Mindestzahl mit mindestens 30 Betriebstagen im Zeitraum und
+  20 Betriebstagen pro Zeitfenster statt 20 Fahrten; der Satz, dass die 100 nach Kenntnis der beschreibenden Top 10
+  aus Issue #23 festgelegt wurden.
+- **Delegated:** Claude Code hat den Plan, die Änderungen im One-Pager und diese Einträge geschrieben, aus den Vorgaben
+  des Teams. Entscheide des Agenten: Gliederung der Einträge (ein Eintrag pro Regel), die Tageszahlen je Fahrplan im
+  Eintrag «Zeitraum» (nachgerechnet), der Hinweis, dass `period.py` bis Issue #33 den alten Zeitraum setzt.
+- **Prüfung:** Im One-Pager steht unter «Was» und «Wie» keiner der Punkte aus dem Issue mehr als offen; offen sind nur
+  A8, A6 und die Hauptleserin. Jeder Verweis im One-Pager hat einen Eintrag mit diesem Titel. Kein Code geändert.
+  `ruff` läuft durch, die Tests ausser `tests/test_data.py` ebenfalls (34). Die Datentests scheitern lokal (23),
+  weil auf diesem Rechner nur die Tagesdateien vom September 2026 gebaut sind, nicht die zwölf Monate aus
+  `period.py`; mit diesem PR hat das nichts zu tun, er ändert nur `docs/`.
+- **Übernommen/verworfen:** Verworfen im Plan: den Punkt «positiver Zuwachs» auf den Referenzwert je Soll-Haltezeit
+  (A8) zu beziehen (Korrektur schwagia, siehe «Mine»); zum Raum die Alternative «ganzes Netz» zu nennen, weil sie
+  nicht im Log steht.
+
+## 2026-11-10 — Hypothese: Zeitraum August 2025 bis Juli 2026, A3 und A4 im Juli 2026 (Issue #33, vor der Analyse notiert)
+
+Anlass: Entscheidung zum Analysezeitraum in Issue #32 (1.8.2025 bis 31.7.2026: zwölf volle Monate ohne fehlende
+Tage, jede Jahreszeit genau einmal, Fahrplanwechsel vom 14.12.2025 enthalten). Neu dazu kommt nur Juli 2026; die
+Monate August 2025 bis Juni 2026 sind im Befund vom 2026-11-08 (#30) schon geprüft. Gezählt wie dort
+(`notebooks/06_zwoelf_monate.py`, Hypothese vom 2026-11-08).
+
+- **Erwartung (schwagia, im Issue):**
+  - Im Archiv fehlt kein Tag des Zeitraums; `uv run build` gibt keine Warnung über fehlende Tage aus.
+  - (A3) Der `REAL`-Anteil im Kanton Zürich liegt im Juli 2026 über 99 %.
+  - (A4) Im Juli 2026 laufen höchstens 1 von 10'000 Schweizer Abschnitten in der Soll-Zeit rückwärts (Grenze des
+    Datentests in `tests/test_data.py`). Liegt der Monat darüber, kommt er als bekannter Befund mit Begründung im Log
+    zu Mai und Juni 2026 (`KNOWN_BACK_IN_TIME`).
+
+## 2026-11-10 — Befund: Zeitraum August 2025 bis Juli 2026, A3 und A4 im Juli 2026 (Issue #33)
+
+Gerechnet nach der Hypothese oben (Commit `bc33848`, gepusht vor dem Laden und Zählen), gezählt wie in
+`notebooks/06_zwoelf_monate.py` (A3) und im Datentest zur Reihenfolge (`quality.trip_structure`, A4). `period.py` setzt
+August 2025 bis Juli 2026; `uv run build` hat Juli 2026 geladen und die Abschnitte für den neuen Zeitraum gebaut.
+
+- **Reihenfolge (Review PR #35, schwagia):** Das ZIP von Juli 2026 wurde schon vor dem Hypothesen-Commit geladen
+  (Manifest 18:50 UTC, also 19:50; Commit 19:54:03), direkt über `sbb_delays.download`, nicht über `uv run build`;
+  dabei wurde nichts geöffnet oder gezählt. `period.py` und der erste Lauf von `uv run build` kamen nach dem Commit:
+  Die Tagesdateien von Juli 2026 sind zwischen 19:54:23 und 19:56:35 geschrieben. Dieser Lauf und ein zweiter brachen
+  beim Schritt `sections` mit «No space left on device» ab; gezählt wurde erst nach dem dritten Lauf.
+- **Fehlende Tage: gehalten.** `uv run build` gibt keine Warnung aus; der Datentest verlangt neu, dass die Daten am
+  1.8.2025 beginnen und am 31.7.2026 enden, und läuft durch (365 Tage).
+- **(A3) gehalten.** Juli 2026: 99.37 % `REAL` im Kanton Zürich (1'352'797 Ankünfte und Abfahrten an 31 Tagen),
+  Erwartung über 99 %.
+- **(A4) gehalten, knapp.** Juli 2026: 456 von 4'995'800 Schweizer Abschnitten laufen in der Soll-Zeit rückwärts,
+  0.91 von 10'000 (Grenze 1). Juli 2026 kommt darum nicht in `KNOWN_BACK_IN_TIME`. Zum Vergleich die übrigen Monate:
+  August 2025 bis April 2026 0.05 bis 0.52, Mai 2026 1.06, Juni 2026 1.49 (beide weiter als bekannter Befund markiert).
+  - Was die 456 sind (Review PR #35, beschreibend, nach dem Befund gezählt wie in Notebook 06, Abschnitt «A4:
+    Widersprüche und Abschnitte», auf Juli 2026 eingeschränkt, nicht im Notebook): nicht dieselben Umleitungen wie im
+    Mai und Juni. 417 der 456 Schritte haben eine ausgefallene Zeile; 331 davon sind IR Voralpen-Express (SOB)
+    zwischen Rotkreuz und Küssnacht am Rigi, 62 RE33 Lancy-Pont-Rouge → Genève-Aéroport, beide ausserhalb des
+    Kantons. Die 39 ohne ausgefallene Zeile liegen fast alle bei der RBS (S8 um Bern).
+  - Im Kanton Zürich: 20 Schritte zwischen zwei Zürcher Halten, alle 20 mit ausgefallener Zeile (10 davon S7 Zürich
+    Flughafen → Kloten, 8 S12 ab Zürich Oerlikon). Von 631'708 Zürcher Abschnittsfahrten im Juli liegen 20 an einem
+    solchen Schritt, keine an einem Schritt ohne ausgefallene Zeile. Die Begründung aus dem Eintrag zu PR #31
+    (`sections` bleibt unverändert) gilt damit auch für Juli 2026.
+- **Abschnittsfahrten im Kanton Zürich** (beide Halte im Kanton, aus `uv run build`): 7'739'652 im Zeitraum, davon
+  631'708 im Juli 2026. Für 13.7.2025 bis 30.6.2026 waren es 7'510'318 (Eintrag vom 2026-11-10 zu PR #31).
+- **Status in `docs/assumptions.md`:** A3 bleibt «gestützt», A4 bleibt «teilweise»; beide mit Verweis auf diesen
+  Eintrag.
+
+## 2026-11-10 — KI-Einsatz: Issue #33
+
+- **Aufgabe:** `period.py` auf August 2025 bis Juli 2026 setzen, Juli 2026 laden und prüfen.
+- **Mine:** das Issue mit den Erwartungen (schwagia), der Zeitraum (Team, Issue #32); Hypothese vor dem Laden und Zählen gepusht;
+  Platz für den Bau (Haonan): ZIP und Tagesdateien vom Juli 2025 und das alte Abschnitts-File gelöscht, weil sie
+  nicht mehr im Zeitraum liegen, und Neustart des Rechners, nachdem `uv run build` zweimal mit «No space left on
+  device» abbrach.
+- **Delegated:** Claude Code hat den Hypothesen-Eintrag aus dem Issue, die Änderung in `period.py` und
+  `tests/test_data.py`, die Zählungen und diese Einträge geschrieben, dazu im One-Pager den Satz zum Zeitraum
+  nachgeführt (er nannte noch den alten Zeitraum in `period.py`, Stand PR #34).
+- **Prüfung:** Tests (A4-Datentest pro Monat, Mai und Juni als erwarteter Fehlschlag), `ruff` und `marimo check`
+  laufen durch. Die Zahl der Tage stimmt mit dem Kalender überein (365).
