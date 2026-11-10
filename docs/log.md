@@ -997,3 +997,153 @@ Mo 7.9. bis So 13.9.2026, Kanton Zürich).
 - **Übernommen/verworfen:** Verworfen im Plan: ein `ModuleNotFoundError` als erstes Scheitern (ersetzt durch den Stub,
   Entscheid schwagia) und `data/processed/sections.parquet` ohne Zeitraum (Entscheid schwagia). Der Vorschlag, die
   Ordnergrenze nur im Log zu nennen, ist durch den Filter auf den Zeitraum ersetzt.
+
+## 2026-11-08 — Hypothese: Zwölf Monate, Annahmen A3 und A4, Halte im Schnappschuss (Issue #30, vor der Analyse notiert)
+
+Anlass: Entscheidung zu Issue #20 (A3 und A4 beim Laden der zwölf Monate prüfen) und offene Prüfung aus PR #27. Daten:
+1.7.2025 bis 30.6.2026 (`period.py`), Parquet aus `uv run build`. Fahrplan 2025 bis 13.12.2025, Fahrplan 2026 ab
+14.12.2025. Kanton aus dem festen Schnappschuss der Haltestellenliste (2026-10-05).
+
+- **Erwartung (schwagia, im Issue):**
+  - (A3) Der `REAL`-Anteil im Kanton Zürich liegt in jedem Monat über 95 % und unterscheidet sich zwischen den beiden
+    Fahrplänen um weniger als 1 Prozentpunkt (H1: September 2026 Schweiz 96.2 %, Tage 95.5–96.7 %).
+  - (A4) In jedem Monat widerspricht die `ZEILE`-Reihenfolge bei weniger als 0.1 % der Fahrten der Soll-Zeit (H2:
+    0 Widersprüche am 8.9.2026).
+  - (Halte) Kein im Kanton Zürich bedienter Halt fehlt im Schnappschuss (Vorprüfung mit der Versionsgeschichte in
+    PR #27, jetzt auf den echten Daten).
+- **Wie gezählt wird (Entscheid des Agenten, im Review zu bestätigen):**
+  - (A3) wie H1 (`quality.status_coverage`): je Ankunft und Abfahrt mit Soll-Zeit an einem nicht ausgefallenen Halt
+    eine Zeile, Anteil mit Status `REAL`; nur Halte, die im Schnappschuss im Kanton Zürich liegen. Der Vergleich der
+    Fahrpläne nimmt alle Ereignisse je Fahrplan zusammen.
+  - (A4) Eine Fahrt widerspricht, wenn bei zwei aufeinanderfolgenden Zeilen (nach `ZEILE`) die erste Soll-Zeit der
+    späteren Zeile vor der letzten Soll-Zeit der früheren liegt. Gezählt über alle Fahrten des Monats, wie geladen.
+  - (Halte) Ob ein Halt, der im Schnappschuss fehlt, in Zürich liegt, steht gerade nicht im Schnappschuss. Darum wird
+    geprüft, ob jede Schweizer `BPUIC` (85…) der zwölf Monate im Schnappschuss steht; fehlende Halte stehen mit Anzahl
+    Fahrten und Name im Befund, und es wird dort festgestellt, ob einer davon in Zürich liegt.
+
+## 2026-11-08 — Entscheidung: Zeitraum 13.7.2025 bis 30.6.2026 (Issue #30)
+
+- **Entscheidung:** `period.py` setzt die Monate Juli 2025 bis Juni 2026. Die Daten beginnen am 13.7.2025: Das
+  Monatsarchiv Juli 2025 enthält nur die Tage 13. bis 31. Juli (Beleg: Dateiliste des ZIPs und die Warnung von
+  `uv run build` aus PR #25: «im Archiv fehlen Tage des Zeitraums: 2025-07-01, …, 2025-07-12»). Die Lücke liegt im
+  Archiv, nicht beim Laden. Damit 353 Tage, Fahrplan 2025 vom 13.7. bis 13.12.2025 (154 Tage), Fahrplan 2026 vom 14.12.2025 bis
+  30.6.2026 (199 Tage). Das Issue nannte 166 Tage für den Fahrplan 2025, ausgehend vom 1.7.
+- **Begründung:** Beide Fahrpläne mit dem Fahrplanwechsel vom 14.12.2025 und alle Jahreszeiten, jeder Monat einmal.
+- **Alternativen:** Juli bis Juli (Juli doppelt) und Juli bis Mai (nur elf Monate), beide im Issue verworfen.
+  August 2025 bis Juli 2026 (zwölf volle Monate, 365 Tage) verworfen (Entscheid Haonan): grössere Abweichung vom
+  Issue und ein weiterer Download von 1.4 GB.
+
+## 2026-11-08 — Entscheidung: `load` liest auch Tagesdateien ohne `SLOID` (Issue #30)
+
+- **Befund:** Die Tagesdateien vom 13.7. bis 12.10.2025 haben 21 Spalten, ab dem 13.10.2025 22: Die Spalte `SLOID`
+  kam am 13.10.2025 dazu (Beleg: Kopfzeilen aller Tagesdateien der zwölf Archive). `load` brach am ersten Tag ab.
+- **Entscheidung:** Fehlt `SLOID`, schreibt `load` die Spalte leer (`NULL`), damit alle Tage dasselbe Schema haben
+  (`load.select_typed`, ein Test mit einer Datei ohne `SLOID`). Keine Auswertung verwendet `SLOID`.
+- **Abweichung vom Issue:** Das Issue schloss Änderungen an `load` aus. Ohne die Änderung lassen sich die Monate vor
+  dem 13.10.2025 nicht laden (Entscheid Haonan: im selben PR statt als eigenes Paket).
+
+## 2026-11-08 — Befund: Zwölf Monate, Annahmen A3 und A4, Halte im Schnappschuss (Issue #30)
+
+Berechnet in `notebooks/06_zwoelf_monate.py` nach der Hypothese oben (Commit `ed40418`, gepusht 2026-11-08 17:55 UTC,
+vor dem Laden). Daten aus `uv run build`, 13.7.2025 bis 30.6.2026.
+
+| Monat | Tage | `REAL` Kanton Zürich | Fahrten | Fahrten mit Widerspruch | Anteil |
+|---|---|---|---|---|---|
+| 2025-07 | 19 | 99.50 % | 303'785 | 257 | 0.085 % |
+| 2025-08 | 31 | 99.22 % | 491'961 | 336 | 0.068 % |
+| 2025-09 | 30 | 99.62 % | 475'348 | 316 | 0.066 % |
+| 2025-10 | 31 | 99.62 % | 475'898 | 469 | 0.099 % |
+| 2025-11 | 30 | 99.70 % | 458'800 | 86 | 0.019 % |
+| 2025-12 | 31 | 99.72 % | 475'180 | 250 | 0.053 % |
+| 2026-01 | 31 | 99.71 % | 484'098 | 237 | 0.049 % |
+| 2026-02 | 28 | 99.61 % | 444'274 | 231 | 0.052 % |
+| 2026-03 | 31 | 99.56 % | 487'669 | 436 | 0.089 % |
+| 2026-04 | 30 | 99.55 % | 468'966 | 309 | 0.066 % |
+| 2026-05 | 31 | 99.25 % | 484'176 | 756 | 0.156 % |
+| 2026-06 | 30 | 99.48 % | 470'809 | 877 | 0.186 % |
+
+- **(A3) gehalten.** Jeder Monat liegt über 95 % (tiefster Wert 99.22 %, August 2025). Fahrplan 2025: 99.55 % von
+  7'027'903 Ereignissen, Fahrplan 2026: 99.55 % von 9'046'132; Unterschied 0.00 Prozentpunkte. Der Kanton Zürich liegt
+  damit deutlich über dem Schweizer Wert aus H1 (96.2 %), mit dem die Erwartung begründet war.
+- **(A4) nicht gehalten.** Zehn Monate liegen unter 0.1 %, Mai 2026 (0.156 %) und Juni 2026 (0.186 %) darüber. Die
+  Erwartung stützte sich auf H2 («0 Widersprüche am 8.9.2026»); H2 hatte nur Halte in derselben Soll-Minute mit den
+  Ist-Zeiten verglichen, nicht jede Soll-Zeit, die Zahlen sind also nicht direkt vergleichbar. Was die Widersprüche
+  sind (beschreibend, nach dem Befund gerechnet, nicht im Notebook):
+  - 4'614 Schritte in 4'560 Fahrten im ganzen Zeitraum, an jedem Tag im Mai und Juni mindestens einer. Etwa die
+    Hälfte betrifft Halte im Ausland (SNCF, vor allem RB und TER bei Neuenburg (Baden): 1'974 Fahrten); 2'379 Schritte
+    liegen zwischen zwei Schweizer Halten, 1'316 zwischen zwei Halten im Kanton Zürich, davon 1'029 im Mai und Juni,
+    am häufigsten S7 bei Zürich Flughafen.
+  - Median 2 Minuten rückwärts, 90 % bis 15 Minuten.
+  - Bei 186 Schritten sind beide Zeiten gemessen; bei 108 davon laufen auch die Ist-Zeiten rückwärts. Dort stimmt die
+    `ZEILE`-Reihenfolge nicht mit der gefahrenen Reihenfolge überein, nicht nur die Soll-Zeit.
+  - Der Schritt `sections` verwirft Abschnitte mit rückwärts laufender Soll-Zeit bereits: Im Abschnitts-File des
+    Zeitraums hat keine Abschnittsfahrt eine negative Soll-Fahrzeit. Ob eine falsche Reihenfolge andere Abschnitte
+    erzeugt, deren Soll-Zeit vorwärts läuft, ist im Review nachgeprüft (Eintrag 2026-11-10).
+  - Der Datentest zur Reihenfolge (`tests/test_data.py`, höchstens 1 von 10'000 Schweizer Abschnitten rückwärts)
+    zeigt dasselbe Muster: pro Monat 0.05 bis 0.5 von 10'000, im Mai 2026 1.1 und im Juni 2026 1.5. Er läuft jetzt pro
+    Monat und führte Mai und Juni zuerst mit einer eigenen Obergrenze von 2 von 10'000 (Entscheid Haonan); im Review
+    ersetzt (Eintrag 2026-11-10).
+- **(Halte) gehalten.** Jede Schweizer `BPUIC` des Zeitraums steht im Schnappschuss vom 2026-10-05, auch ausserhalb
+  von Zürich; es fehlt kein Halt. Die Vorprüfung in PR #27 (Aigle-Hôpital) betraf keinen Halt in den Bahndaten.
+- **Status in `docs/assumptions.md`:** A3 «gestützt», Evidenz «hoch» (für den Kanton Zürich); A4 «teilweise»,
+  Evidenz «mittel» (10 von 12 Monaten). Die Tabelle ist neu sortiert.
+- **Entscheidung (Haonan, 2026-11-08, Vorschlag des Agenten übernommen):** Die Rangliste bleibt auf den Abschnitten
+  nach `ZEILE`; Abschnitte mit rückwärts laufender Soll-Zeit verwirft `sections` schon. Die Häufung im Mai und Juni
+  2026 (S7 bei Zürich Flughafen) wird bei A5 («Gleicher Weg») geprüft, weil sie nach geänderten Laufwegen aussieht.
+
+## 2026-11-08 — KI-Einsatz: Issue #30
+
+- **Aufgabe:** zwölf Monate laden, A3, A4 und die Halte im Schnappschuss prüfen, Zeitraum festlegen.
+- **Mine:** das Issue mit den drei Erwartungen (schwagia); die Entscheide (Haonan): `SLOID`-Korrektur im selben PR;
+  Zeitraum als Monate Juli 2025 bis Juni 2026 mit Beginn am 13.7.; Hypothese vor dem Laden gepusht; Platz für den
+  Download (ZIP September 2026 gelöscht, Neustart des Rechners); Mai und Juni 2026 im Datentest als bekannter Befund
+  mit Obergrenze statt einer Prüfung über den ganzen Zeitraum, die die zwei Monate verdeckt hätte; die Entscheidung im
+  Befund (Vorschlag des Agenten übernommen).
+- **Delegated:** Claude Code hat den Hypothesen-Eintrag aus dem Issue, `period.py`, die Korrektur in `load.py` mit
+  Test, die Anpassung von `tests/test_build.py`, das Notebook 06, die Beschreibung der Widersprüche, die Einträge in
+  `assumptions.md` und diese Einträge geschrieben. Entscheide des Agenten: wie gezählt wird (im Hypothesen-Eintrag,
+  vor dem Lauf); die Prüfung «Halte» über alle Schweizer `BPUIC`, weil der Kanton eines fehlenden Halts nicht
+  bekannt ist; `tests/test_build.py` setzt den Zeitraum auf September 2026, weil die Tests sonst vom Zeitraum in
+  `period.py` abhängen; die Datentests prüfen Lücken nur im Zeitraum (im Ordner liegen weiter die Tage vom September
+  2026 für die Notebooks 03 bis 05) und die Reihenfolge pro Monat, weil die Abfrage über den ganzen Zeitraum mehr als
+  10 GB Platz auf der Festplatte brauchte und mit «No space left on device» abbrach; der Vorschlag zur Entscheidung.
+- **Prüfung:** Der neue Test in `tests/test_load.py` schlägt mit dem alten `load` fehl und läuft mit der Korrektur
+  durch. Die Tage je Monat stimmen mit den Dateilisten der Archive überein (19 im Juli, sonst Kalendertage). Tests,
+  `ruff` und `marimo check` laufen durch.
+- **Übernommen/verworfen:** Nicht übernommen: die Widersprüche nach dem Befund nur zwischen Schweizer Halten zu
+  zählen; das hätte die Regel an das Ergebnis angepasst. Die Aufteilung steht nur beschreibend im Befund.
+
+## 2026-11-10 — Entscheidung: A4-Widersprüche sind meist Umleitungen, Datentest ohne eigene Obergrenze (Review PR #31)
+
+Anlass: zwei Fragen von schwagia im Review. Gerechnet nach dem Befund, beschreibend, in `notebooks/06_zwoelf_monate.py`
+(Abschnitt «A4: Widersprüche und Abschnitte»); keine neue Erwartung, darum keine Hypothese.
+
+- **Befund:** Die Widersprüche sind fast alle Umleitungen. Beispiel S7 Winterthur–Rapperswil am 14.6.2026: Zürich
+  Flughafen (Soll 10:27) steht als zusätzlicher Halt in der Fahrt, die ausgelassenen Halte Kloten (10:24) und Kloten
+  Balsberg (10:26) bleiben als ausgefallene Zeilen dahinter stehen. Von den 1'316 rückwärts laufenden Schritten
+  zwischen zwei Halten im Kanton Zürich haben 1'306 eine ausgefallene Zeile (im ganzen Zeitraum 2'351 von 4'614).
+  `sections` bildet über ausgefallene Halte keinen Abschnitt; die übrigen Abschnitte dieser Fahrten folgen dem
+  gefahrenen Weg. Von 7'510'318 Zürcher Abschnittsfahrten liegen 1'225 an einem solchen Schritt, davon 22 an einem
+  Schritt ohne ausgefallene Zeile (3 von 1 Mio.); nur diese 22 könnten in falscher Reihenfolge gebildet sein.
+- **Entscheidung (Haonan, Vorschlag des Agenten übernommen):** `sections` bleibt, wie es ist. Fahrten mit Widerspruch
+  auszuschliessen würde 15'383 Zürcher Abschnittsfahrten entfernen, fast nur die umgeleiteten S7-Fahrten im Mai und
+  Juni und damit gerade gestörte Fahrten, um 22 möglicherweise falsche zu vermeiden. Die Prüfung bei A5 («Gleicher
+  Weg») bleibt.
+- **Entscheidung (Haonan, Vorschlag des Agenten übernommen):** Der Datentest zur Reihenfolge hat für jeden Monat
+  dieselbe Grenze von 1 von 10'000. Die eigene Obergrenze von 2 von 10'000 für Mai und Juni war erst nach dem Befund
+  festgelegt und hätte den Test an das Ergebnis angepasst. Mai und Juni 2026 sind jetzt als erwarteter Fehlschlag
+  markiert (`xfail`, `strict`), mit Verweis auf diesen Eintrag. Läuft einer der beiden Monate wieder durch, wird der
+  Test rot; liegt ein anderer Monat über der Grenze, ebenfalls. Eine weitere Ausnahme gibt es nur mit Log-Eintrag
+  und Review. Die Prüfung «eine Fahrt hat einen Betreiber und eine Linie» ist ein eigener Test, damit die Markierung
+  sie nicht verdeckt.
+- **Status A4:** bleibt «teilweise», Evidenz «mittel»; ergänzt, dass die Widersprüche meist Umleitungen sind.
+
+## 2026-11-10 — KI-Einsatz: Review PR #31
+
+- **Mine:** die Fragen im Review (schwagia); die beiden Entscheide (Haonan).
+- **Delegated:** Claude Code hat die Zählungen, den Abschnitt im Notebook 06, die Änderung in `tests/test_data.py`,
+  diese Einträge und die Antworten im Review geschrieben. Entscheid des Agenten: als Grenze für «möglicherweise
+  falsch» gilt ein Abschnitt, dessen Halt A oder B an einem rückwärts laufenden Schritt ohne ausgefallene Zeile liegt.
+- **Prüfung:** Die Zahlen im Notebook stimmen mit einer getrennten Zählung pro Monat überein. Mit der alten Grenze
+  wären Mai und Juni rot; mit `xfail` laufen sie als erwarteter Fehlschlag, alle anderen Monate durch. Tests, `ruff`
+  und `marimo check` laufen durch.

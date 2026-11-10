@@ -49,6 +49,17 @@ SELECT_TYPED = """
 """
 
 
+def select_typed(columns: list[str]) -> str:
+    """SELECT_TYPED for one daily CSV with these columns.
+
+    Daily files before 13.10.2025 have no SLOID column (21 instead of 22 columns, log 2026-11-08,
+    issue #30); SLOID is then written as NULL, so all days have the same schema.
+    """
+    if "SLOID" in columns:
+        return SELECT_TYPED
+    return SELECT_TYPED.replace("    SLOID\n", "    NULL::varchar as SLOID\n")
+
+
 def csv_to_rail_parquet(csv_path: Path, parquet_path: Path) -> int:
     """Write the rail rows of one daily CSV as typed Parquet. Returns the row count."""
     parquet_path.parent.mkdir(parents=True, exist_ok=True)
@@ -62,10 +73,13 @@ def csv_to_rail_parquet(csv_path: Path, parquet_path: Path) -> int:
     expected = con.execute(
         f"select count(*) from {source} where PRODUKT_ID = ?", [str(csv_path), RAIL_PRODUCT]
     ).fetchone()[0]
+    columns = [
+        c[0] for c in con.execute(f"select * from {source} limit 0", [str(csv_path)]).description
+    ]
     con.execute(
         f"""
         copy (
-            select {SELECT_TYPED}
+            select {select_typed(columns)}
             from {source}
             where PRODUKT_ID = ?
         ) to '{tmp}' (format parquet, compression zstd)
