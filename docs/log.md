@@ -1147,3 +1147,118 @@ Anlass: zwei Fragen von schwagia im Review. Gerechnet nach dem Befund, beschreib
 - **Prüfung:** Die Zahlen im Notebook stimmen mit einer getrennten Zählung pro Monat überein. Mit der alten Grenze
   wären Mai und Juni rot; mit `xfail` laufen sie als erwarteter Fehlschlag, alle anderen Monate durch. Tests, `ruff`
   und `marimo check` laufen durch.
+
+## 2026-11-10 — Entscheidung: Raum (Issue #32)
+
+- **Entscheidung (Team: schwagia, Hn1016):** Die Rangliste umfasst den Kanton Zürich; ein Abschnitt zählt, wenn beide
+  Halte im Kanton liegen (Kanton aus dem festen Schnappschuss der Haltestellenliste). Bisher war der Kanton Zürich nur
+  für einzelne Auswertungen gesetzt (Hypothese zu Issue #14, Befund zu Issue #30), nicht als Raum der Rangliste.
+- **Betreiber mit tiefer `REAL`-Abdeckung:** Der Eintrag vom 2026-10-05 (H1) liess offen, ob LEB, MBC und ZB
+  ausgeschlossen oder separat ausgewiesen werden. Beides entfällt: Laut Team fahren LEB, MBC und ZB nicht im Kanton
+  Zürich, ein Ausschluss ist nicht nötig.
+- **Alternativen:** keine erwogen.
+- **Begründung:** im Issue nicht genannt. Im Kanton Zürich sind in jedem Monat über 99 % der Ankünfte und Abfahrten
+  `REAL` (Befund zu Issue #30).
+
+## 2026-11-10 — Entscheidung: Zeitraum (Issue #32)
+
+- **Entscheidung (Team: schwagia, Hn1016):** 1.8.2025 bis 31.7.2026: zwölf volle Monate ohne fehlende Tage (365 Tage),
+  jede Jahreszeit genau einmal, mit dem Fahrplanwechsel vom 14.12.2025. Fahrplan 2025 vom 1.8. bis 13.12.2025
+  (135 Tage), Fahrplan 2026 vom 14.12.2025 bis 31.7.2026 (230 Tage).
+- **Alternativen:**
+  - 13.7.2025 bis 30.6.2026 (Entscheidung zu Issue #30, zurzeit in `period.py`): verworfen, weil der 1. bis 12.7.2025
+    fehlen.
+  - 1.8.2025 bis 30.6.2026: verworfen, weil dann der Juli ganz fehlt.
+- **Umsetzung in `period.py`:** Issue #33. Bis dahin rechnen `uv run build` und `sections` mit 13.7.2025 bis
+  30.6.2026.
+- **Abweichung vom Issue:** Das Issue verlangte, den Zeitraum 13.7.2025 bis 30.6.2026 aus Issue #30 zu übernehmen.
+
+## 2026-11-10 — Entscheidung: Richtung (Issue #32)
+
+- **Entscheidung (Team: schwagia, Hn1016):** A→B und B→A sind verschiedene Abschnitte.
+- **Alternative:** beide Richtungen zusammenlegen, verworfen, weil die Unterschiede zwischen den Richtungen
+  verschwinden.
+- **Begründung:** In der ersten Rangliste unterschieden sich die Richtungen deutlich (Befund zu Issue #14: Thalwil →
+  Zürich Enge +1.09 min, Zürich Enge → Thalwil +0.74 min). Massnahmen wie Fahrzeitreserven gelten je Richtung.
+
+## 2026-11-10 — Entscheidung: Positiver Zuwachs (Issue #32)
+
+- **Entscheidung (Team: schwagia, Hn1016):** Pro Abschnitt zählt das Mittel der Streckenverspätung nach Referenzwert
+  je Soll-Fahrzeit (A7, berechnet in Issue #23). Ist das Mittel positiv, trägt der Abschnitt Mittel × Fahrten bei. Das
+  Total des positiven Verspätungszuwachses ist die Summe über alle Abschnitte mit positivem Mittel; der Anteil der
+  Top 10 bezieht sich auf dieses Total.
+- **Alternative:** pro Fahrt nur positive Werte zählen, verworfen, weil zufälliges Rauschen dann auch auf neutralen
+  Abschnitten als Zuwachs erscheint.
+- Für die Halte gilt der Referenzwert je Soll-Haltezeit (A8); er bleibt offen und gehört nicht zu Issue #23.
+
+## 2026-11-10 — Entscheidung: Hauptkennzahl (Issue #32)
+
+- **Entscheidung (Team: schwagia, Hn1016):** Die Rangliste ordnet absolut, nach Minuten Zuwachs im ganzen Zeitraum
+  (Mittel × Fahrten).
+- **Alternativen:** pro Fahrt oder pro Streckenkilometer als Hauptkennzahl. Beide kommen als Begleitspalten dazu, weil
+  die absolute Rangliste sonst nur Volumen und Länge abbilden könnte. Ob sie das tut, prüft später der Vergleich mit
+  der Baseline «sortiert nach Zugzahl».
+- **Begründung:** Die Aufgabenstellung fragt nach dem grössten Netzeffekt.
+
+## 2026-11-10 — Entscheidung: Systematisch (Issue #32)
+
+- **Entscheidung (Team: schwagia, Hn1016):**
+  - Bewertet wird ein Abschnitt mit mindestens 100 gemessenen Fahrten im Zeitraum, in einem Zeitfenster mit
+    mindestens 20. Beide Zahlen sind vorläufig, bis A10 («Genug Fahrten») geprüft ist.
+  - Verstärker, wenn das 95-%-Konfidenzintervall des Mittels ganz über 0 liegt; Absorber, wenn es ganz unter 0
+    liegt; sonst neutral.
+- **Alternative:** eine feste Schwelle (z. B. Mittel > 0.1 min), verworfen, weil sie nicht von der Fahrtenzahl
+  abhängt.
+
+## 2026-11-10 — Entscheidung: Zeitfenster (Issue #32)
+
+- **Entscheidung (Team: schwagia, Hn1016), vorläufig bis A10:** Zeitfenster nach der Soll-Abfahrt an A.
+  - Tageszeit: Morgenspitze 6–9 Uhr, Tag 9–16, Abendspitze 16–19, Abend/Nacht 19–6.
+  - Wochentag: Montag–Freitag und Samstag/Sonntag.
+  - Jahreszeit, meteorologisch: Winter Dez–Feb, Frühling Mär–Mai, Sommer Jun–Aug, Herbst Sep–Nov.
+  - Fahrplan: 2025 (bis 13.12.2025) und 2026.
+- **Alternativen:** keine erwogen.
+
+## 2026-11-10 — Entscheidung: Stabilität (Issue #32)
+
+- **Entscheidung (Team: schwagia, Hn1016):** Die Rangliste gilt als stabil, wenn
+  - die Spearman-Rangkorrelation zwischen den beiden Fahrplänen mindestens 0.7 beträgt und mindestens 7 der Top 10 in
+    beiden vorkommen, und
+  - über 20 Paare zufälliger 4-Wochen-Fenster der Median der Korrelation mindestens 0.7 beträgt.
+- Hier wird nur die Schwelle festgelegt. Die Erwartung und wie die Fenster gezogen werden, gehören ins Paket
+  Stabilitätsprüfung.
+- **Alternativen:** keine erwogen.
+
+## 2026-11-10 — Entscheidung: Wert oder Grund (Issue #32)
+
+- **Entscheidung (Team: schwagia, Hn1016):** Jeder Abschnitt und Halt bekommt einen Wert oder einen genannten Grund,
+  warum er nicht bewertet wird («nie gemessen», «zu wenige Fahrten»). Nichts fällt still weg. Bisher war nur der Grund
+  «nie gemessen» entschieden (Log 2026-10-25).
+- **Alternativen:** keine erwogen.
+
+## 2026-11-10 — Entscheidung: Schwelle 80 % `REAL` (Issue #32)
+
+- **Entscheidung (Team: schwagia, Hn1016):** Die Schwelle aus dem Log vom 2026-10-25 bleibt: Die Rangliste wird mit
+  und ohne Abschnitte unter 80 % `REAL` verglichen.
+- **Alternative:** die Schwelle streichen, weil im Kanton Zürich über 99 % der Ankünfte und Abfahrten `REAL` sind
+  (Befund zu Issue #30). Verworfen, weil erst der Vergleich mit und ohne Schwelle belegt, dass sie nichts verändert.
+
+## 2026-11-10 — KI-Einsatz: Issue #32
+
+- **Aufgabe:** die Regeln für die Rangliste in den One-Pager und in je einen Log-Eintrag übernehmen, ohne Code.
+- **Mine:** das Issue; alle Entscheide (schwagia, Hn1016): Raum, Zeitraum, Durchfahrten als Punkt (Verweis auf die
+  Entscheidung zu Issue #24), Richtung, positiver Zuwachs, Hauptkennzahl, Systematisch, Zeitfenster, Stabilität, Wert
+  oder Grund, Schwelle 80 % `REAL`, je mit Alternativen und Begründung; was offen bleibt (A8, A6, Hauptleserin); die
+  Korrekturen am Plan (schwagia): Punkt «positiver Zuwachs» meint den Referenzwert je Soll-Fahrzeit (A7, Issue #23),
+  nicht A8; zum Raum nur Alternativen aus dem Log; die Alternative zur Schwelle 80 % `REAL`.
+- **Delegated:** Claude Code hat den Plan, die Änderungen im One-Pager und diese Einträge geschrieben, aus den Vorgaben
+  des Teams. Entscheide des Agenten: Gliederung der Einträge (ein Eintrag pro Regel), die Tageszahlen je Fahrplan im
+  Eintrag «Zeitraum» (nachgerechnet), der Hinweis, dass `period.py` bis Issue #33 den alten Zeitraum setzt.
+- **Prüfung:** Im One-Pager steht unter «Was» und «Wie» keiner der Punkte aus dem Issue mehr als offen; offen sind nur
+  A8, A6 und die Hauptleserin. Jeder Verweis im One-Pager hat einen Eintrag mit diesem Titel. Kein Code geändert.
+  `ruff` läuft durch, die Tests ausser `tests/test_data.py` ebenfalls (34). Die Datentests scheitern lokal (23),
+  weil auf diesem Rechner nur die Tagesdateien vom September 2026 gebaut sind, nicht die zwölf Monate aus
+  `period.py`; mit diesem PR hat das nichts zu tun, er ändert nur `docs/`.
+- **Übernommen/verworfen:** Verworfen im Plan: den Punkt «positiver Zuwachs» auf den Referenzwert je Soll-Haltezeit
+  (A8) zu beziehen (Korrektur schwagia, siehe «Mine»); zum Raum die Alternative «ganzes Netz» zu nennen, weil sie
+  nicht im Log steht.
