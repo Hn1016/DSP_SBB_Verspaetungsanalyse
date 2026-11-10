@@ -33,7 +33,7 @@ def scalar(con, sql):
 
 
 def test_one_file_per_operating_day_without_gaps(con):
-    # within the period from period.py; the archive of July 2025 starts on the 13th (log 2026-11-08)
+    # every day of the period from period.py, from its first to its last day (issue #33)
     first, last = period_days(START, END)
     days, data_first, data_last = con.sql(
         f"""
@@ -41,7 +41,7 @@ def test_one_file_per_operating_day_without_gaps(con):
         where BETRIEBSTAG between date '{first}' and date '{last}'
         """
     ).fetchone()
-    assert data_last == last
+    assert (data_first, data_last) == (first, last)
     assert days == (data_last - data_first).days + 1
     files = [p for p in ISTDATEN_RAIL.glob("*.parquet") if str(first) <= p.stem <= str(last)]
     assert days == len(files)
