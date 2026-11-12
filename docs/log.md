@@ -1786,9 +1786,11 @@ Zeilen = 524 Abschnitte × 13 Fenster, jede mit Wert oder Grund. Die Klassenmitt
 - **Klassen:** Im ganzen Zeitraum sind von 394 Abschnitten 142 Verstärker, 124 Absorber und 128 neutral; in den
   Fenstern ist die Verteilung ähnlich (121 bis 142 Verstärker, 116 bis 126 Absorber, 118 bis 131 neutral). Von den
   128 neutralen im ganzen Zeitraum haben 119 ein Intervall, das die 0 nicht enthält; sie sind neutral, weil das Mittel
-  der Tagesmittel unter 0.25 min liegt (in den Fenstern 109 bis 122). Über die Klasse entscheidet also fast immer
-  `MIN_EFFECT`, nicht das Intervall. In der Top 10 ist Rang 7, Zürich HB → Zürich Hardbrücke (0.19 min, Intervall
-  [0.18, 0.19]), neutral; die anderen neun sind Verstärker.
+  der Tagesmittel unter 0.25 min liegt (in den Fenstern 109 bis 122). In der Top 10 ist Rang 7, Zürich HB → Zürich
+  Hardbrücke (0.19 min, Intervall [0.18, 0.19]), neutral; die anderen neun sind Verstärker.
+- **Was über die Klasse entscheidet:** fast immer `MIN_EFFECT`, nicht das Intervall: 119 von 128 neutralen
+  Abschnitten haben ein Intervall ohne 0. Für den Bericht heisst das: «systematisch» bedeutet hier praktisch «im
+  Mittel der Tagesmittel mindestens 0.25 min».
 - **Gründe:** Im ganzen Zeitraum haben 130 Abschnitte den Grund «zu wenige Fahrten» (höchstens 65 Fahrten und 25
   Betriebstage, wie im Befund zu #39), keiner «zu wenige Betriebstage». In den Fenstern haben 0 bis 8 Abschnitte «zu
   wenige Betriebstage». «nie gemessen» wird zuerst geprüft: Ein Abschnitt mit weniger als 100 Fahrten und ohne Fahrt
@@ -1800,7 +1802,8 @@ Zeilen = 524 Abschnitte × 13 Fenster, jede mit Wert oder Grund. Die Klassenmitt
   - Das Intervall behandelt die Betriebstage als unabhängig. Eine Störung über mehrere Tage oder eine Baustelle über
     Wochen macht benachbarte Tage ähnlich; dann ist das Intervall zu schmal. Das ist nicht geprüft. Weil fast immer
     `MIN_EFFECT` entscheidet, ändert ein etwas breiteres Intervall die Klassen kaum; für die 23 Zeilen mit breitem
-    Intervall gilt das nicht.
+    Intervall gilt das nicht. Ob die Rangliste über die Zeit hält, prüft die Stabilitätsprüfung (Eintrag
+    «Stabilität» vom 2026-11-10, eigenes Paket); sie hängt nicht von dieser Annahme ab.
   - (c) zeigt, dass das Intervall bei den vorhandenen Betriebstagen einen Effekt von 0.25 min eingrenzen kann. Die
     meisten Fenster haben weit mehr als 20 Betriebstage; ob genau 20 genügen würden, ist damit nicht gezeigt (die
     kleinste Zahl Betriebstage einer Zeile mit Wert ist 20, im Frühling).
@@ -1810,9 +1813,9 @@ Zeilen = 524 Abschnitte × 13 Fenster, jede mit Wert oder Grund. Die Klassenmitt
   - Die Fenster einer Einteilung überschneiden sich mit denen der anderen: Der Sommer besteht aus August 2025 und
     Juni/Juli 2026, der Winter enthält die ersten 13 Dezembertage im Fahrplan 2025.
   - Nur Abschnitte, keine Halte; keine Stabilitätsprüfung, keine Ursache (laut Issue nicht Teil davon).
-- **Status in `docs/assumptions.md` (Vorschlag des Agenten, vom Team zu bestätigen):** A10 bleibt «teilweise»,
-  Evidenz «mittel». Für Abschnitte ist jetzt auch die Intervallbreite gestützt ((c) gehalten); offen bleibt A10 für
-  Halte.
+- **Entscheidung (schwagia, 2026-11-12; zur Bestätigung durch Hn1016 im Review), Status in `docs/assumptions.md`:**
+  A10 bleibt «teilweise», Evidenz «mittel» (Vorschlag des Agenten übernommen). Für Abschnitte ist A10 jetzt auch bei
+  der Intervallbreite gestützt, durch Prüfung (c); offen bleibt A10 für Halte.
 
 ## 2026-11-12 — KI-Einsatz: Issue #38
 
@@ -1820,7 +1823,8 @@ Zeilen = 524 Abschnitte × 13 Fenster, jede mit Wert oder Grund. Die Klassenmitt
   Fixture, Test und drei Prüfungen nach dem Bau.
 - **Mine:** das Issue (Hn1016); die Detail-Entscheide im Eintrag «Details der Rangliste» (schwagia); die Fälle und
   die Erwartungswerte der Fixture, von Hand nachgerechnet und festgelegt (schwagia); die Erwartungen (a), (b), (c)
-  mit der Schwelle von 90 % (schwagia); der Auftrag «Test zuerst» und die Nummer des Notebooks (schwagia).
+  mit der Schwelle von 90 % (schwagia); die Entscheidung zum Status von A10 und der Satz, was «systematisch» für
+  den Bericht heisst (schwagia); der Auftrag «Test zuerst» und die Nummer des Notebooks (schwagia).
 - **Delegated:** Claude Code hat die Einträge im Log, `tests/fixtures/ranking_cases.csv` und `tests/test_ranking.py`
   nach den vorgegebenen Fällen, `src/sbb_delays/ranking.py`, die Spalte `abfahrt_a` in `sections.py`, den Schritt in
   `build.py` mit den Tests, die Stelle im README und das Notebook 10 geschrieben. Entscheide des Agenten: die drei
@@ -1828,7 +1832,7 @@ Zeilen = 524 Abschnitte × 13 Fenster, jede mit Wert oder Grund. Die Klassenmitt
   (Hypothesen-Eintrag); die Namen der Spalten und Fenster; Klassenmittel als Wörterbuch Klasse → Mittel;
   `min_days_window` unter 2 wird abgelehnt; zwei Tests ohne eigene Zahlen (Form der Ausgabe nach den Punkten 4 und 5,
   Abbruch bei fehlendem Klassenmittel); im Befund die beschreibenden Zahlen zur halben Breite und die Spalte «neutral
-  nur wegen `MIN_EFFECT`»; der Vorschlag zum Status von A10.
+  nur wegen `MIN_EFFECT`»; der Vorschlag zum Status von A10 (von schwagia übernommen).
 - **Prüfung:**
   - Der Test war zuerst rot (Commit `3f72f46`, vor `ranking.py`): `uv run pytest tests/test_ranking.py` meldete
     0 failed, 1 error beim Sammeln, «ImportError: cannot import name 'ranking' from 'sbb_delays'». Rot heisst hier

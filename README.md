@@ -36,7 +36,7 @@ uv run build            # baut, was fehlt
 uv run build --force    # baut data/processed für den Zeitraum neu; data/raw bleibt unangetastet
 ```
 
-- Der Zeitraum steht nur in `src/sbb_delays/period.py` (vorerst September 2026).
+- Der Zeitraum steht nur in `src/sbb_delays/period.py` (1.8.2025 bis 31.7.2026, Issue #33).
 - `build` führt vier Schritte der Reihe nach aus und druckt pro Schritt eine Zeile, `gebaut` oder `übersprungen`:
   1. `download` lädt die Monatsarchive IstDaten (v2) und die Haltestellen (Service Points) nach `data/raw/`.
   2. `load` wandelt die Monatsarchive in Parquet um (eine Datei pro Betriebstag, nur Züge).
