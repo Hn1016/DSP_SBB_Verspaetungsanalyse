@@ -32,7 +32,8 @@ def sections(
     """Section passages of the operating days from start to end, from the `rail` view of con.
 
     section_delay = arrival delay at B - departure delay at A; scheduled_min = scheduled
-    arrival at B - scheduled departure at A; both in minutes. pass_through: A or B is one.
+    arrival at B - scheduled departure at A; both in minutes. abfahrt_a: scheduled departure
+    at A (for the time-of-day windows of the ranking, issue #38). pass_through: A or B is one.
     """
     first, last = period_days(start, end)
     in_period = f"BETRIEBSTAG between date '{first}' and date '{last}'"
@@ -48,6 +49,7 @@ def sections(
         select a.BETRIEBSTAG, a.FAHRT_BEZEICHNER, a.LINIEN_TEXT,
                p.zeile_a, p.zeile_b,
                a.BPUIC as a_id, b.BPUIC as b_id,
+               a.ABFAHRTSZEIT as abfahrt_a,
                a.ab_delay as ab_delay_a, b.an_delay as an_delay_b,
                b.an_delay - a.ab_delay as section_delay,
                datediff('minute', a.ABFAHRTSZEIT, b.ANKUNFTSZEIT) as scheduled_min,
