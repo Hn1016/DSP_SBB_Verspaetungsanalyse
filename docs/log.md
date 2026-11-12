@@ -1633,23 +1633,29 @@ Die ersten fünf Zeilen sind die gekreuzten Fenster aus den Erwartungen, die üb
 - **Grenzen:**
   - Gezählt sind Betriebstage. Das zeigt, dass die Mindestzahlen kaum einen Abschnitt nahe an der Grenze treffen. Es
     zeigt nicht, dass 20 Betriebstage genügen, um ein Muster von Zufall zu unterscheiden; das hängt von der Breite
-    des Intervalls über die Tagesmittel ab und ist laut Issue nicht Teil davon.
+    des Intervalls über die Tagesmittel ab und ist laut Issue nicht Teil davon. Es wird im Befund zu Issue #38
+    geprüft (Review PR #40, schwagia): Bei 20 Betriebstagen ist die halbe Breite des Intervalls 2.093 · s / √20;
+    ein Effekt von 0.25 min ist nur nachweisbar, wenn die Standardabweichung s der Tagesmittel höchstens etwa
+    0.53 min beträgt. Geprüft wird der Anteil der Abschnitte je Fenster mit halber Breite unter 0.25 min.
   - Nur Abschnitte, keine Halte. Die gekreuzten Fenster (Tageszeit × Wochentag) stammen aus den Erwartungen; Issue
     #32 nennt die Einteilungen getrennt.
-- **Entscheidung (Haonan, 2026-11-12, Vorschlag des Agenten übernommen):** Die Mindestzahlen bleiben: mindestens 100
+- **Entscheidung (Team: schwagia, Hn1016, 2026-11-12; Vorschlag des Agenten, Einverständnis schwagia im Review
+  PR #40):** Die Mindestzahlen bleiben: mindestens 100
   gemessene Fahrten und 30 Betriebstage im Zeitraum, mindestens 20 Betriebstage pro Zeitfenster. Ein Abschnitt mit zu
   wenigen Betriebstagen in einem Fenster bekommt dort den Grund «zu wenige Betriebstage» (Eintrag «Wert oder Grund»).
   Die Zeitfenster aus Issue #32 bleiben; der Befund gibt keinen Anlass, sie zu ändern.
 - **Status in `docs/assumptions.md`:** A10 «teilweise», Evidenz «mittel»: für Abschnitte gestützt; offen für Halte
-  und für die Frage, ob 20 Betriebstage statistisch genügen. Im One-Pager steht bei «Systematisch» und «Zeitfenster»
-  statt «vorläufig bis A10» der Verweis auf diesen Eintrag.
+  und für die Frage, ob 20 Betriebstage statistisch genügen (Issue #38). Im One-Pager steht bei «Systematisch» und
+  «Zeitfenster» statt «vorläufig bis A10» neu «beibehalten» mit Verweis auf diesen Eintrag; «bestätigt» im ersten
+  Stand widersprach dem Status «teilweise» (Review PR #40).
 
 ## 2026-11-12 — KI-Einsatz: Issue #39
 
 - **Aufgabe:** für die Zürcher Abschnitte die Betriebstage je Zeitfenster zählen und die vorläufigen Mindestzahlen
   prüfen.
-- **Mine:** das Issue mit den drei Erwartungen (schwagia); die Entscheidung im Befund (Haonan, Vorschlag des Agenten
-  übernommen).
+- **Mine:** das Issue mit den drei Erwartungen (schwagia); die Entscheidung im Befund (Team; Vorschlag des Agenten,
+  von Haonan übernommen, Einverständnis schwagia im Review); aus dem Review (schwagia): «beibehalten» statt
+  «bestätigt» im One-Pager und die Prüfung der Intervallbreite in Issue #38.
 - **Delegated:** Claude Code hat den Hypothesen-Eintrag aus dem Issue, das Notebook 08, den Befund und diese Einträge
   geschrieben. Entscheide des Agenten: die Zählweise im Hypothesen-Eintrag (vor dem Zählen; (1) streng als «in allen
   drei Fenstern», (2) für Abend/Nacht an Werktagen und Samstag/Sonntag); die Soll-Abfahrt an A aus den Tagesdateien,
