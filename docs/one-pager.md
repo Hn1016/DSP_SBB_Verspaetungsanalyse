@@ -48,13 +48,13 @@ zwischen den beiden Fahrplänen (Rangkorrelation).
   Streckenkilometer als Begleitspalten; der Vergleich mit der Baseline «sortiert nach Zugzahl» prüft, ob die
   Rangliste nur Volumen und Länge abbildet (Log «Hauptkennzahl»).
 - **Systematisch:** mindestens 100 gemessene Fahrten und 30 Betriebstage mit Messung im Zeitraum, mindestens 20
-  Betriebstage pro Zeitfenster (*vorläufig bis A10*). Das 95-%-Konfidenzintervall des Mittels wird über die
-  Tagesmittel je Betriebstag gerechnet, nicht über Fahrten. Verstärker, wenn es ganz über 0 liegt und das Mittel
-  mindestens 0.25 min beträgt; Absorber, wenn es ganz unter 0 liegt und das Mittel höchstens −0.25 min beträgt; sonst
-  neutral (Log «Systematisch»).
-- **Zeitfenster** nach Soll-Abfahrt an A (*vorläufig bis A10*): Tageszeit Morgenspitze 6–9 Uhr, Tag 9–16,
-  Abendspitze 16–19, Abend/Nacht 19–6; Wochentag Montag–Freitag und Samstag/Sonntag; Jahreszeit meteorologisch
-  (Dez–Feb, Mär–Mai, Jun–Aug, Sep–Nov); Fahrplan 2025 (bis 13.12.2025) und 2026 (Log «Zeitfenster»).
+  Betriebstage pro Zeitfenster (bestätigt, Log 2026-11-12, Befund #39). Das 95-%-Konfidenzintervall des Mittels
+  wird über die Tagesmittel je Betriebstag gerechnet, nicht über Fahrten. Verstärker, wenn es ganz über 0 liegt und
+  das Mittel mindestens 0.25 min beträgt; Absorber, wenn es ganz unter 0 liegt und das Mittel höchstens −0.25 min
+  beträgt; sonst neutral (Log «Systematisch»).
+- **Zeitfenster** nach Soll-Abfahrt an A (bestätigt, Log 2026-11-12, Befund #39): Tageszeit Morgenspitze 6–9 Uhr,
+  Tag 9–16, Abendspitze 16–19, Abend/Nacht 19–6; Wochentag Montag–Freitag und Samstag/Sonntag; Jahreszeit
+  meteorologisch (Dez–Feb, Mär–Mai, Jun–Aug, Sep–Nov); Fahrplan 2025 (bis 13.12.2025) und 2026 (Log «Zeitfenster»).
 - **Stabil**, wenn die Spearman-Rangkorrelation zwischen den beiden Fahrplänen mindestens 0.7 beträgt und mindestens
   7 der Top 10 in beiden vorkommen; über 20 Paare zufälliger 4-Wochen-Fenster ist der Median der Korrelation
   mindestens 0.7. Die Erwartung kommt ins Paket Stabilitätsprüfung (Log «Stabilität»).

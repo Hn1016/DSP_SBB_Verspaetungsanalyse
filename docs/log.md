@@ -1584,3 +1584,77 @@ Kanton Zürich; die 394 Abschnitte mit mindestens 100 Fahrten und 30 Betriebstag
   Mindestzahl im ganzen Zeitraum erreichen. Betriebstage je Fenster sind nicht gezählt.
 - *Folge bei Widerlegung:* Die Mindestzahlen werden nicht automatisch geändert. Das Team entscheidet nach dem Befund,
   ob sie bleiben oder mit Begründung neu gesetzt werden.
+
+## 2026-11-12 — Befund: A10, genug Betriebstage pro Abschnitt und Zeitfenster (Issue #39)
+
+Berechnet in `notebooks/08_a10_betriebstage.py` nach der Hypothese oben (Commit `12fea26`, gepusht vor dem Zählen).
+Basis: 394 Zürcher Abschnitte mit mindestens 100 Fahrten und 30 Betriebstagen (wie Befund #23), 7'738'519
+Abschnittsfahrten, 1.8.2025 bis 31.7.2026; jede hat eine Soll-Abfahrt an A.
+
+**Anteil der 394 Abschnitte mit mindestens 20 Betriebstagen je Fenster**
+
+| Fenster | erreicht | Anteil | ohne Fahrt | 1–19 Tage | 20–39 Tage | Median Tage |
+|---|---|---|---|---|---|---|
+| Morgenspitze Mo–Fr | 376 | 95.4 % | 12 | 6 | 0 | 261 |
+| Tag Mo–Fr | 362 | 91.9 % | 27 | 5 | 0 | 261 |
+| Abendspitze Mo–Fr | 375 | 95.2 % | 12 | 7 | 0 | 261 |
+| Abend/Nacht Mo–Fr | 373 | 94.7 % | 17 | 4 | 3 | 261 |
+| Samstag/Sonntag | 370 | 93.9 % | 18 | 6 | 0 | 104 |
+| Morgenspitze | 376 | 95.4 % | 12 | 6 | 0 | 365 |
+| Tag | 363 | 92.1 % | 24 | 7 | 1 | 365 |
+| Abendspitze | 375 | 95.2 % | 11 | 8 | 0 | 365 |
+| Abend/Nacht | 377 | 95.7 % | 16 | 1 | 2 | 365 |
+| Montag–Freitag | 390 | 99.0 % | 0 | 4 | 2 | 261 |
+| Winter (Dez–Feb) | 391 | 99.2 % | 0 | 3 | 4 | 90 |
+| Frühling (Mär–Mai) | 392 | 99.5 % | 0 | 2 | 5 | 92 |
+| Sommer (Jun–Aug) | 392 | 99.5 % | 0 | 2 | 7 | 92 |
+| Herbst (Sep–Nov) | 390 | 99.0 % | 0 | 4 | 3 | 91 |
+| Fahrplan 2025 | 390 | 99.0 % | 0 | 4 | 0 | 135 |
+| Fahrplan 2026 | 394 | 100.0 % | 0 | 0 | 2 | 230 |
+
+Die ersten fünf Zeilen sind die gekreuzten Fenster aus den Erwartungen, die übrigen die Fenster aus Issue #32 einzeln.
+
+- **(1) gehalten.** 91.9 % der Abschnitte haben in Morgenspitze, Tag und Abendspitze, je Montag bis Freitag,
+  mindestens 20 Betriebstage (Erwartung mindestens 80 %).
+- **(2) nicht gehalten.** Abend/Nacht (Mo–Fr) 94.7 % und Samstag/Sonntag 93.9 % liegen über 60 %, aber nicht unter
+  den Tageszeit-Fenstern: Das schwächste Fenster ist «Tag Mo–Fr» mit 91.9 %. 27 Abschnitte haben dort keine Fahrt; es
+  sind Haltemuster, die nur zu den Spitzenzeiten fahren (z. B. Langnau-Gattikon → Adliswil, 2'402 Fahrten, keine
+  zwischen 09:00 und 16:00 an Werktagen).
+- **(3) gehalten.** 99.0 % der Abschnitte haben in beiden Fahrplänen mindestens 20 Betriebstage (Erwartung mindestens
+  90 %). Nicht in beiden: Opfikon → Zürich Flughafen (12 Tage im Fahrplan 2025, 46 im Fahrplan 2026), Winterthur →
+  Zürich HB (2, 82), Uster → Stettbach (14, 26), Stettbach → Uster (13, 22).
+- **Zur Mindestzahl pro Zeitfenster (20 Betriebstage):** Ein Abschnitt fährt in einem Fenster fast jeden Tag oder gar
+  nicht. Je Fenster haben 0 bis 8 Abschnitte 1 bis 19 Betriebstage und 0 bis 7 Abschnitte 20 bis 39. Eine Mindestzahl
+  zwischen etwa 10 und 40 ergäbe fast dasselbe Bild.
+- **Zur Mindestzahl im Zeitraum (100 Fahrten, 30 Betriebstage):** Sie schliesst 130 Abschnitte mit zusammen 1'133
+  Fahrten aus (0.015 % der Abschnittsfahrten). Der grösste ausgeschlossene Abschnitt hat 65 Fahrten und 25
+  Betriebstage, der kleinste der Basis 134 Fahrten und 35 Betriebstage; kein Abschnitt hat genug Fahrten, aber zu
+  wenige Betriebstage.
+- **Grenzen:**
+  - Gezählt sind Betriebstage. Das zeigt, dass die Mindestzahlen kaum einen Abschnitt nahe an der Grenze treffen. Es
+    zeigt nicht, dass 20 Betriebstage genügen, um ein Muster von Zufall zu unterscheiden; das hängt von der Breite
+    des Intervalls über die Tagesmittel ab und ist laut Issue nicht Teil davon.
+  - Nur Abschnitte, keine Halte. Die gekreuzten Fenster (Tageszeit × Wochentag) stammen aus den Erwartungen; Issue
+    #32 nennt die Einteilungen getrennt.
+- **Entscheidung (Haonan, 2026-11-12, Vorschlag des Agenten übernommen):** Die Mindestzahlen bleiben: mindestens 100
+  gemessene Fahrten und 30 Betriebstage im Zeitraum, mindestens 20 Betriebstage pro Zeitfenster. Ein Abschnitt mit zu
+  wenigen Betriebstagen in einem Fenster bekommt dort den Grund «zu wenige Betriebstage» (Eintrag «Wert oder Grund»).
+  Die Zeitfenster aus Issue #32 bleiben; der Befund gibt keinen Anlass, sie zu ändern.
+- **Status in `docs/assumptions.md`:** A10 «teilweise», Evidenz «mittel»: für Abschnitte gestützt; offen für Halte
+  und für die Frage, ob 20 Betriebstage statistisch genügen. Im One-Pager steht bei «Systematisch» und «Zeitfenster»
+  statt «vorläufig bis A10» der Verweis auf diesen Eintrag.
+
+## 2026-11-12 — KI-Einsatz: Issue #39
+
+- **Aufgabe:** für die Zürcher Abschnitte die Betriebstage je Zeitfenster zählen und die vorläufigen Mindestzahlen
+  prüfen.
+- **Mine:** das Issue mit den drei Erwartungen (schwagia); die Entscheidung im Befund (Haonan, Vorschlag des Agenten
+  übernommen).
+- **Delegated:** Claude Code hat den Hypothesen-Eintrag aus dem Issue, das Notebook 08, den Befund und diese Einträge
+  geschrieben. Entscheide des Agenten: die Zählweise im Hypothesen-Eintrag (vor dem Zählen; (1) streng als «in allen
+  drei Fenstern», (2) für Abend/Nacht an Werktagen und Samstag/Sonntag); die Soll-Abfahrt an A aus den Tagesdateien,
+  weil sie im Abschnitts-File fehlt; nach dem Befund die beschreibenden Spalten «1–19 Tage» und «20–39 Tage» und die
+  Tabelle, was die Mindestzahl im Zeitraum ausschliesst.
+- **Prüfung:** Die Basis hat 394 Abschnitte wie im Befund zu #23. Basis und ausgeschlossene Abschnitte ergeben
+  zusammen die 7'739'652 Zürcher Abschnittsfahrten aus dem Befund zu #33. Tests, `ruff` und `marimo check` laufen
+  durch.

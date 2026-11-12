@@ -17,7 +17,7 @@ Wichtiges mit wenig Evidenz steht oben. Ausnahme: A10, A9 und A5 stehen in der R
 
 | # | Annahme | Wichtigkeit | Evidenz | Status |
 |---|---|---|---|---|
-| 10 | **Genug Fahrten:** Pro Abschnitt bzw. Halt und Zeitfenster gibt es genug gemessene Fahrten, um ein systematisches Muster von Zufall zu unterscheiden, auch für Abschnitte über den Fahrplanwechsel hinweg. | hoch | tief | offen (Log 2026-10-29, «Evidenz von A9 und A10 ohne Grundlage») |
+| 10 | **Genug Fahrten:** Pro Abschnitt bzw. Halt und Zeitfenster gibt es genug gemessene Fahrten, um ein systematisches Muster von Zufall zu unterscheiden, auch für Abschnitte über den Fahrplanwechsel hinweg. | hoch | mittel | teilweise (Log 2026-11-12, Befund #39: für Abschnitte gestützt, Mindestzahlen bestätigt; offen für Halte und ob 20 Betriebstage statistisch genügen) |
 | 9 | **Ausfälle verzerren nicht:** Abschnitte mit Ausfällen wegzulassen verschiebt die Rangliste nicht wesentlich, obwohl Ausfälle sich an Störungstagen mit hohen Verspätungen häufen. | hoch | tief | offen (Log 2026-10-29, «Evidenz von A9 und A10 ohne Grundlage») |
 | 5 | **Gleicher Weg:** Ein Haltepaar A→B bezeichnet im ganzen Zeitraum denselben physischen Weg; Umleitungen und geänderte Laufwege unter derselben Haltefolge sind selten. | hoch | tief | offen (Log 2026-10-06, H2: nur Hinweis auf Umleitungen) |
 | 1 | **Echte Messung:** Zeiten mit Status `REAL` sind an allen Schweizer Halten tatsächlich gemessen, mit vergleichbarer Genauigkeit, und nicht nachträglich ergänzt oder interpoliert. | hoch | mittel | offen (Log 2026-10-06, H5: nur Plausibilität) |
