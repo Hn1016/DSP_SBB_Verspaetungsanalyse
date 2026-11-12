@@ -1550,3 +1550,37 @@ zweiten Nachtrag (Commit `eb5b77f`, gepusht vor dem Rechnen). Basis wie der zwei
 - **KI-Einsatz:** Mine: die Frage und der Vorschlag im Review (schwagia), übernommen (Haonan). Delegated: Claude Code
   hat den zweiten Nachtrag, die Zellen im Notebook, diesen Eintrag und die Antworten im Review geschrieben. Prüfung:
   Tests, `ruff` und `marimo check` laufen durch.
+
+## 2026-11-12 — Hypothese: A10, genug Betriebstage pro Abschnitt und Zeitfenster (Issue #39, vor der Analyse notiert)
+
+Anlass: Die Mindestzahlen und die Zeitfenster aus Issue #32 sind «vorläufig bis A10» (Einträge «Systematisch» und
+«Zeitfenster» vom 2026-11-10). Basis: Abschnittsfahrten aus `uv run build`, 1.8.2025 bis 31.7.2026, beide Halte im
+Kanton Zürich; die 394 Abschnitte mit mindestens 100 Fahrten und 30 Betriebstagen aus dem Befund zu #23.
+
+- **Erwartung (schwagia, im Issue):**
+  - (1) Von den 394 Abschnitten erreichen mindestens 80 % in jedem Tageszeit-Fenster an Werktagen mindestens 20
+    Betriebstage.
+  - (2) In den Fenstern Abend/Nacht und Samstag/Sonntag sind es weniger, aber mindestens 60 %.
+  - (3) Mindestens 90 % der 394 Abschnitte kommen in beiden Fahrplänen (2025 und 2026) mit mindestens 20 Betriebstagen
+    vor.
+- **Wie gezählt wird (Entscheid des Agenten, im Review zu bestätigen):**
+  - Ein Betriebstag mit Messung in einem Fenster: ein `BETRIEBSTAG`, an dem der Abschnitt in diesem Fenster mindestens
+    eine Abschnittsfahrt hat. Ein Abschnitt ohne Fahrt in einem Fenster zählt als «nicht erreicht»; der Nenner ist
+    immer 394.
+  - Tageszeit nach der Soll-Abfahrt an A (`ABFAHRTSZEIT` aus den Tagesdateien, über `BETRIEBSTAG` und `ZEILE`), Anfang
+    eingeschlossen, Ende ausgeschlossen: Morgenspitze 06:00–09:00, Tag 09:00–16:00, Abendspitze 16:00–19:00,
+    Abend/Nacht 19:00–06:00. Wochentag und Fahrplan nach dem `BETRIEBSTAG`, nicht nach dem Kalendertag der Abfahrt:
+    Eine Fahrt nach Mitternacht gehört zum Betriebstag davor.
+  - (1) gilt für Morgenspitze, Tag und Abendspitze, je Montag bis Freitag. Gehalten, wenn mindestens 80 % der
+    Abschnitte in allen drei Fenstern mindestens 20 Betriebstage haben. Der Anteil je Fenster steht daneben.
+  - (2) gilt für Abend/Nacht (Montag bis Freitag) und für Samstag/Sonntag (alle Tageszeiten zusammen). Gehalten, wenn
+    beide Anteile mindestens 60 % betragen und unter jedem der drei Anteile aus (1) liegen.
+  - (3) Fahrplan 2025 vom 1.8. bis 13.12.2025, Fahrplan 2026 vom 14.12.2025 bis 31.7.2026. Gehalten, wenn mindestens
+    90 % der Abschnitte in jedem der beiden mindestens 20 Betriebstage haben.
+  - Die Erwartungen kreuzen Tageszeit und Wochentag; Issue #32 nennt sie als getrennte Einteilungen. Der Befund
+    nennt darum den Anteil auch für jedes Fenster aus Issue #32 einzeln (Tageszeit, Wochentag, Jahreszeit, Fahrplan),
+    ohne eigene Erwartung.
+- **Was schon bekannt ist:** aus #23 die Zahl der Fahrten für die Abschnitte der Top 10 und dass 394 Abschnitte die
+  Mindestzahl im ganzen Zeitraum erreichen. Betriebstage je Fenster sind nicht gezählt.
+- *Folge bei Widerlegung:* Die Mindestzahlen werden nicht automatisch geändert. Das Team entscheidet nach dem Befund,
+  ob sie bleiben oder mit Begründung neu gesetzt werden.
