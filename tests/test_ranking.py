@@ -146,7 +146,7 @@ def test_every_section_has_one_row_per_window(result):
     assert [name for _, name in ranking.WINDOWS] == ALL_WINDOWS
     per_section = result.group_by("a_id", "b_id").agg(pl.col("fenster").sort())
     assert per_section.height == 9
-    assert all(windows == sorted(ALL_WINDOWS) for windows in per_section["fenster"])
+    assert all(w == sorted(ALL_WINDOWS) for w in per_section["fenster"].to_list())
 
     # a value or a reason, never both; a rank only with a value
     with_value = result.filter(pl.col("grund").is_null())
