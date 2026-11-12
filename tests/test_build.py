@@ -1,7 +1,8 @@
 """Order and skipping of `uv run build`, without network and without real data.
 
 Only the network (requests.get) and the paths are replaced. download.fetch,
-download.fetch_service_points, load.zip_to_rail_parquet and sections.sections run unchanged.
+download.fetch_service_points, load.zip_to_rail_parquet, sections.sections and ranking.ranking
+run unchanged.
 """
 
 import functools
@@ -61,7 +62,11 @@ def env(tmp_path, monkeypatch):
     # the test archive is September 2026, independent of the period in period.py
     monkeypatch.setattr(build, "START", (2026, 9))
     monkeypatch.setattr(build, "END", (2026, 9))
-    stops = b"number;designation\n"
+    # The stop list as ranking.zurich_sections reads it. Bern is marked as ZH only for this
+    # test, so that the one section of the test train (Zürich HB -> Bern) reaches the ranking.
+    stops = (
+        "number;designationOfficial;cantonAbbreviation\n8503000;Zürich HB;ZH\n8507000;Bern;ZH\n"
+    ).encode()
     monkeypatch.setattr(download, "SERVICE_POINTS_SHA256", hashlib.sha256(stops).hexdigest())
 
     served = {"archive": month_archive()}  # a test may replace it before the first run
@@ -110,7 +115,12 @@ def test_first_run_downloads_then_loads(env, capsys):
 
     assert env["calls"] == ["fetch_service_points", "fetch_istdaten", "zip_to_rail_parquet"]
     out, err = capsys.readouterr()
-    assert out.splitlines() == ["download: gebaut", "load: gebaut", "sections: gebaut"]
+    assert out.splitlines() == [
+        "download: gebaut",
+        "load: gebaut",
+        "sections: gebaut",
+        "ranking: gebaut",
+    ]
     assert warnings(err) == []
     assert all(path.exists() for path in build.rail_parquets())
     assert len(build.rail_parquets()) == 30
@@ -120,6 +130,14 @@ def test_first_run_downloads_then_loads(env, capsys):
     assert build.sections_parquet().name == f"sections_2026-09_2026-09_{build.rules_hash()}.parquet"
     assert re.fullmatch(r"[0-9a-f]{8}", build.rules_hash())
     assert duckdb.read_parquet(str(build.sections_parquet())).count("*").fetchone()[0] == 30
+    # the one section in each of the 13 windows; 30 trips are below MIN_TRIPS, so no value
+    ranking_hash = build.rules_hash([*build.RULE_FILES, build.RANKING_FILE])
+    assert build.ranking_parquet().name == f"ranking_2026-09_2026-09_{ranking_hash}.parquet"
+    assert ranking_hash != build.rules_hash()
+    reasons = duckdb.sql(
+        f"select grund, count(*) from read_parquet('{build.ranking_parquet()}') group by all"
+    ).fetchall()
+    assert sorted(reasons) == [("nie gemessen", 7), ("zu wenige Fahrten", 6)]
 
 
 def test_second_run_skips_every_step(env, capsys):
@@ -127,7 +145,8 @@ def test_second_run_skips_every_step(env, capsys):
     capsys.readouterr()
     manifest_before = env["manifest"].read_text()
     mtimes = [
-        path.stat().st_mtime_ns for path in [*build.rail_parquets(), build.sections_parquet()]
+        path.stat().st_mtime_ns
+        for path in [*build.rail_parquets(), build.sections_parquet(), build.ranking_parquet()]
     ]
     env["calls"].clear()
 
@@ -137,12 +156,14 @@ def test_second_run_skips_every_step(env, capsys):
         "download: übersprungen",
         "load: übersprungen",
         "sections: übersprungen",
+        "ranking: übersprungen",
     ]
     assert env["calls"] == []
     assert len(env["requests"]) == 2  # only the first run
     assert env["manifest"].read_text() == manifest_before
     assert [
-        path.stat().st_mtime_ns for path in [*build.rail_parquets(), build.sections_parquet()]
+        path.stat().st_mtime_ns
+        for path in [*build.rail_parquets(), build.sections_parquet(), build.ranking_parquet()]
     ] == mtimes
 
 
@@ -154,7 +175,12 @@ def test_force_rebuilds_processed_but_not_raw(env, capsys):
 
     build.build(force=True)
 
-    assert stdout_lines(capsys) == ["download: übersprungen", "load: gebaut", "sections: gebaut"]
+    assert stdout_lines(capsys) == [
+        "download: übersprungen",
+        "load: gebaut",
+        "sections: gebaut",
+        "ranking: gebaut",
+    ]
     assert env["calls"] == ["zip_to_rail_parquet"]
     assert len(env["requests"]) == 2
     assert {p: p.read_bytes() for p in env["raw"].rglob("*") if p.is_file()} == raw_before
@@ -165,7 +191,12 @@ def test_missing_day_in_archive_warns_and_still_skips(env, capsys):
     env["served"]["archive"] = month_archive(missing=frozenset({15}))
     build.build()
     out, err = capsys.readouterr()
-    assert out.splitlines() == ["download: gebaut", "load: gebaut", "sections: gebaut"]
+    assert out.splitlines() == [
+        "download: gebaut",
+        "load: gebaut",
+        "sections: gebaut",
+        "ranking: gebaut",
+    ]
     assert warnings(err) == ["Warnung: im Archiv fehlen Tage des Zeitraums: 2026-09-15"]
     assert len(build.rail_parquets()) == 29
     env["calls"].clear()
@@ -177,6 +208,7 @@ def test_missing_day_in_archive_warns_and_still_skips(env, capsys):
         "download: übersprungen",
         "load: übersprungen",
         "sections: übersprungen",
+        "ranking: übersprungen",
     ]
     assert warnings(err) == ["Warnung: im Archiv fehlen Tage des Zeitraums: 2026-09-15"]
     assert env["calls"] == []
@@ -215,3 +247,25 @@ def test_changed_rules_rebuild_sections_and_drop_the_old_file(env, tmp_path, mon
     assert build.sections_parquet().exists()
     assert not old.exists()
     assert build.build_sections() == "übersprungen"
+
+
+def test_ranking_follows_sections_and_its_own_rules(env, tmp_path, monkeypatch, capsys):
+    rules = tmp_path / "rules" / "ranking.py"  # a copy, so the test can change the rules
+    rules.parent.mkdir()
+    shutil.copy(build.RANKING_FILE, rules)
+    monkeypatch.setattr(build, "RANKING_FILE", rules)
+    build.build()
+    capsys.readouterr()
+    old = build.ranking_parquet()
+
+    assert build.build_ranking() == "übersprungen"
+    assert build.build_ranking(force=True) == "gebaut"  # as build() does when sections was built
+
+    rules.write_text(rules.read_text() + "\n# changed rule\n")
+
+    assert build.ranking_parquet() != old
+    build.build()
+    assert stdout_lines(capsys)[-2:] == ["sections: übersprungen", "ranking: gebaut"]
+    assert build.ranking_parquet().exists()
+    assert not old.exists()
+    assert build.build_ranking() == "übersprungen"
