@@ -15,14 +15,14 @@ Usage:
 import argparse
 import csv
 import hashlib
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime
 from pathlib import Path
 
 import duckdb
 import requests
 from tqdm import tqdm
 
-from sbb_delays.paths import MANIFEST, RAW, SERVICE_POINTS_RAW
+from sbb_delays.paths import MANIFEST, RAW, SBB_DATA_RAW, SERVICE_POINTS_RAW
 from sbb_delays.period import SERVICE_POINTS_DATE, SERVICE_POINTS_SHA256
 
 # Monthly archive of IstDaten (v2 format, available from 2025-07). The daily files on
@@ -49,6 +49,12 @@ SERVICE_POINTS_COLUMNS = [
     "validFrom",
     "validTo",
 ]
+
+# CSV export of a dataset of data.sbb.ch (issue #42). The provider serves only the current
+# state, so a download is kept as a snapshot named after its retrieval date.
+SBB_DATA_URL = (
+    "https://data.sbb.ch/api/explore/v2.1/catalog/datasets/{dataset}/exports/csv?delimiter=%3B"
+)
 
 MANIFEST_FIELDS = ["file", "url", "retrieved_at", "sha256", "bytes"]
 CHUNK_SIZE = 1 << 20
@@ -169,6 +175,14 @@ def fetch_service_points(directory: Path = SERVICE_POINTS_RAW) -> Path:
         raise SnapshotUnavailable(
             f"Haltestellen-Schnappschuss {SERVICE_POINTS_DATE} nicht verfügbar ({url}): {e}"
         ) from e
+
+
+def fetch_sbb_dataset(dataset: str, directory: Path = SBB_DATA_RAW) -> Path:
+    """Return the newest local snapshot of a data.sbb.ch dataset; download one if none exists."""
+    if snapshots := sorted(directory.glob(f"{dataset}_20[0-9][0-9]-*.csv")):
+        return snapshots[-1]
+    url = SBB_DATA_URL.format(dataset=dataset)
+    return fetch(url, directory / f"{dataset}_{date.today():%Y-%m-%d}.csv")
 
 
 def extract_service_points(source: Path, dest: Path) -> Path:
