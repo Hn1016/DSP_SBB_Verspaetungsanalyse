@@ -1664,3 +1664,24 @@ Die ersten fünf Zeilen sind die gekreuzten Fenster aus den Erwartungen, die üb
 - **Prüfung:** Die Basis hat 394 Abschnitte wie im Befund zu #23. Basis und ausgeschlossene Abschnitte ergeben
   zusammen die 7'739'652 Zürcher Abschnittsfahrten aus dem Befund zu #33. Tests, `ruff` und `marimo check` laufen
   durch.
+
+## 2026-11-14 — Hypothese: LEB, MBC und ZB im Kanton Zürich (Issue #36, vor der Analyse notiert)
+
+Anlass: Die Entscheidung «Raum» vom 2026-11-10 (Issue #32) hält fest, dass LEB, MBC und ZB laut Team nicht im Kanton
+Zürich fahren; an den Daten ist das nicht geprüft. Die drei fielen im Befund zu H1 (2026-10-06) mit tiefer
+`REAL`-Abdeckung auf (LEB 65 %, MBC 85 %, ZB 88 %). Basis: Abschnittsfahrten aus `uv run build`, 1.8.2025 bis
+31.7.2026, beide Halte im Kanton Zürich (Kanton aus dem Schnappschuss der Haltestellenliste, `period.py`).
+
+- **Erwartung (schwagia, im Issue):** 0 Abschnittsfahrten von LEB, MBC und ZB im Kanton Zürich.
+- **Wie gezählt wird (Entscheid cengihas):**
+  - Betreiber einer Abschnittsfahrt: `BETREIBER_ABK` am Halt A, aus den Tagesdateien über `BETRIEBSTAG` und `ZEILE`,
+    weil er im Abschnitts-File fehlt. Eine Fahrt hat nur einen Betreiber (Befund H2, 2026-10-06).
+  - Gegenprobe Abkürzung: Dieselbe Zählung für die ganze Schweiz. Hat dort einer der drei 0 Abschnittsfahrten, ist
+    die Abkürzung falsch und die Zürcher 0 sagt nichts.
+  - Gegenprobe Messung: Zeilen der drei Betreiber an Zürcher Halten in den Tagesdateien, unabhängig vom Status.
+    Gehalten ist die Erwartung nur, wenn auch diese Zahl 0 ist.
+  - Dazu die fünf Betreiber mit den meisten Zürcher Abschnittsfahrten, mit Anteil am Total.
+- **Was schon bekannt ist:** die Zahl der Zürcher Abschnittsfahrten im Zeitraum (Befund zu #33); nach Betreiber ist
+  sie nicht gezählt.
+- *Folge bei Widerlegung:* Der Befund nennt die betroffenen Abschnitte mit Zahl der Fahrten. Ob sie ausgeschlossen
+  oder separat ausgewiesen werden, entscheidet das Team; die Aussage im One-Pager bleibt bis dahin stehen.
