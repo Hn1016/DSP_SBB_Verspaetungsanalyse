@@ -1665,6 +1665,271 @@ Die ersten fünf Zeilen sind die gekreuzten Fenster aus den Erwartungen, die üb
   zusammen die 7'739'652 Zürcher Abschnittsfahrten aus dem Befund zu #33. Tests, `ruff` und `marimo check` laufen
   durch.
 
+## 2026-11-12 — Entscheidung: Details der Rangliste (Issue #38)
+
+Grundlage: die Regeln aus Issue #32 (Einträge vom 2026-11-10), der Referenzwert je Soll-Fahrzeit aus dem Befund zu
+#23 und die beibehaltenen Mindestzahlen aus dem Befund zu #39. Die Einträge dort lassen Details offen, die der
+Pipeline-Schritt `ranking` braucht.
+
+- **Entscheidung (schwagia, nicht vom Agenten):**
+  1. **Zwei Mittel.** Klasse und Intervall gehen über das Mittel der Tagesmittel nach Referenzwert; das
+     95-%-Intervall wird mit der t-Verteilung (`scipy.stats.t`) über die Betriebstage gerechnet. Der Zuwachs ist das
+     Mittel über die Fahrten nach Referenzwert × Fahrten (wie Notebook 07). Beide Mittel stehen als Spalten in der
+     Ausgabe.
+  2. **Referenzwert.** Klassenmittel der Soll-Fahrzeit (Klassen 0, 1, 2, 3, 4, 5+ Minuten) über alle Zürcher
+     Abschnittsfahrten des ganzen Zeitraums, für alle Fenster gleich.
+  3. **Zuordnung zu den Fenstern.** Tageszeit nach der Uhrzeit der Soll-Abfahrt an A, Anfang eingeschlossen, Ende
+     ausgeschlossen; Wochentag, Jahreszeit und Fahrplan nach dem `BETRIEBSTAG` (wie Befund #39).
+  4. **Wert oder Grund.** Eine Fensterzeile hat einen Wert nur, wenn der Abschnitt im ganzen Zeitraum `MIN_TRIPS` und
+     `MIN_DAYS` erfüllt und im Fenster `MIN_DAYS_WINDOW` Betriebstage hat. Sonst steht ein Grund, in dieser
+     Reihenfolge geprüft: «nie gemessen» (keine Fahrt im Fenster), «zu wenige Fahrten», «zu wenige Betriebstage».
+     `fahrten` und `tage` stehen auch in Zeilen mit Grund. (Name und Reihenfolge ersetzt am 2026-11-14, Eintrag
+     «Name und Reihenfolge der Gründe».)
+  5. **Form der Ausgabe.** Eine Zeile pro Abschnitt (`a_id`, `b_id`) × Fenster, 13 Fenster mit den Spalten
+     `fenster_typ` und `fenster`: ganzer Zeitraum; Tageszeit Morgenspitze 06–09, Tag 09–16, Abendspitze 16–19,
+     Abend/Nacht 19–06; Wochentag Mo–Fr, Sa/So; Jahreszeit Winter (Dez–Feb), Frühling (Mär–Mai), Sommer (Jun–Aug),
+     Herbst (Sep–Nov); Fahrplan 2025 (bis 13.12.2025), 2026 (ab 14.12.2025). Rang nach Zuwachs je Fenster, nur für
+     Zeilen mit Wert.
+  6. **Konstanten.** `MIN_TRIPS = 100`, `MIN_DAYS = 30`, `MIN_DAYS_WINDOW = 20`, `MIN_EFFECT = 0.25` stehen an einer
+     Stelle in `ranking.py`; die Funktionen nehmen sie als Parameter.
+  - **Klasse.** Verstärker, wenn das Intervall ganz über 0 liegt und das Mittel der Tagesmittel mindestens
+    `MIN_EFFECT` beträgt; Absorber, wenn es ganz unter 0 liegt und das Mittel höchstens −`MIN_EFFECT` beträgt; sonst
+    neutral. Frühe Ankünfte werden nicht gekappt.
+- **Auslegung (Agent, von schwagia im Plan bestätigt):**
+  - «zu wenige Fahrten» heisst weniger als `MIN_TRIPS` Fahrten im ganzen Zeitraum; «zu wenige Betriebstage» heisst
+    weniger als `MIN_DAYS` Betriebstage im ganzen Zeitraum oder weniger als `MIN_DAYS_WINDOW` im Fenster.
+  - Der Filter auf den Kanton Zürich (beide Halte, wie Notebook 07) steht in einer eigenen Funktion
+    `zurich_sections()`; `class_means()` und `ranking()` nehmen die schon gefilterten Abschnittsfahrten. So kann die
+    Fixture erfundene Halte verwenden.
+  - Fehlt für eine vorkommende Klasse der Soll-Fahrzeit ein Klassenmittel, bricht `ranking()` mit einer Meldung ab,
+    statt die Fahrten still wegzulassen.
+- **Begründung zu 1:** Das Intervall über Tagesmittel folgt dem Eintrag «Systematisch» (Fahrten am selben Tag sind
+  nicht unabhängig). Der Zuwachs zählt Minuten über alle Fahrten und braucht darum das Mittel über die Fahrten; so
+  bleibt er mit dem Befund zu #23 vergleichbar. Die beiden Mittel unterscheiden sich, wenn ein Abschnitt nicht an
+  jedem Tag gleich viele Fahrten hat.
+- **Alternativen:** keine weiteren erwogen; die Alternativen zum Intervall stehen im Eintrag «Systematisch».
+
+## 2026-11-12 — Hypothese: Rangliste als Pipeline-Schritt, drei Prüfungen (Issue #38, vor der Analyse notiert)
+
+Anlass: Der Schritt `ranking` in `uv run build` schreibt für jeden Zürcher Abschnitt und jedes der 13 Fenster eine
+Zeile (Eintrag «Details der Rangliste» oben). Basis: Abschnittsfahrten aus `uv run build`, 1.8.2025 bis 31.7.2026,
+beide Halte im Kanton Zürich. Die Prüfungen laufen nach dem Bau in `notebooks/10_rangliste_pruefung.py`.
+
+- **Erwartung (schwagia):**
+  - (a) Im Fenster «ganzer Zeitraum» sind Zuwachs und Rang der Top 10 gleich wie im Befund zu #23 (Notebook 07, Rang
+    nach Mittel × Fahrten mit Referenzwert).
+  - (b) Die Zahl der Abschnitte mit mindestens 20 Betriebstagen je Fenster stimmt mit der Tabelle im Befund zu #39
+    überein.
+  - (c) In jedem der 13 Fenster haben mindestens 90 % der Abschnitte mit Wert eine halbe Intervallbreite unter
+    0.25 min. Begründung: Laut Befund zu #39 haben die meisten Fenster weit mehr als 20 Betriebstage (Median 90 bis
+    365).
+- **Wie geprüft wird (Entscheid des Agenten, im Review zu bestätigen):**
+  - (a) Verglichen werden die zehn Zeilen mit Rang 1 bis 10 im Fenster «ganzer Zeitraum» mit der Tabelle «Top 10 mit
+    Referenzwert» im Befund zu #23: derselbe Abschnitt auf demselben Rang, dieselbe Zahl Fahrten und derselbe
+    Zuwachs, auf ganze Minuten gerundet. Gehalten, wenn alle zehn Zeilen übereinstimmen.
+  - (b) Der Befund zu #39 zählt unter den 394 Abschnitten, die die Mindestzahl im ganzen Zeitraum erfüllen. Gezählt
+    werden darum je Fenster die Abschnitte, die im ganzen Zeitraum mindestens 100 Fahrten und 30 Betriebstage und im
+    Fenster mindestens 20 Betriebstage haben (Spalten `fahrten` und `tage`); das sind die Zeilen mit Wert. Erwartet
+    aus der Spalte «erreicht»: ganzer Zeitraum 394; Morgenspitze 376, Tag 363, Abendspitze 375, Abend/Nacht 377;
+    Mo–Fr 390, Sa/So 370; Winter 391, Frühling 392, Sommer 392, Herbst 390; Fahrplan 2025 390, Fahrplan 2026 394.
+    Gehalten, wenn alle 13 Zahlen übereinstimmen. Die gekreuzten Fenster aus dem Befund zu #39 (Tageszeit × Mo–Fr)
+    gibt es in der Rangliste nicht.
+  - (c) Halbe Intervallbreite = (obere − untere Grenze) / 2 des 95-%-Intervalls über die Tagesmittel nach
+    Referenzwert. Der Nenner je Fenster sind die Abschnitte mit Wert. Gehalten, wenn der Anteil mit halber Breite
+    unter 0.25 min in jedem der 13 Fenster mindestens 90 % beträgt; der Anteil je Fenster steht im Befund.
+  - Ohne Erwartung, beschreibend: je Fenster die Zahl der Verstärker, Absorber und neutralen Abschnitte und die
+    Verteilung der Gründe.
+- **Was schon bekannt ist:** die Top 10 und die Klassenmittel aus dem Befund zu #23, die Betriebstage je Fenster aus
+  dem Befund zu #39. Tagesmittel, Intervalle und Klassen sind für keinen Abschnitt gerechnet. (a) und (b) sind
+  Rechenproben gegen zwei unabhängig geschriebene Notebooks; sie können scheitern, wenn `ranking.py` anders filtert,
+  zuordnet oder zählt.
+- *Folge bei Widerlegung:* (a), (b): Die Abweichung wird gesucht und im Befund genannt, bevor die Rangliste weiter
+  verwendet wird. (c): Das Team entscheidet, ob `MIN_DAYS_WINDOW` erhöht oder Fenster zusammengelegt werden; nichts
+  wird automatisch geändert.
+
+## 2026-11-12 — Befund: Rangliste als Pipeline-Schritt, drei Prüfungen (Issue #38)
+
+Gebaut mit `uv run build` (Schritt `ranking`, `src/sbb_delays/ranking.py`), geprüft in
+`notebooks/10_rangliste_pruefung.py` nach der Hypothese oben (Commit `a2d5dcc` von 19:40:29 MEZ, von schwagia
+gepusht um 19:42:56, vor dem Bau; die ganze Reihenfolge mit Uhrzeiten steht im Eintrag «KI-Einsatz» unten).
+Basis: 7'739'652 Abschnittsfahrten im Kanton Zürich, 1.8.2025 bis 31.7.2026, auf 524 Abschnitten. Die Datei hat 6'812
+Zeilen = 524 Abschnitte × 13 Fenster, jede mit Wert oder Grund. Die Klassenmittel sind die aus dem Befund zu #23
+(+2.39, +0.22, −0.13, −0.53, −0.71, −0.78).
+
+**Je Fenster: Abschnitte mit Wert, halbe Breite des 95-%-Intervalls, Klassen und Gründe**
+
+| Fenster | mit Wert | Befund #39 | halbe Breite < 0.25 min | Anteil | Verstärker | Absorber | neutral | keine Fahrt im Fenster | zu wenige Fahrten | zu wenige Betriebstage |
+|---|---|---|---|---|---|---|---|---|---|---|
+| ganzer Zeitraum | 394 | 394 | 391 | 99.2 % | 142 | 124 | 128 | 0 | 130 | 0 |
+| Morgenspitze | 376 | 376 | 376 | 100.0 % | 131 | 119 | 126 | 12 | 130 | 6 |
+| Tag | 363 | 363 | 363 | 100.0 % | 125 | 120 | 118 | 24 | 130 | 7 |
+| Abendspitze | 375 | 375 | 374 | 99.7 % | 121 | 124 | 130 | 11 | 130 | 8 |
+| Abend/Nacht | 377 | 377 | 376 | 99.7 % | 137 | 118 | 122 | 16 | 130 | 1 |
+| Mo–Fr | 390 | 390 | 388 | 99.5 % | 141 | 125 | 124 | 0 | 130 | 4 |
+| Sa/So | 370 | 370 | 368 | 99.5 % | 123 | 116 | 131 | 18 | 130 | 6 |
+| Winter | 391 | 391 | 390 | 99.7 % | 140 | 124 | 127 | 0 | 130 | 3 |
+| Frühling | 392 | 392 | 389 | 99.2 % | 137 | 125 | 130 | 0 | 130 | 2 |
+| Sommer | 392 | 392 | 389 | 99.2 % | 141 | 122 | 129 | 0 | 130 | 2 |
+| Herbst | 390 | 390 | 387 | 99.2 % | 141 | 125 | 124 | 0 | 130 | 4 |
+| Fahrplan 2025 | 390 | 390 | 388 | 99.5 % | 140 | 123 | 127 | 0 | 130 | 4 |
+| Fahrplan 2026 | 394 | 394 | 392 | 99.5 % | 142 | 126 | 126 | 0 | 130 | 0 |
+
+Die drei Spalten der Gründe stehen nach dem Review mit Namen und Reihenfolge vom 2026-11-14 (Eintrag «Name und
+Reihenfolge der Gründe», Datei `ranking_2025-08_2026-07_b176f2ef.parquet`). Vorher zählte die Spalte «nie gemessen»
+0, 104, 77, 81, 90, 51, 62, 91, 69, 72, 60, 50, 41 und die Spalte «zu wenige Fahrten» 130, 38, 77, 60, 56, 79, 86,
+39, 61, 58, 70, 80, 89; die Spalte «zu wenige Betriebstage» ist gleich geblieben. Alle anderen Spalten der Tabelle
+sind unverändert.
+
+- **(a) gehalten.** Im Fenster «ganzer Zeitraum» stimmen alle zehn Zeilen der Top 10 mit dem Befund zu #23 überein:
+  derselbe Abschnitt auf demselben Rang, dieselbe Zahl Fahrten, derselbe Zuwachs auf ganze Minuten (Rang 1 Zürich HB →
+  Zürich Oerlikon, 75'748 Fahrten, 70'872 min; Rang 10 Zürich Stadelhofen → Stettbach, 56'560 Fahrten, 22'338 min).
+- **(b) gehalten.** In allen 13 Fenstern ist die Zahl der Abschnitte mit Wert gleich der Spalte «erreicht» im Befund
+  zu #39 (Tabelle oben). Die Abschnitte mit Wert im ganzen Zeitraum haben zusammen 7'738'519 Fahrten, wie dort.
+- **(c) gehalten.** In jedem Fenster haben mindestens 99.2 % der Abschnitte mit Wert eine halbe Intervallbreite unter
+  0.25 min (Erwartung mindestens 90 %). Der Median der halben Breite liegt je Fenster zwischen 0.008 und 0.015 min,
+  das 90. Perzentil zwischen 0.023 und 0.063 min. Über alle Fenster sind es 23 Zeilen mit halber Breite ab 0.25 min,
+  auf sieben Abschnitten (Winterthur → Zürich HB, Zürich HB → Zürich Enge, Zürich HB → Winterthur, Stettbach → Uster,
+  Winterthur → Dietlikon, Zürich Stadelhofen → Winterthur, Oberrieden Dorf → Horgen Oberdorf); die grösste ist
+  1.69 min (Winterthur → Zürich HB im Sommer, 68 Fahrten an 22 Betriebstagen).
+- **Klassen:** Im ganzen Zeitraum sind von 394 Abschnitten 142 Verstärker, 124 Absorber und 128 neutral; in den
+  Fenstern ist die Verteilung ähnlich (121 bis 142 Verstärker, 116 bis 126 Absorber, 118 bis 131 neutral). Von den
+  128 neutralen im ganzen Zeitraum haben 119 ein Intervall, das die 0 nicht enthält; sie sind neutral, weil das Mittel
+  der Tagesmittel unter 0.25 min liegt (in den Fenstern 109 bis 122). In der Top 10 ist Rang 7, Zürich HB → Zürich
+  Hardbrücke (0.19 min, Intervall [0.18, 0.19]), neutral; die anderen neun sind Verstärker.
+- **Was über die Klasse entscheidet:** fast immer `MIN_EFFECT`, nicht das Intervall: 119 von 128 neutralen
+  Abschnitten haben ein Intervall ohne 0. Für den Bericht heisst das: «systematisch» bedeutet hier praktisch «im
+  Mittel der Tagesmittel mindestens 0.25 min». Rang 7 der Top 10 (Zürich HB → Zürich Hardbrücke, 0.19 min) ist
+  neutral; ob die Top 10 nur aus Verstärkern gebildet wird, entscheidet das Team in einem eigenen Issue (Review
+  Hn1016).
+- **Gründe:** Im ganzen Zeitraum haben 130 Abschnitte den Grund «zu wenige Fahrten» (höchstens 65 Fahrten und 25
+  Betriebstage, wie im Befund zu #39), keiner «zu wenige Betriebstage». Die Mindestzahlen des ganzen Zeitraums werden
+  zuerst geprüft: Diese 130 Abschnitte haben in jedem der 13 Fenster «zu wenige Fahrten», auch in Fenstern ohne
+  Fahrt. Von den 394 anderen haben je Fenster 0 bis 24 «keine Fahrt im Fenster» (Morgenspitze 12, Tag 24,
+  Abendspitze 11, Abend/Nacht 16, Sa/So 18, sonst 0) und 0 bis 8 «zu wenige Betriebstage».
+- **Nach dem Review geprüft (2026-11-14):** Die neue Reihenfolge der Gründe darf nur die Spalte `grund` ändern.
+  Erwartung vor dem Lauf, aus der alten Tabelle gerechnet: «zu wenige Fahrten» 130 in jedem Fenster, «keine Fahrt im
+  Fenster» = alte Spalte «nie gemessen» − (130 − alte Spalte «zu wenige Fahrten»), «zu wenige Betriebstage» gleich;
+  alle 39 Zahlen sind eingetroffen. Nach `uv run build` (nur `ranking` gebaut) und neuem Lauf von Notebook 10: (a),
+  (b) und (c) gehalten mit denselben Zahlen (10 von 10 Zeilen, 13 von 13 Fenstern, kleinster Anteil 99.2 %), und die
+  Zahl der Verstärker, Absorber und neutralen ist in allen 13 Fenstern gleich. Vergleich aller 6'812 Zeilen der
+  alten Datei (`…_27b2ff15`) mit der neuen (`…_b176f2ef`): `fahrten`, `tage`, `klasse` und `rang` sind in jeder
+  Zeile gleich. `grund` ändert sich in 848 Zeilen: 767 von «nie gemessen» zu «zu wenige Fahrten», 81 zu «keine Fahrt
+  im Fenster»; die 4'994 Zeilen mit Wert, die 923 mit «zu wenige Fahrten» und die 47 mit «zu wenige Betriebstage»
+  bleiben. Die Mittel, Intervallgrenzen und der Zuwachs weichen in der letzten Stelle ab (Mittel und Grenzen
+  höchstens 2 × 10⁻¹⁵ min, Zuwachs höchstens 2 × 10⁻¹⁰ min). Das kommt nicht von der Änderung: Zwei Läufe desselben
+  Codes weichen gleich stark voneinander ab (höchstens 3 × 10⁻¹⁵ und 1.5 × 10⁻¹⁰ min), weil DuckDB parallel summiert.
+- **Grenzen:**
+  - (a) und (b) sind Rechenproben gegen die Notebooks 07 und 08. Sie zeigen, dass `ranking.py` gleich filtert,
+    zuordnet und zählt, nicht, dass die Regeln selbst richtig sind. Tagesmittel, Intervall und Klasse haben keine
+    zweite Rechnung; sie sind nur durch die Fixture mit den von Hand gerechneten Werten geprüft.
+  - Das Intervall behandelt die Betriebstage als unabhängig. Eine Störung über mehrere Tage oder eine Baustelle über
+    Wochen macht benachbarte Tage ähnlich; dann ist das Intervall zu schmal. Das ist nicht geprüft. Weil fast immer
+    `MIN_EFFECT` entscheidet, ändert ein etwas breiteres Intervall die Klassen kaum; für die 23 Zeilen mit breitem
+    Intervall gilt das nicht. Ob die Rangliste über die Zeit hält, prüft die Stabilitätsprüfung (Eintrag
+    «Stabilität» vom 2026-11-10, eigenes Paket); sie hängt nicht von dieser Annahme ab.
+  - (c) zeigt, dass das Intervall bei den vorhandenen Betriebstagen einen Effekt von 0.25 min eingrenzen kann. Die
+    meisten Fenster haben weit mehr als 20 Betriebstage; ob genau 20 genügen würden, ist damit nicht gezeigt (die
+    kleinste Zahl Betriebstage einer Zeile mit Wert ist 20, im Frühling).
+  - Der Wert ist relativ zum Klassenmittel der Soll-Fahrzeit (Befund zu #23): Verstärker heisst «mehr Zuwachs als ein
+    durchschnittlicher Zürcher Abschnitt gleicher Soll-Fahrzeit». Die Klassenmittel gelten für alle Fenster; ein
+    Fenster, in dem alle Abschnitte später sind, hat darum mehr Verstärker.
+  - Die Fenster einer Einteilung überschneiden sich mit denen der anderen: Der Sommer besteht aus August 2025 und
+    Juni/Juli 2026, der Winter enthält die ersten 13 Dezembertage im Fahrplan 2025.
+  - Nur Abschnitte, keine Halte; keine Stabilitätsprüfung, keine Ursache (laut Issue nicht Teil davon).
+- **Entscheidung (Team: schwagia, Hn1016; bestätigt im Review), Status in `docs/assumptions.md`:**
+  A10 bleibt «teilweise», Evidenz «mittel» (Vorschlag des Agenten übernommen). Für Abschnitte ist A10 jetzt auch bei
+  der Intervallbreite gestützt, durch Prüfung (c); offen bleibt A10 für Halte.
+
+## 2026-11-12 — KI-Einsatz: Issue #38
+
+- **Aufgabe:** die Rangliste der Zürcher Abschnitte je Zeitfenster als Schritt `ranking` in `uv run build`, mit
+  Fixture, Test und drei Prüfungen nach dem Bau.
+- **Mine:** das Issue (Hn1016); die Detail-Entscheide im Eintrag «Details der Rangliste» (schwagia); die Fälle und
+  die Erwartungswerte der Fixture, von Hand nachgerechnet und festgelegt (schwagia); die Erwartungen (a), (b), (c)
+  mit der Schwelle von 90 % (schwagia); die Entscheidung zum Status von A10 und der Satz, was «systematisch» für
+  den Bericht heisst (schwagia); der Auftrag «Test zuerst» und die Nummer des Notebooks (schwagia). Aus dem Review
+  des PR (2026-11-14, Hn1016 und schwagia): die Uhrzeiten als Beleg für die Reihenfolge; der Name «keine Fahrt im
+  Fenster» und die neue Reihenfolge der Gründe (Eintrag vom 2026-11-14); der Satz zu Rang 7 der Top 10 und dass
+  das Team darüber in einem eigenen Issue entscheidet; A10 als Entscheidung des Teams und die Ergänzung «bei den
+  vorhandenen Betriebstagen» in `docs/assumptions.md`.
+- **Delegated:** Claude Code hat die Einträge im Log, `tests/fixtures/ranking_cases.csv` und `tests/test_ranking.py`
+  nach den vorgegebenen Fällen, `src/sbb_delays/ranking.py`, die Spalte `abfahrt_a` in `sections.py`, den Schritt in
+  `build.py` mit den Tests, die Stelle im README und das Notebook 10 geschrieben. Entscheide des Agenten: die drei
+  Auslegungen im Eintrag «Details der Rangliste» (von schwagia im Plan bestätigt); wie (a), (b), (c) geprüft werden
+  (Hypothesen-Eintrag); die Namen der Spalten und Fenster; Klassenmittel als Wörterbuch Klasse → Mittel;
+  `min_days_window` unter 2 wird abgelehnt; zwei Tests ohne eigene Zahlen (Form der Ausgabe nach den Punkten 4 und 5,
+  Abbruch bei fehlendem Klassenmittel); im Befund die beschreibenden Zahlen zur halben Breite und die Spalte «neutral
+  nur wegen `MIN_EFFECT`»; der Vorschlag zum Status von A10 (von schwagia übernommen). Im Review (2026-11-14):
+  Claude Code hat die vier Punkte umgesetzt, je ein Commit. Entscheide des Agenten, von schwagia im Plan bestätigt:
+  `tests/test_build.py` und die Spalte `keine_fahrt` in Notebook 10 mit anpassen; den alten Punkt 4 im Eintrag
+  «Details der Rangliste» stehen lassen und auf den neuen Eintrag verweisen; One-Pager und Log vom 2026-10-25 nicht
+  ändern; die Erwartung für die neue Tabelle der Gründe vor dem Lauf aus der alten rechnen; der Vergleich aller
+  Zeilen der alten mit der neuen Datei.
+- **Prüfung:**
+  - Der Test war zuerst rot (Commit `3f72f46` um 19:44:19 MEZ, nach dem Push, vor `ranking.py`): `uv run pytest tests/test_ranking.py` meldete
+    0 failed, 1 error beim Sammeln, «ImportError: cannot import name 'ranking' from 'sbb_delays'». Rot heisst hier
+    also nur, dass das Modul fehlte; kein einzelner Testfall lief.
+  - Im ersten Lauf mit `ranking.py`: 19 passed, 1 failed. Gescheitert ist der Test zur Form der Ausgabe (vom
+    Agenten), mit «TypeError: the truth value of a Series is ambiguous»: Der Test verglich eine polars-Series mit
+    einer Liste. Korrigiert wurde der Test, nicht `ranking.py`; die Fälle mit den Erwartungswerten von schwagia waren
+    im ersten Lauf grün und sind nicht angepasst worden.
+  - Die Erwartungswerte hat der Agent vor dem Schreiben nachgerechnet (Intervalle mit t(0.975; 3) = 3.182,
+    Wochentage, Fahrten je Fenster). Eine Abweichung: «in den übrigen 9 Fenstern» im Auftrag sind 8 (13 Fenster, 5
+    mit Fahrten); von schwagia bestätigt.
+  - Nach dem Bau: (a), (b), (c) im Befund oben; 6'812 Zeilen = 524 × 13, keine Zeile mit Wert und Grund zugleich
+    oder ohne beides; die Summe der Fahrten ergibt die 7'739'652 aus dem Befund zu #33. Ein zweiter Lauf von
+    `uv run build` meldet für alle vier Schritte «übersprungen». Tests, `ruff` und `marimo check` laufen durch.
+  - Im Review (2026-11-14): Die Tests wurden vor `ranking.py` angepasst und waren rot (10 failed, 15 passed in
+    `test_ranking.py` und `test_build.py`, alle wegen des alten Namens oder der alten Reihenfolge), danach 81 passed.
+    `uv run build` baute nur `ranking`. Die 39 erwarteten Zahlen der Gründe sind eingetroffen; (a), (b), (c) und
+    die Klassen sind unverändert (Befund, «Nach dem Review geprüft»). Der Vergleich aller Zeilen zeigte Abweichungen
+    der Mittel in der letzten Stelle; der Agent hat denselben Code zweimal laufen lassen und dieselbe Streuung
+    gefunden, sie kommt also nicht von der Änderung. Tests, `ruff` und `marimo check` laufen durch.
+- **Reihenfolge:** Entscheidung und Hypothese waren committet (`a2d5dcc`) und von schwagia gepusht, bevor Fixture,
+  Test und Code entstanden und bevor gebaut wurde. Die Erwartungen sind nicht geändert. Beleg, Uhrzeiten vom
+  2026-11-12 in MEZ (Commit-Zeiten aus `git log`, Push aus dem Reflog von `origin/feat/issue-38-ranking`,
+  Schreibzeiten der Dateien in `data/processed/`):
+  - Plan ohne Änderung.
+  - Hypothese `a2d5dcc` 19:40:29.
+  - Push des Branches 19:42:56.
+  - Danach `3f72f46` 19:44:19 (Test rot), `1c8ad28` 19:45:25, `af5856c` 19:45:57, `54d5c79` 19:46:46.
+  - `sections_2025-08_2026-07_a62f7773.parquet` geschrieben 19:47:13.
+  - `ranking_2025-08_2026-07_27b2ff15.parquet` geschrieben 19:47:15.
+  - `7213af8` und `191d7ab` 19:49:38.
+- **Grösse:** Das Issue schätzt 150–200 Zeilen in `ranking.py` und `build.py`. Es sind 191 Zeilen in `ranking.py`
+  und rund 40 neue in `build.py`. Der Grund sind die 13 Fenster (Tabelle der Fenster, eine Zeile je Abschnitt und
+  Fenster auch ohne Fahrt) und die Spalten mit beiden Mitteln, Intervall, Klasse, Rang und Grund.
+- **Übernommen/verworfen:** Übernommen: der Plan des Agenten mit den Ergänzungen von schwagia (Erwartung für (c),
+  Kommentar zu Bern im Build-Test, Halt nach dem ersten Commit). Verworfen (schwagia): Notebook-Nummer 09, sie ist
+  für Issue #36 reserviert.
+
+## 2026-11-14 — Entscheidung: Name und Reihenfolge der Gründe (Team: schwagia, Hn1016; Review PR zu Issue #38)
+
+Anlass: Review von Hn1016 auf den PR zu Issue #38. Ersetzt im Eintrag «Details der Rangliste» vom 2026-11-12 in
+Punkt 4 den Namen des ersten Grundes und die Reihenfolge der Prüfung.
+
+- **Alte Regel:** Gründe in dieser Reihenfolge geprüft: «nie gemessen» (keine Fahrt im Fenster), «zu wenige Fahrten»
+  (weniger als `MIN_TRIPS` im ganzen Zeitraum), «zu wenige Betriebstage» (weniger als `MIN_DAYS` im ganzen Zeitraum
+  oder weniger als `MIN_DAYS_WINDOW` im Fenster).
+- **Neue Regel:** Der Grund «nie gemessen» heisst «keine Fahrt im Fenster». Geprüft wird in dieser Reihenfolge:
+  1. «zu wenige Fahrten»: weniger als `MIN_TRIPS` Fahrten im ganzen Zeitraum.
+  2. «zu wenige Betriebstage»: weniger als `MIN_DAYS` Betriebstage im ganzen Zeitraum.
+  3. «keine Fahrt im Fenster».
+  4. «zu wenige Betriebstage»: weniger als `MIN_DAYS_WINDOW` Betriebstage im Fenster.
+- **Grund (Review Hn1016):** «nie gemessen» bedeutet im One-Pager und im Log vom 2026-10-25 einen Halt ohne
+  `REAL`-Zeit. Ein Abschnitt ohne Fahrt in einem Fenster ist etwas anderes; derselbe Name für beides führt im
+  Bericht in die Irre.
+- **Grund für die Reihenfolge (Team):** Zuerst wird geprüft, ob ein Abschnitt überhaupt zur Basis gehört
+  (Mindestzahl im Zeitraum), erst dann, ob er in einem Fenster fährt. So zeigt die Tabelle getrennt, welche
+  Abschnitte grundsätzlich zu selten befahren sind und welche nur zu bestimmten Zeiten nicht fahren.
+- **Folge der Reihenfolge:** Ein Abschnitt, der die Mindestzahl im ganzen Zeitraum nicht erfüllt, hat in allen 13
+  Fenstern denselben Grund. Die Spalte «zu wenige Fahrten» zählt darum in jedem Fenster 130. Werte, Klassen und
+  Ränge ändern sich nicht (Befund zu Issue #38, «Nach dem Review geprüft»).
+- **Umsetzung:** `src/sbb_delays/ranking.py`, Kopf von `tests/fixtures/ranking_cases.csv`, `tests/test_ranking.py`,
+  `tests/test_build.py` (ein Abschnitt mit 30 Fahrten: 13 × «zu wenige Fahrten»), Spalte `keine_fahrt` in
+  `notebooks/10_rangliste_pruefung.py`. Die Daten der Fixture und die Erwartungswerte der Fälle mit Wert sind nicht
+  geändert.
+
 ## 2026-11-14 — Hypothese: LEB, MBC und ZB im Kanton Zürich (Issue #36, vor der Analyse notiert)
 
 Anlass: Die Entscheidung «Raum» vom 2026-11-10 (Issue #32) hält fest, dass LEB, MBC und ZB laut Team nicht im Kanton

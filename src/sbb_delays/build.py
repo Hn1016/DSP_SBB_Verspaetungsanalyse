@@ -2,12 +2,14 @@
 
 Runs the existing steps in order: download (monthly archives and stops into data/raw), then
 load (rail Parquet per operating day into data/processed), then sections (section passages of
-the period, one Parquet file named after the period, issue #24). Before each step the target files
+the period, one Parquet file named after the period, issue #24), then ranking (one row per
+Zurich section and time window, issue #38). Before each step the target files
 of the period are checked: if all exist, the step is skipped. Otherwise the step runs, and the
 existing functions skip single files that already exist, so an interrupted build continues.
 The targets of load are the daily files in the archives; calendar days of the period that an
 archive lacks are reported as a warning. sections is also rebuilt when load built something,
 and when its rules change: a short checksum of sections.py and quality.py is in the file name.
+ranking is also rebuilt when sections built something; its checksum covers ranking.py as well.
 
 Each step prints one line on stdout; progress bars and warnings go to stderr.
 
@@ -21,10 +23,13 @@ import hashlib
 import sys
 import zipfile
 from calendar import monthrange
+from collections.abc import Sequence
 from datetime import date
 from pathlib import Path
 
-from sbb_delays import download, load, quality, sections
+import duckdb
+
+from sbb_delays import download, load, quality, ranking, sections
 from sbb_delays.paths import ISTDATEN_RAIL, ISTDATEN_RAW, PROCESSED, SERVICE_POINTS_RAW
 from sbb_delays.period import END, START
 
@@ -96,10 +101,10 @@ def build_load(force: bool = False) -> str:
 RULE_FILES = [Path(sections.__file__), Path(quality.__file__)]
 
 
-def rules_hash() -> str:
-    """First 8 hex characters of SHA-256 over the contents of RULE_FILES, in order."""
+def rules_hash(files: Sequence[Path] | None = None) -> str:
+    """First 8 hex characters of SHA-256 over the contents of files (RULE_FILES), in order."""
     digest = hashlib.sha256()
-    for path in RULE_FILES:
+    for path in RULE_FILES if files is None else files:
         digest.update(path.read_bytes())
     return digest.hexdigest()[:8]
 
@@ -129,11 +134,43 @@ def build_sections(force: bool = False) -> str:
     return "gebaut"
 
 
+# The ranking rules; with RULE_FILES they decide what the ranking file holds.
+RANKING_FILE = Path(ranking.__file__)
+
+
+def ranking_prefix() -> str:
+    return sections_prefix().replace("sections", "ranking", 1)
+
+
+def ranking_parquet() -> Path:
+    """Target of ranking; named like sections, the checksum also covers ranking.py."""
+    return PROCESSED / f"{ranking_prefix()}_{rules_hash([*RULE_FILES, RANKING_FILE])}.parquet"
+
+
+def build_ranking(force: bool = False) -> str:
+    target = ranking_parquet()
+    if target.exists() and not force:
+        return "übersprungen"
+    passages = ranking.zurich_sections(
+        duckdb.connect(), sections_parquet(), download.service_points_snapshot(SERVICE_POINTS_RAW)
+    )
+    table = ranking.ranking(passages, ranking.class_means(passages))
+    tmp = target.with_suffix(".parquet.part")
+    table.write_parquet(tmp, compression="zstd")
+    tmp.rename(target)
+    for old in PROCESSED.glob(f"{ranking_prefix()}*.parquet"):  # older rules, as for sections
+        if old != target:
+            old.unlink()
+    return "gebaut"
+
+
 def build(force: bool = False) -> None:
     print(f"download: {build_download()}", flush=True)
     loaded = build_load(force)
     print(f"load: {loaded}", flush=True)
-    print(f"sections: {build_sections(force or loaded == 'gebaut')}", flush=True)
+    sectioned = build_sections(force or loaded == "gebaut")
+    print(f"sections: {sectioned}", flush=True)
+    print(f"ranking: {build_ranking(force or sectioned == 'gebaut')}", flush=True)
 
 
 def main() -> None:
