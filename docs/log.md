@@ -1847,7 +1847,11 @@ sind unverändert.
 - **Mine:** das Issue (Hn1016); die Detail-Entscheide im Eintrag «Details der Rangliste» (schwagia); die Fälle und
   die Erwartungswerte der Fixture, von Hand nachgerechnet und festgelegt (schwagia); die Erwartungen (a), (b), (c)
   mit der Schwelle von 90 % (schwagia); die Entscheidung zum Status von A10 und der Satz, was «systematisch» für
-  den Bericht heisst (schwagia); der Auftrag «Test zuerst» und die Nummer des Notebooks (schwagia).
+  den Bericht heisst (schwagia); der Auftrag «Test zuerst» und die Nummer des Notebooks (schwagia). Aus dem Review
+  des PR (2026-11-14, Hn1016 und schwagia): die Uhrzeiten als Beleg für die Reihenfolge; der Name «keine Fahrt im
+  Fenster» und die neue Reihenfolge der Gründe (Eintrag vom 2026-11-14); der Satz zu Rang 7 der Top 10 und dass
+  das Team darüber in einem eigenen Issue entscheidet; A10 als Entscheidung des Teams und die Ergänzung «bei den
+  vorhandenen Betriebstagen» in `docs/assumptions.md`.
 - **Delegated:** Claude Code hat die Einträge im Log, `tests/fixtures/ranking_cases.csv` und `tests/test_ranking.py`
   nach den vorgegebenen Fällen, `src/sbb_delays/ranking.py`, die Spalte `abfahrt_a` in `sections.py`, den Schritt in
   `build.py` mit den Tests, die Stelle im README und das Notebook 10 geschrieben. Entscheide des Agenten: die drei
@@ -1855,7 +1859,12 @@ sind unverändert.
   (Hypothesen-Eintrag); die Namen der Spalten und Fenster; Klassenmittel als Wörterbuch Klasse → Mittel;
   `min_days_window` unter 2 wird abgelehnt; zwei Tests ohne eigene Zahlen (Form der Ausgabe nach den Punkten 4 und 5,
   Abbruch bei fehlendem Klassenmittel); im Befund die beschreibenden Zahlen zur halben Breite und die Spalte «neutral
-  nur wegen `MIN_EFFECT`»; der Vorschlag zum Status von A10 (von schwagia übernommen).
+  nur wegen `MIN_EFFECT`»; der Vorschlag zum Status von A10 (von schwagia übernommen). Im Review (2026-11-14):
+  Claude Code hat die vier Punkte umgesetzt, je ein Commit. Entscheide des Agenten, von schwagia im Plan bestätigt:
+  `tests/test_build.py` und die Spalte `keine_fahrt` in Notebook 10 mit anpassen; den alten Punkt 4 im Eintrag
+  «Details der Rangliste» stehen lassen und auf den neuen Eintrag verweisen; One-Pager und Log vom 2026-10-25 nicht
+  ändern; die Erwartung für die neue Tabelle der Gründe vor dem Lauf aus der alten rechnen; der Vergleich aller
+  Zeilen der alten mit der neuen Datei.
 - **Prüfung:**
   - Der Test war zuerst rot (Commit `3f72f46` um 19:44:19 MEZ, nach dem Push, vor `ranking.py`): `uv run pytest tests/test_ranking.py` meldete
     0 failed, 1 error beim Sammeln, «ImportError: cannot import name 'ranking' from 'sbb_delays'». Rot heisst hier
@@ -1870,6 +1879,12 @@ sind unverändert.
   - Nach dem Bau: (a), (b), (c) im Befund oben; 6'812 Zeilen = 524 × 13, keine Zeile mit Wert und Grund zugleich
     oder ohne beides; die Summe der Fahrten ergibt die 7'739'652 aus dem Befund zu #33. Ein zweiter Lauf von
     `uv run build` meldet für alle vier Schritte «übersprungen». Tests, `ruff` und `marimo check` laufen durch.
+  - Im Review (2026-11-14): Die Tests wurden vor `ranking.py` angepasst und waren rot (10 failed, 15 passed in
+    `test_ranking.py` und `test_build.py`, alle wegen des alten Namens oder der alten Reihenfolge), danach 81 passed.
+    `uv run build` baute nur `ranking`. Die 39 erwarteten Zahlen der Gründe sind eingetroffen; (a), (b), (c) und
+    die Klassen sind unverändert (Befund, «Nach dem Review geprüft»). Der Vergleich aller Zeilen zeigte Abweichungen
+    der Mittel in der letzten Stelle; der Agent hat denselben Code zweimal laufen lassen und dieselbe Streuung
+    gefunden, sie kommt also nicht von der Änderung. Tests, `ruff` und `marimo check` laufen durch.
 - **Reihenfolge:** Entscheidung und Hypothese waren committet (`a2d5dcc`) und von schwagia gepusht, bevor Fixture,
   Test und Code entstanden und bevor gebaut wurde. Die Erwartungen sind nicht geändert. Beleg, Uhrzeiten vom
   2026-11-12 in MEZ (Commit-Zeiten aus `git log`, Push aus dem Reflog von `origin/feat/issue-38-ranking`,
