@@ -1919,6 +1919,9 @@ Punkt 4 den Namen des ersten Grundes und die Reihenfolge der Prüfung.
 - **Grund (Review Hn1016):** «nie gemessen» bedeutet im One-Pager und im Log vom 2026-10-25 einen Halt ohne
   `REAL`-Zeit. Ein Abschnitt ohne Fahrt in einem Fenster ist etwas anderes; derselbe Name für beides führt im
   Bericht in die Irre.
+- **Grund für die Reihenfolge (Team):** Zuerst wird geprüft, ob ein Abschnitt überhaupt zur Basis gehört
+  (Mindestzahl im Zeitraum), erst dann, ob er in einem Fenster fährt. So zeigt die Tabelle getrennt, welche
+  Abschnitte grundsätzlich zu selten befahren sind und welche nur zu bestimmten Zeiten nicht fahren.
 - **Folge der Reihenfolge:** Ein Abschnitt, der die Mindestzahl im ganzen Zeitraum nicht erfüllt, hat in allen 13
   Fenstern denselben Grund. Die Spalte «zu wenige Fahrten» zählt darum in jedem Fenster 130. Werte, Klassen und
   Ränge ändern sich nicht (Befund zu Issue #38, «Nach dem Review geprüft»).
