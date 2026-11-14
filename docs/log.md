@@ -1749,7 +1749,8 @@ beide Halte im Kanton Zürich. Die Prüfungen laufen nach dem Bau in `notebooks/
 ## 2026-11-12 — Befund: Rangliste als Pipeline-Schritt, drei Prüfungen (Issue #38)
 
 Gebaut mit `uv run build` (Schritt `ranking`, `src/sbb_delays/ranking.py`), geprüft in
-`notebooks/10_rangliste_pruefung.py` nach der Hypothese oben (Commit `a2d5dcc`, von schwagia gepusht vor dem Bau).
+`notebooks/10_rangliste_pruefung.py` nach der Hypothese oben (Commit `a2d5dcc` von 19:40:29 MEZ, von schwagia
+gepusht um 19:42:56, vor dem Bau; die ganze Reihenfolge mit Uhrzeiten steht im Eintrag «KI-Einsatz» unten).
 Basis: 7'739'652 Abschnittsfahrten im Kanton Zürich, 1.8.2025 bis 31.7.2026, auf 524 Abschnitten. Die Datei hat 6'812
 Zeilen = 524 Abschnitte × 13 Fenster, jede mit Wert oder Grund. Die Klassenmittel sind die aus dem Befund zu #23
 (+2.39, +0.22, −0.13, −0.53, −0.71, −0.78).
@@ -1834,7 +1835,7 @@ Zeilen = 524 Abschnitte × 13 Fenster, jede mit Wert oder Grund. Die Klassenmitt
   Abbruch bei fehlendem Klassenmittel); im Befund die beschreibenden Zahlen zur halben Breite und die Spalte «neutral
   nur wegen `MIN_EFFECT`»; der Vorschlag zum Status von A10 (von schwagia übernommen).
 - **Prüfung:**
-  - Der Test war zuerst rot (Commit `3f72f46`, vor `ranking.py`): `uv run pytest tests/test_ranking.py` meldete
+  - Der Test war zuerst rot (Commit `3f72f46` um 19:44:19 MEZ, nach dem Push, vor `ranking.py`): `uv run pytest tests/test_ranking.py` meldete
     0 failed, 1 error beim Sammeln, «ImportError: cannot import name 'ranking' from 'sbb_delays'». Rot heisst hier
     also nur, dass das Modul fehlte; kein einzelner Testfall lief.
   - Im ersten Lauf mit `ranking.py`: 19 passed, 1 failed. Gescheitert ist der Test zur Form der Ausgabe (vom
@@ -1848,7 +1849,16 @@ Zeilen = 524 Abschnitte × 13 Fenster, jede mit Wert oder Grund. Die Klassenmitt
     oder ohne beides; die Summe der Fahrten ergibt die 7'739'652 aus dem Befund zu #33. Ein zweiter Lauf von
     `uv run build` meldet für alle vier Schritte «übersprungen». Tests, `ruff` und `marimo check` laufen durch.
 - **Reihenfolge:** Entscheidung und Hypothese waren committet (`a2d5dcc`) und von schwagia gepusht, bevor Fixture,
-  Test und Code entstanden und bevor gebaut wurde. Die Erwartungen sind nicht geändert.
+  Test und Code entstanden und bevor gebaut wurde. Die Erwartungen sind nicht geändert. Beleg, Uhrzeiten vom
+  2026-11-12 in MEZ (Commit-Zeiten aus `git log`, Push aus dem Reflog von `origin/feat/issue-38-ranking`,
+  Schreibzeiten der Dateien in `data/processed/`):
+  - Plan ohne Änderung.
+  - Hypothese `a2d5dcc` 19:40:29.
+  - Push des Branches 19:42:56.
+  - Danach `3f72f46` 19:44:19 (Test rot), `1c8ad28` 19:45:25, `af5856c` 19:45:57, `54d5c79` 19:46:46.
+  - `sections_2025-08_2026-07_a62f7773.parquet` geschrieben 19:47:13.
+  - `ranking_2025-08_2026-07_27b2ff15.parquet` geschrieben 19:47:15.
+  - `7213af8` und `191d7ab` 19:49:38.
 - **Grösse:** Das Issue schätzt 150–200 Zeilen in `ranking.py` und `build.py`. Es sind 191 Zeilen in `ranking.py`
   und rund 40 neue in `build.py`. Der Grund sind die 13 Fenster (Tabelle der Fenster, eine Zeile je Abschnitt und
   Fenster auch ohne Fahrt) und die Spalten mit beiden Mitteln, Intervall, Klasse, Rang und Grund.
