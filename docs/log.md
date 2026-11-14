@@ -1969,3 +1969,32 @@ und die Baseline «sortiert nach Zugzahl» (Eintrag «Hauptkennzahl» vom 2026-1
 - *Folge bei Widerlegung:* Nichts wird automatisch geändert. Das Team entscheidet nach dem Befund, ob die Zuordnung
   verwendet wird oder Plan B gilt (Fahrten aus den IstDaten statt Zugzahl, Luftlinie aus den Koordinaten der Service
   Points statt km). Plan B wird in diesem Paket nicht umgesetzt.
+
+## 2026-11-14 — Hypothese, Nachtrag: A6, was eine «Kette» ist (Issue #42, vor dem Zuordnen notiert)
+
+Anlass: Die beiden Datensätze sind geladen (`data/raw/manifest.csv`, Abruf 2026-11-14) und ihr Aufbau ist
+angeschaut; die 394 Abschnitte sind noch mit keinem der beiden verbunden. Der Aufbau zeigt, dass der Eintrag oben bei
+der Zugzahl nicht genau genug ist. Die Erwartungen (1), (2), (3) bleiben unverändert.
+
+- **Was der Aufbau zeigt (ohne die 394 Abschnitte):**
+  - `zugzahlen` ist ein Netz aus Kanten zwischen Betriebspunkten, auch solchen ohne Halt (Abzweigungen, Spurwechsel).
+    Jüngstes Jahr 2025, je Kante bis zu vier Zeilen (Personen- und Güterverkehr, zwei Richtungen), in wenigen
+    Fällen eine Zeile doppelt. 2025 im Personenverkehr: 1'570 Kanten, Betreiberinnen SBB, BLS, SOB, TPF, TRAVYS,
+    HBL, HBS, DB. 10 Zeilen je Jahr haben keine `BPUIC`.
+  - Die Nummern der Strecken in `zugzahlen` und der Linien in `linie-mit-betriebspunkten` sind verschiedene
+    Nummernkreise (nur 8 gleiche Nummern, mit anderen Namen). Die Zugzahl kann darum nicht über die Linie gesucht
+    werden, nur über die `BPUIC` im Netz.
+  - `linie-mit-betriebspunkten`: 1'900 Zeilen, 1'358 Betriebspunkte auf 324 Linien; 409 Betriebspunkte liegen auf
+    mehr als einer Linie; kein Betriebspunkt hat auf derselben Linie zwei Kilometerwerte.
+- **Präzisierung (Entscheid des Agenten, im Review zu bestätigen):**
+  - Netz: die Kanten des Jahres 2025 im Personenverkehr, ohne Richtung, über `von_bpuic` und `bis_bpuic`.
+  - Kette von A nach B: der kürzeste Weg im Netz, gemessen an der Zahl der Kanten. In einem Netz mit Maschen gibt es
+    fast immer mehrere Wege; «nur eine Kette» heisst darum: genau ein kürzester Weg. «mehrdeutig»: mehrere gleich
+    kurze Wege. «nicht zuordenbar»: A oder B ist kein Knoten im Netz, oder es gibt keinen Weg.
+  - Zugzahl einer Kante: Summe der beiden Richtungen im Personenverkehr 2025; eine doppelte Zeile zählt einmal. Im
+    Befund stehen je Abschnitt die Zahl der Kanten der Kette und die kleinste und grösste Zugzahl.
+  - Der kürzeste Weg kann ein anderer sein als der gefahrene. Der Befund nennt darum die Verteilung der Zahl der
+    Kanten und Beispiele mit langen Ketten; eine Schwelle dafür gibt es nicht.
+  - Länge: unverändert (genau eine gemeinsame Linie, Differenz der Kilometer).
+- **Was schon bekannt ist:** nur das oben Genannte und die Top 10 aus dem Befund zu #23. Ob ein Abschnitt in einem
+  der Datensätze vorkommt, ist nicht nachgeschaut.
