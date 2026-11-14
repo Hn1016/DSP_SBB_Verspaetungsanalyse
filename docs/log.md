@@ -1798,7 +1798,9 @@ sind unverändert.
   Hardbrücke (0.19 min, Intervall [0.18, 0.19]), neutral; die anderen neun sind Verstärker.
 - **Was über die Klasse entscheidet:** fast immer `MIN_EFFECT`, nicht das Intervall: 119 von 128 neutralen
   Abschnitten haben ein Intervall ohne 0. Für den Bericht heisst das: «systematisch» bedeutet hier praktisch «im
-  Mittel der Tagesmittel mindestens 0.25 min».
+  Mittel der Tagesmittel mindestens 0.25 min». Rang 7 der Top 10 (Zürich HB → Zürich Hardbrücke, 0.19 min) ist
+  neutral; ob die Top 10 nur aus Verstärkern gebildet wird, entscheidet das Team in einem eigenen Issue (Review
+  Hn1016).
 - **Gründe:** Im ganzen Zeitraum haben 130 Abschnitte den Grund «zu wenige Fahrten» (höchstens 65 Fahrten und 25
   Betriebstage, wie im Befund zu #39), keiner «zu wenige Betriebstage». Die Mindestzahlen des ganzen Zeitraums werden
   zuerst geprüft: Diese 130 Abschnitte haben in jedem der 13 Fenster «zu wenige Fahrten», auch in Fenstern ohne
