@@ -1836,7 +1836,7 @@ sind unverändert.
   - Die Fenster einer Einteilung überschneiden sich mit denen der anderen: Der Sommer besteht aus August 2025 und
     Juni/Juli 2026, der Winter enthält die ersten 13 Dezembertage im Fahrplan 2025.
   - Nur Abschnitte, keine Halte; keine Stabilitätsprüfung, keine Ursache (laut Issue nicht Teil davon).
-- **Entscheidung (schwagia, 2026-11-12; zur Bestätigung durch Hn1016 im Review), Status in `docs/assumptions.md`:**
+- **Entscheidung (Team: schwagia, Hn1016; bestätigt im Review), Status in `docs/assumptions.md`:**
   A10 bleibt «teilweise», Evidenz «mittel» (Vorschlag des Agenten übernommen). Für Abschnitte ist A10 jetzt auch bei
   der Intervallbreite gestützt, durch Prüfung (c); offen bleibt A10 für Halte.
 
