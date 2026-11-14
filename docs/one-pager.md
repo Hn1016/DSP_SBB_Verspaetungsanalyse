@@ -1,7 +1,8 @@
 # One-Pager: Wo entstehen und wo verschwinden Verspätungen im Schweizer Bahnnetz?
 
 Stand: 2026-10-17, Schritt 2 und «Fertig» nachgeführt am 2026-10-29, Prüfungen an die Richtlinien v3 angeglichen am
-2026-11-01, Regeln für die Rangliste festgelegt am 2026-11-10 (Issue #32). Quellen: Aufgabenstellung (`docs/requirements.md`) und die Entscheidungen im Projektlog (`docs/log.md`).
+2026-11-01, Regeln für die Rangliste festgelegt am 2026-11-10 (Issue #32), Länge und Zugzahl nach Plan B am 2026-11-14
+(Issue #42). Quellen: Aufgabenstellung (`docs/requirements.md`) und die Entscheidungen im Projektlog (`docs/log.md`).
 Was dort nicht entschieden ist, steht hier als **offen**.
 
 ## Warum (Why)
@@ -46,7 +47,8 @@ zwischen den beiden Fahrplänen (Rangkorrelation).
   Abschnitte mit positivem Mittel (Log «Positiver Zuwachs»).
 - **Hauptkennzahl:** absolut, Minuten Zuwachs im ganzen Zeitraum (Mittel × Fahrten). Pro Fahrt und pro
   Streckenkilometer als Begleitspalten; der Vergleich mit der Baseline «sortiert nach Zugzahl» prüft, ob die
-  Rangliste nur Volumen und Länge abbildet (Log «Hauptkennzahl»).
+  Rangliste nur Volumen und Länge abbildet (Log «Hauptkennzahl»). Länge ist die Luftlinie zwischen den beiden
+  Halten, Zugzahl die Zahl der Fahrten aus den IstDaten (Plan B, Log 2026-11-14, Befund #42).
 - **Systematisch:** mindestens 100 gemessene Fahrten und 30 Betriebstage mit Messung im Zeitraum, mindestens 20
   Betriebstage pro Zeitfenster (beibehalten, Log 2026-11-12, Befund #39; ob 20 Betriebstage genügen, offen, Issue
   #38). Das 95-%-Konfidenzintervall des Mittels wird über die Tagesmittel je Betriebstag gerechnet, nicht über
@@ -73,8 +75,9 @@ Offen:
 - SBB IstDaten v2 von opentransportdata.swiss, Monatsarchive (Log 2026-10-05), verfügbar ab 13.7.2025. Der
   Zeitraum (siehe Eingrenzung) enthält den Fahrplanwechsel vom 14.12.2025.
 - Haltestellenliste (Service Points) mit Koordinaten, Schnappschuss mit Abrufdatum (Log 2026-10-05).
-- Von data.sbb.ch: Züge pro Streckenabschnitt (Auslastungsmass), Linie (Betriebspunkte), Kilometrierungspunkte.
-  Noch nicht geladen.
+- Von data.sbb.ch: Züge pro Streckenabschnitt (`zugzahlen`) und Linie mit Betriebspunkten und Kilometern
+  (`linie-mit-betriebspunkten`), geladen am 2026-11-14. Sie werden für die Rangliste nicht verwendet: Eine Länge gibt
+  es nur für 69.8 % der Abschnitte und 5 der Top 10, eine Zugzahl für 86.3 % (Log 2026-11-14, Befund #42).
 
 **Eingrenzung (entschieden, Log 2026-10-05 und 2026-10-06):** nur `PRODUKT_ID = 'Zug'`; nur Halte in der Schweiz
 (BPUIC 85…); nur `REAL` gilt als gemessen; Ausfälle bleiben in den Daten und werden ausgewiesen.
@@ -103,11 +106,13 @@ Offen:
 4. Je Abschnitt bzw. Halt und Zeitfenster aggregieren.
 5. Je Abschnitt eine einfache Regression des Zuwachses auf die eingehende Verspätung: Die Steigung zeigt, ob ein
    Abschnitt einen konstanten Betrag addiert oder proportional verstärkt.
-6. Normieren pro Fahrt und pro Streckenkilometer, mit der Zugzahl pro Abschnitt vergleichen.
+6. Normieren pro Fahrt und pro Kilometer Luftlinie, mit der Zahl der Fahrten pro Abschnitt vergleichen (Plan B, Log
+   2026-11-14, Befund #42).
 7. Prüfungen nach Abschnitt 3 der Richtlinien, dann Karte und Bericht.
 
 Offen:
-- Wie Halte (BPUIC) auf die Streckenabschnitte und Kilometrierung von data.sbb.ch abgebildet werden (A6).
+- Wie weit die Luftlinie von der Streckenlänge abweicht; die 275 Abschnitte mit Länge aus data.sbb.ch können das
+  zeigen (Log 2026-11-14, Befund #42).
 
 ## Nicht-Ziele (Non-goals)
 

@@ -1929,3 +1929,170 @@ Punkt 4 den Namen des ersten Grundes und die Reihenfolge der Prüfung.
   `tests/test_build.py` (ein Abschnitt mit 30 Fahrten: 13 × «zu wenige Fahrten»), Spalte `keine_fahrt` in
   `notebooks/10_rangliste_pruefung.py`. Die Daten der Fixture und die Erwartungswerte der Fälle mit Wert sind nicht
   geändert.
+
+## 2026-11-14 — Hypothese: A6, Zuordnung der Abschnitte zu data.sbb.ch (Issue #42, vor der Analyse notiert)
+
+Anlass: A6 in `docs/assumptions.md` ist offen (mittel/tief, kein Log-Eintrag). Die Normierung pro Streckenkilometer
+und die Baseline «sortiert nach Zugzahl» (Eintrag «Hauptkennzahl» vom 2026-11-10) brauchen die Zuordnung. Basis: die
+394 Zürcher Abschnitte mit Wert im Fenster «ganzer Zeitraum» aus dem Pipeline-Schritt `ranking` (Befund zu #38),
+1.8.2025 bis 31.7.2026.
+
+- **Erwartung (schwagia, im Issue):**
+  - (1) Mindestens 80 % der 394 Abschnitte lassen sich eindeutig einem Streckenabschnitt mit Länge in km zuordnen.
+  - (2) Mindestens 9 der Top 10 aus dem Befund zu #23 lassen sich eindeutig zuordnen.
+  - (3) Für mindestens 80 % der 394 Abschnitte gibt es eine Zugzahl.
+- **Wie zugeordnet und gezählt wird (Entscheid des Agenten, im Review zu bestätigen):**
+  - Datensätze von data.sbb.ch: `linie-mit-betriebspunkten` (Linie und Kilometer je Betriebspunkt, mit `bpuic`) für
+    die Länge, `zugzahlen` (Züge pro Streckenabschnitt und Jahr, mit `von_bpuic` und `bis_bpuic`) für die Zugzahl.
+    Geladen über `sbb_delays.download`, mit Prüfsumme in `data/raw/manifest.csv`. Der Schlüssel ist die `BPUIC`;
+    Namen werden nicht verglichen.
+  - Länge, je Abschnitt A→B: «eindeutig», wenn A und B auf genau einer gemeinsamen Linie liegen; die Länge ist dann
+    der Betrag der Differenz der Kilometer. «mehrdeutig», wenn sie auf mehreren gemeinsamen Linien liegen oder ein
+    Halt auf der gemeinsamen Linie mehrere Kilometerwerte hat. «nicht zuordenbar», wenn A oder B im Datensatz fehlt
+    oder die beiden keine gemeinsame Linie haben (der Weg wechselt die Linie). Der Grund steht je Abschnitt dabei.
+  - Zugzahl, je Abschnitt A→B, für das jüngste Jahr im Datensatz: «eindeutig», wenn die Kette der Streckenabschnitte
+    von A bis B lückenlos gefunden wird und es nur eine solche Kette gibt (im einfachsten Fall ein Eintrag von A bis
+    B). Führt der Abschnitt über mehrere Streckenabschnitte, stehen die kleinste und die grösste Zugzahl der Kette
+    im Befund; welche gilt, wird hier nicht entschieden. «mehrdeutig» bei mehreren Ketten, «nicht zuordenbar» sonst.
+    Die Richtung wird nicht verlangt: Ein Eintrag B→A zählt für A→B, der Befund nennt, wie oft das vorkommt.
+  - (1) und (3): Der Nenner ist immer 394; gehalten, wenn der Anteil «eindeutig» mindestens 80 % beträgt.
+    «mehrdeutig» zählt nicht als zugeordnet.
+  - (2): die zehn Abschnitte mit Rang 1 bis 10 im Fenster «ganzer Zeitraum» (Rang nach Mittel × Fahrten mit
+    Referenzwert, Tabelle im Befund zu #23). Gehalten, wenn mindestens 9 bei der Länge «eindeutig» sind. Die Zahl
+    für die Zugzahl steht daneben, ohne eigene Erwartung.
+- **Was schon bekannt ist:** Am 2026-11-14 wurden nur die Beschreibungen der Datensätze im Katalog gelesen (Namen,
+  Felder, Zahl der Zeilen: `linie-mit-betriebspunkten` 1'900, `zugzahlen` 30'328); keine Zeile ist geladen, nichts
+  ist zugeordnet. `zugzahlen` hat ein Feld für die Infrastrukturbetreiberin; ob die Datensätze die Strecken anderer
+  Betreiberinnen im Kanton Zürich (zum Beispiel SZU) enthalten, ist nicht geprüft. Einen eigenen Datensatz
+  «Kilometrierungspunkte» hat die Suche im Katalog nicht gefunden; die Kilometer kommen aus
+  `linie-mit-betriebspunkten`.
+- *Folge bei Widerlegung:* Nichts wird automatisch geändert. Das Team entscheidet nach dem Befund, ob die Zuordnung
+  verwendet wird oder Plan B gilt (Fahrten aus den IstDaten statt Zugzahl, Luftlinie aus den Koordinaten der Service
+  Points statt km). Plan B wird in diesem Paket nicht umgesetzt.
+
+## 2026-11-14 — Hypothese, Nachtrag: A6, was eine «Kette» ist (Issue #42, vor dem Zuordnen notiert)
+
+Anlass: Die beiden Datensätze sind geladen (`data/raw/manifest.csv`, Abruf 2026-11-14) und ihr Aufbau ist
+angeschaut; die 394 Abschnitte sind noch mit keinem der beiden verbunden. Der Aufbau zeigt, dass der Eintrag oben bei
+der Zugzahl nicht genau genug ist. Die Erwartungen (1), (2), (3) bleiben unverändert.
+
+- **Was der Aufbau zeigt (ohne die 394 Abschnitte):**
+  - `zugzahlen` ist ein Netz aus Kanten zwischen Betriebspunkten, auch solchen ohne Halt (Abzweigungen, Spurwechsel).
+    Jüngstes Jahr 2025, je Kante bis zu vier Zeilen (Personen- und Güterverkehr, zwei Richtungen), in wenigen
+    Fällen eine Zeile doppelt. 2025 im Personenverkehr: 1'570 Kanten, Betreiberinnen SBB, BLS, SOB, TPF, TRAVYS,
+    HBL, HBS, DB. 10 Zeilen je Jahr haben keine `BPUIC`.
+  - Die Nummern der Strecken in `zugzahlen` und der Linien in `linie-mit-betriebspunkten` sind verschiedene
+    Nummernkreise (nur 8 gleiche Nummern, mit anderen Namen). Die Zugzahl kann darum nicht über die Linie gesucht
+    werden, nur über die `BPUIC` im Netz.
+  - `linie-mit-betriebspunkten`: 1'900 Zeilen, 1'358 Betriebspunkte auf 324 Linien; 409 Betriebspunkte liegen auf
+    mehr als einer Linie; kein Betriebspunkt hat auf derselben Linie zwei Kilometerwerte.
+- **Präzisierung (Entscheid des Agenten, im Review zu bestätigen):**
+  - Netz: die Kanten des Jahres 2025 im Personenverkehr, ohne Richtung, über `von_bpuic` und `bis_bpuic`.
+  - Kette von A nach B: der kürzeste Weg im Netz, gemessen an der Zahl der Kanten. In einem Netz mit Maschen gibt es
+    fast immer mehrere Wege; «nur eine Kette» heisst darum: genau ein kürzester Weg. «mehrdeutig»: mehrere gleich
+    kurze Wege. «nicht zuordenbar»: A oder B ist kein Knoten im Netz, oder es gibt keinen Weg.
+  - Zugzahl einer Kante: Summe der beiden Richtungen im Personenverkehr 2025; eine doppelte Zeile zählt einmal. Im
+    Befund stehen je Abschnitt die Zahl der Kanten der Kette und die kleinste und grösste Zugzahl.
+  - Der kürzeste Weg kann ein anderer sein als der gefahrene. Der Befund nennt darum die Verteilung der Zahl der
+    Kanten und Beispiele mit langen Ketten; eine Schwelle dafür gibt es nicht.
+  - Länge: unverändert (genau eine gemeinsame Linie, Differenz der Kilometer).
+- **Was schon bekannt ist:** nur das oben Genannte und die Top 10 aus dem Befund zu #23. Ob ein Abschnitt in einem
+  der Datensätze vorkommt, ist nicht nachgeschaut.
+
+## 2026-11-14 — Befund: A6, Zuordnung der Abschnitte zu data.sbb.ch (Issue #42)
+
+Berechnet in `notebooks/11_zuordnung_data_sbb.py` nach der Hypothese oben (Commit `d451249`) und dem Nachtrag
+(Commit `80e83dc`), beide gepusht vor dem Zuordnen. Basis: die 394 Zürcher Abschnitte mit Wert im Fenster «ganzer
+Zeitraum» (`ranking_2025-08_2026-07_b176f2ef.parquet`), zusammen 7'738'519 Abschnittsfahrten, wie im Befund zu #38.
+Datensätze von data.sbb.ch, Abruf 2026-11-14, Prüfsummen in `data/raw/manifest.csv`: `linie-mit-betriebspunkten`
+(1'900 Zeilen) und `zugzahlen` (30'328 Zeilen, jüngstes Jahr 2025).
+
+| Ziel | eindeutig | mehrdeutig | nicht zuordenbar | Anteil eindeutig | Anteil der Fahrten eindeutig |
+|---|---|---|---|---|---|
+| Länge (km) | 275 | 2 | 117 | 69.8 % | 66.5 % |
+| Zugzahl | 340 | 4 | 50 | 86.3 % | 85.9 % |
+
+- **(1) nicht gehalten.** 275 von 394 Abschnitten (69.8 %) haben genau eine gemeinsame Linie und damit eine Länge
+  (Erwartung mindestens 80 %). Die Längen liegen zwischen 0.93 und 15.55 km, Median 2.85 km.
+- **(2) nicht gehalten.** 5 der Top 10 haben eine Länge (Erwartung mindestens 9): Rang 2, 4, 7, 8 und 10. Ohne Länge
+  sind Rang 1 (Zürich HB → Zürich Oerlikon), 3 (Zürich Flughafen → Zürich Oerlikon), 5 (Zürich HB → Zürich Wiedikon),
+  6 (Winterthur → Stettbach) und 9 (Uster → Zürich Stadelhofen), alle mit dem Grund «keine gemeinsame Linie». Eine
+  Zugzahl haben alle 10.
+- **(3) gehalten.** 340 von 394 Abschnitten (86.3 %) haben genau einen kürzesten Weg im Netz und damit eine Zugzahl
+  (Erwartung mindestens 80 %).
+- **Gründe bei der Länge (117 Abschnitte, 2'505'371 Fahrten):**
+  - «keine gemeinsame Linie», 61 Abschnitte mit 1'359'274 Fahrten: A und B stehen im Datensatz, aber auf
+    verschiedenen Linien; der Weg wechselt die Linie, oft in einem Knoten. Beispiele: Zürich HB ↔ Zürich Stadelhofen
+    (je rund 127'700 Fahrten), Zürich HB ↔ Zürich Oerlikon, Zürich Oerlikon ↔ Zürich Flughafen, Winterthur ↔
+    Winterthur Grüze.
+  - A oder B fehlt im Datensatz, 56 Abschnitte mit 1'146'097 Fahrten (50 mit beiden Halten, je 3 mit A oder B). Nach
+    der Linie der Fahrten sind es vor allem S4 und S10 (28 und 16 Abschnitte), S17 (8) und S13 (6): Strecken, die im
+    Datensatz der SBB nicht geführt sind. Beispiele: Adliswil → Sood-Oberleimbach, Zürich HB ↔ Zürich Selnau,
+    Dietikon ↔ Dietikon Schöneggstrasse, Wädenswil ↔ Burghalden.
+  - «mehrdeutig», 2 Abschnitte: Zürich Hardbrücke ↔ Zürich Altstetten liegt auf zwei gemeinsamen Linien; die beiden
+    Längen unterscheiden sich um 5 m.
+- **Gründe bei der Zugzahl (54 Abschnitte):** 50 «nicht zuordenbar», weil A oder B kein Knoten im Netz ist (46 mit
+  beiden Halten, je 2 mit A oder B; 1'059'478 Fahrten); «kein Weg im Netz» kommt nicht vor. 4 «mehrdeutig» mit zwei
+  gleich kurzen Wegen: Zürich HB ↔ Zürich Wipkingen und Zürich HB ↔ Winterthur.
+- **Wie gut die Zugzahl ist, wo sie eindeutig ist (beschreibend, ohne Erwartung):**
+  - 200 der 340 Ketten bestehen aus einer Kante, 71 aus zwei, 23 aus drei, 46 aus vier bis dreizehn (589'900
+    Fahrten). Die längsten: Winterthur ↔ Zürich Stadelhofen (13 Kanten), Winterthur ↔ Stettbach (11), Winterthur ↔
+    Zürich Flughafen und Zürich HB ↔ Wädenswil (10).
+  - Bei 224 der 340 ist die Zugzahl auf der ganzen Kette gleich, bei 256 weicht die grösste höchstens 10 % von der
+    kleinsten ab. Bei 70 ist die grösste mehr als das 1.5-Fache der kleinsten, bei 57 mehr als das Doppelte.
+    Beispiel Rang 5, Zürich HB → Zürich Wiedikon: 91'220 bis 779'381 Züge auf drei Kanten. Für diese Abschnitte gibt
+    es nicht «die» Zugzahl.
+  - Alle 275 Abschnitte mit Länge haben auch eine Zugzahl; 63 haben eine Zugzahl ohne Länge.
+- **Grenzen:**
+  - Der kürzeste Weg im Netz ist nicht geprüft gegen den gefahrenen Weg; bei den langen Ketten kann er ein anderer
+    sein.
+  - `zugzahlen` gilt für das Kalenderjahr 2025, der Zeitraum der Rangliste ist 1.8.2025 bis 31.7.2026, mit dem
+    Fahrplanwechsel vom 14.12.2025. Die Zugzahl zählt alle Personenzüge auf der Kante, beide Richtungen zusammen,
+    auch solche, die den Abschnitt in den IstDaten anders befahren (andere Haltefolge); die Rangliste trennt die
+    Richtungen.
+  - Die Länge aus der Differenz der Kilometer gilt nur auf einer Linie. Ob sie dort der gefahrenen Länge
+    entspricht, ist nicht geprüft.
+  - Die Datensätze sind der Stand vom 2026-11-14; data.sbb.ch liefert nur den aktuellen Stand.
+  - Nur die 394 Abschnitte mit Wert; die 130 mit «zu wenige Fahrten» sind nicht zugeordnet.
+- **Entscheidung (Hn1016, 2026-11-14, auf Vorschlag des Agenten; zur Bestätigung durch schwagia im Review), Status in
+  `docs/assumptions.md`:** A6 ist für die Länge widerlegt und für die Zugzahl nur teilweise gestützt. Es gilt Plan B
+  für beide Grössen:
+  - Länge: Luftlinie aus den Koordinaten der Service Points, für alle Abschnitte gleich gerechnet. Die Zuordnung
+    scheitert bei 30 % der Abschnitte und bei der Hälfte der Top 10, und zwar aus Gründen im Aufbau der Daten
+    (Linienwechsel in Knoten, Strecken ausserhalb des Datensatzes); eine Rangliste «pro km» nur für 275 Abschnitte
+    liesse gerade die Abschnitte um Zürich HB weg.
+  - Zugzahl: Fahrten aus den IstDaten. Sie gibt es für alle 394 Abschnitte, je Richtung und für genau den Zeitraum
+    der Rangliste; `zugzahlen` deckt 86 % ab, gilt für ein anderes Jahr und gibt bei 70 Abschnitten keine einzelne
+    Zahl.
+  - Plan B wird in diesem Paket nicht umgesetzt. Die 275 Längen aus der Zuordnung können später zeigen, wie weit die
+    Luftlinie von der Streckenlänge abweicht; das ist kein Teil dieses Pakets.
+
+## 2026-11-14 — KI-Einsatz: Issue #42
+
+- **Aufgabe:** die 394 Zürcher Abschnitte mit Wert den Linien, Kilometern und Zugzahlen von data.sbb.ch zuordnen und
+  zählen, für wie viele das eindeutig gelingt.
+- **Mine:** das Issue mit den Erwartungen (1), (2), (3) (schwagia); der Auftrag, die Hypothese und den Nachtrag vor
+  dem Zuordnen zu committen und zu pushen (Hn1016); die Entscheidung zu Plan B (Hn1016, zur Bestätigung durch
+  schwagia).
+- **Delegated:** Claude Code hat die Einträge im Log, `fetch_sbb_dataset()` in `download.py` mit zwei Tests und das
+  Notebook 11 geschrieben. Entscheide des Agenten: die Wahl der beiden Datensätze; die Regeln für «eindeutig»,
+  «mehrdeutig» und «nicht zuordenbar» (Hypothese); nach dem Blick auf den Aufbau der Daten die Präzisierung «genau
+  ein kürzester Weg im Netz» (Nachtrag, vor dem Zuordnen); Zugzahl einer Kante als Summe beider Richtungen im
+  Personenverkehr 2025; die beschreibenden Zahlen im Befund (Länge der Ketten, Spanne der Zugzahl, Anteil der
+  Fahrten); der Vorschlag für die Entscheidung.
+- **Prüfung:**
+  - Die Basis hat 394 Abschnitte und 7'738'519 Fahrten, wie im Befund zu #38; die Top 10 der neu gebauten
+    Ranglisten-Datei sind die aus dem Befund zu #23.
+  - Der erste eigene Test für `fetch_sbb_dataset()` scheiterte: Die Suche nach `zugzahlen_*.csv` fand auch
+    `zugzahlen_pro_monat_…`. Korrigiert wurde die Funktion (Muster mit Jahreszahl), nicht der Test.
+  - Jeder der 394 Abschnitte hat je Ziel genau einen Status; die Summen der Tabelle ergeben 394.
+  - Nicht geprüft: ob der kürzeste Weg der gefahrene ist, und die Längen gegen eine zweite Quelle.
+- **Reihenfolge:** Hypothese `d451249` gepusht, dann die beiden Datensätze geladen und ihr Aufbau angeschaut (ohne
+  die 394 Abschnitte), dann der Nachtrag `80e83dc` gepusht, erst danach die Zuordnung. Die Erwartungen sind nicht
+  geändert.
+- **Abweichung beim Bau:** `sections` und `ranking` wurden lokal direkt gebaut (`build.build_sections()`,
+  `build.build_ranking()`), nicht mit `uv run build`, weil die Monatsarchive aus Platzgründen lokal gelöscht sind;
+  die Tagesdateien in `data/processed/istdaten_rail/` sind unverändert.
+- **Übernommen/verworfen:** Übernommen: Plan und Zählweise des Agenten; der Vorschlag «Plan B für beide Grössen»
+  (Hn1016, nach der Gegenüberstellung mit der Alternative «Plan B nur für die Länge»). Verworfen: Plan B nur für
+  die Länge.
