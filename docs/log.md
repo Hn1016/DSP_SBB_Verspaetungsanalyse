@@ -1929,3 +1929,43 @@ Punkt 4 den Namen des ersten Grundes und die Reihenfolge der Prüfung.
   `tests/test_build.py` (ein Abschnitt mit 30 Fahrten: 13 × «zu wenige Fahrten»), Spalte `keine_fahrt` in
   `notebooks/10_rangliste_pruefung.py`. Die Daten der Fixture und die Erwartungswerte der Fälle mit Wert sind nicht
   geändert.
+
+## 2026-11-14 — Hypothese: A6, Zuordnung der Abschnitte zu data.sbb.ch (Issue #42, vor der Analyse notiert)
+
+Anlass: A6 in `docs/assumptions.md` ist offen (mittel/tief, kein Log-Eintrag). Die Normierung pro Streckenkilometer
+und die Baseline «sortiert nach Zugzahl» (Eintrag «Hauptkennzahl» vom 2026-11-10) brauchen die Zuordnung. Basis: die
+394 Zürcher Abschnitte mit Wert im Fenster «ganzer Zeitraum» aus dem Pipeline-Schritt `ranking` (Befund zu #38),
+1.8.2025 bis 31.7.2026.
+
+- **Erwartung (schwagia, im Issue):**
+  - (1) Mindestens 80 % der 394 Abschnitte lassen sich eindeutig einem Streckenabschnitt mit Länge in km zuordnen.
+  - (2) Mindestens 9 der Top 10 aus dem Befund zu #23 lassen sich eindeutig zuordnen.
+  - (3) Für mindestens 80 % der 394 Abschnitte gibt es eine Zugzahl.
+- **Wie zugeordnet und gezählt wird (Entscheid des Agenten, im Review zu bestätigen):**
+  - Datensätze von data.sbb.ch: `linie-mit-betriebspunkten` (Linie und Kilometer je Betriebspunkt, mit `bpuic`) für
+    die Länge, `zugzahlen` (Züge pro Streckenabschnitt und Jahr, mit `von_bpuic` und `bis_bpuic`) für die Zugzahl.
+    Geladen über `sbb_delays.download`, mit Prüfsumme in `data/raw/manifest.csv`. Der Schlüssel ist die `BPUIC`;
+    Namen werden nicht verglichen.
+  - Länge, je Abschnitt A→B: «eindeutig», wenn A und B auf genau einer gemeinsamen Linie liegen; die Länge ist dann
+    der Betrag der Differenz der Kilometer. «mehrdeutig», wenn sie auf mehreren gemeinsamen Linien liegen oder ein
+    Halt auf der gemeinsamen Linie mehrere Kilometerwerte hat. «nicht zuordenbar», wenn A oder B im Datensatz fehlt
+    oder die beiden keine gemeinsame Linie haben (der Weg wechselt die Linie). Der Grund steht je Abschnitt dabei.
+  - Zugzahl, je Abschnitt A→B, für das jüngste Jahr im Datensatz: «eindeutig», wenn die Kette der Streckenabschnitte
+    von A bis B lückenlos gefunden wird und es nur eine solche Kette gibt (im einfachsten Fall ein Eintrag von A bis
+    B). Führt der Abschnitt über mehrere Streckenabschnitte, stehen die kleinste und die grösste Zugzahl der Kette
+    im Befund; welche gilt, wird hier nicht entschieden. «mehrdeutig» bei mehreren Ketten, «nicht zuordenbar» sonst.
+    Die Richtung wird nicht verlangt: Ein Eintrag B→A zählt für A→B, der Befund nennt, wie oft das vorkommt.
+  - (1) und (3): Der Nenner ist immer 394; gehalten, wenn der Anteil «eindeutig» mindestens 80 % beträgt.
+    «mehrdeutig» zählt nicht als zugeordnet.
+  - (2): die zehn Abschnitte mit Rang 1 bis 10 im Fenster «ganzer Zeitraum» (Rang nach Mittel × Fahrten mit
+    Referenzwert, Tabelle im Befund zu #23). Gehalten, wenn mindestens 9 bei der Länge «eindeutig» sind. Die Zahl
+    für die Zugzahl steht daneben, ohne eigene Erwartung.
+- **Was schon bekannt ist:** Am 2026-11-14 wurden nur die Beschreibungen der Datensätze im Katalog gelesen (Namen,
+  Felder, Zahl der Zeilen: `linie-mit-betriebspunkten` 1'900, `zugzahlen` 30'328); keine Zeile ist geladen, nichts
+  ist zugeordnet. `zugzahlen` hat ein Feld für die Infrastrukturbetreiberin; ob die Datensätze die Strecken anderer
+  Betreiberinnen im Kanton Zürich (zum Beispiel SZU) enthalten, ist nicht geprüft. Einen eigenen Datensatz
+  «Kilometrierungspunkte» hat die Suche im Katalog nicht gefunden; die Kilometer kommen aus
+  `linie-mit-betriebspunkten`.
+- *Folge bei Widerlegung:* Nichts wird automatisch geändert. Das Team entscheidet nach dem Befund, ob die Zuordnung
+  verwendet wird oder Plan B gilt (Fahrten aus den IstDaten statt Zugzahl, Luftlinie aus den Koordinaten der Service
+  Points statt km). Plan B wird in diesem Paket nicht umgesetzt.
