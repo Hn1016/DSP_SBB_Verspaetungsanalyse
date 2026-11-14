@@ -168,7 +168,7 @@ def _(WINDOWS, pl, table):
                 (pl.col("klasse") == "neutral")
                 & ((pl.col("ki_unten") > 0) | (pl.col("ki_oben") < 0))
             ).sum(),
-            nie_gemessen=(pl.col("grund") == "nie gemessen").sum(),
+            keine_fahrt=(pl.col("grund") == "keine Fahrt im Fenster").sum(),
             zu_wenige_fahrten=(pl.col("grund") == "zu wenige Fahrten").sum(),
             zu_wenige_tage=(pl.col("grund") == "zu wenige Betriebstage").sum(),
         )
@@ -200,7 +200,7 @@ def _(by_window):
         "absorber",
         "neutral",
         "neutral_nur_effekt",
-        "nie_gemessen",
+        "keine_fahrt",
         "zu_wenige_fahrten",
         "zu_wenige_tage",
     ).head(13)

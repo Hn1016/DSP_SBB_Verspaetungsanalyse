@@ -1683,7 +1683,8 @@ Pipeline-Schritt `ranking` braucht.
   4. **Wert oder Grund.** Eine Fensterzeile hat einen Wert nur, wenn der Abschnitt im ganzen Zeitraum `MIN_TRIPS` und
      `MIN_DAYS` erfüllt und im Fenster `MIN_DAYS_WINDOW` Betriebstage hat. Sonst steht ein Grund, in dieser
      Reihenfolge geprüft: «nie gemessen» (keine Fahrt im Fenster), «zu wenige Fahrten», «zu wenige Betriebstage».
-     `fahrten` und `tage` stehen auch in Zeilen mit Grund.
+     `fahrten` und `tage` stehen auch in Zeilen mit Grund. (Name und Reihenfolge ersetzt am 2026-11-14, Eintrag
+     «Name und Reihenfolge der Gründe».)
   5. **Form der Ausgabe.** Eine Zeile pro Abschnitt (`a_id`, `b_id`) × Fenster, 13 Fenster mit den Spalten
      `fenster_typ` und `fenster`: ganzer Zeitraum; Tageszeit Morgenspitze 06–09, Tag 09–16, Abendspitze 16–19,
      Abend/Nacht 19–06; Wochentag Mo–Fr, Sa/So; Jahreszeit Winter (Dez–Feb), Frühling (Mär–Mai), Sommer (Jun–Aug),
@@ -1757,21 +1758,27 @@ Zeilen = 524 Abschnitte × 13 Fenster, jede mit Wert oder Grund. Die Klassenmitt
 
 **Je Fenster: Abschnitte mit Wert, halbe Breite des 95-%-Intervalls, Klassen und Gründe**
 
-| Fenster | mit Wert | Befund #39 | halbe Breite < 0.25 min | Anteil | Verstärker | Absorber | neutral | nie gemessen | zu wenige Fahrten | zu wenige Betriebstage |
+| Fenster | mit Wert | Befund #39 | halbe Breite < 0.25 min | Anteil | Verstärker | Absorber | neutral | keine Fahrt im Fenster | zu wenige Fahrten | zu wenige Betriebstage |
 |---|---|---|---|---|---|---|---|---|---|---|
 | ganzer Zeitraum | 394 | 394 | 391 | 99.2 % | 142 | 124 | 128 | 0 | 130 | 0 |
-| Morgenspitze | 376 | 376 | 376 | 100.0 % | 131 | 119 | 126 | 104 | 38 | 6 |
-| Tag | 363 | 363 | 363 | 100.0 % | 125 | 120 | 118 | 77 | 77 | 7 |
-| Abendspitze | 375 | 375 | 374 | 99.7 % | 121 | 124 | 130 | 81 | 60 | 8 |
-| Abend/Nacht | 377 | 377 | 376 | 99.7 % | 137 | 118 | 122 | 90 | 56 | 1 |
-| Mo–Fr | 390 | 390 | 388 | 99.5 % | 141 | 125 | 124 | 51 | 79 | 4 |
-| Sa/So | 370 | 370 | 368 | 99.5 % | 123 | 116 | 131 | 62 | 86 | 6 |
-| Winter | 391 | 391 | 390 | 99.7 % | 140 | 124 | 127 | 91 | 39 | 3 |
-| Frühling | 392 | 392 | 389 | 99.2 % | 137 | 125 | 130 | 69 | 61 | 2 |
-| Sommer | 392 | 392 | 389 | 99.2 % | 141 | 122 | 129 | 72 | 58 | 2 |
-| Herbst | 390 | 390 | 387 | 99.2 % | 141 | 125 | 124 | 60 | 70 | 4 |
-| Fahrplan 2025 | 390 | 390 | 388 | 99.5 % | 140 | 123 | 127 | 50 | 80 | 4 |
-| Fahrplan 2026 | 394 | 394 | 392 | 99.5 % | 142 | 126 | 126 | 41 | 89 | 0 |
+| Morgenspitze | 376 | 376 | 376 | 100.0 % | 131 | 119 | 126 | 12 | 130 | 6 |
+| Tag | 363 | 363 | 363 | 100.0 % | 125 | 120 | 118 | 24 | 130 | 7 |
+| Abendspitze | 375 | 375 | 374 | 99.7 % | 121 | 124 | 130 | 11 | 130 | 8 |
+| Abend/Nacht | 377 | 377 | 376 | 99.7 % | 137 | 118 | 122 | 16 | 130 | 1 |
+| Mo–Fr | 390 | 390 | 388 | 99.5 % | 141 | 125 | 124 | 0 | 130 | 4 |
+| Sa/So | 370 | 370 | 368 | 99.5 % | 123 | 116 | 131 | 18 | 130 | 6 |
+| Winter | 391 | 391 | 390 | 99.7 % | 140 | 124 | 127 | 0 | 130 | 3 |
+| Frühling | 392 | 392 | 389 | 99.2 % | 137 | 125 | 130 | 0 | 130 | 2 |
+| Sommer | 392 | 392 | 389 | 99.2 % | 141 | 122 | 129 | 0 | 130 | 2 |
+| Herbst | 390 | 390 | 387 | 99.2 % | 141 | 125 | 124 | 0 | 130 | 4 |
+| Fahrplan 2025 | 390 | 390 | 388 | 99.5 % | 140 | 123 | 127 | 0 | 130 | 4 |
+| Fahrplan 2026 | 394 | 394 | 392 | 99.5 % | 142 | 126 | 126 | 0 | 130 | 0 |
+
+Die drei Spalten der Gründe stehen nach dem Review mit Namen und Reihenfolge vom 2026-11-14 (Eintrag «Name und
+Reihenfolge der Gründe», Datei `ranking_2025-08_2026-07_b176f2ef.parquet`). Vorher zählte die Spalte «nie gemessen»
+0, 104, 77, 81, 90, 51, 62, 91, 69, 72, 60, 50, 41 und die Spalte «zu wenige Fahrten» 130, 38, 77, 60, 56, 79, 86,
+39, 61, 58, 70, 80, 89; die Spalte «zu wenige Betriebstage» ist gleich geblieben. Alle anderen Spalten der Tabelle
+sind unverändert.
 
 - **(a) gehalten.** Im Fenster «ganzer Zeitraum» stimmen alle zehn Zeilen der Top 10 mit dem Befund zu #23 überein:
   derselbe Abschnitt auf demselben Rang, dieselbe Zahl Fahrten, derselbe Zuwachs auf ganze Minuten (Rang 1 Zürich HB →
@@ -1793,9 +1800,22 @@ Zeilen = 524 Abschnitte × 13 Fenster, jede mit Wert oder Grund. Die Klassenmitt
   Abschnitten haben ein Intervall ohne 0. Für den Bericht heisst das: «systematisch» bedeutet hier praktisch «im
   Mittel der Tagesmittel mindestens 0.25 min».
 - **Gründe:** Im ganzen Zeitraum haben 130 Abschnitte den Grund «zu wenige Fahrten» (höchstens 65 Fahrten und 25
-  Betriebstage, wie im Befund zu #39), keiner «zu wenige Betriebstage». In den Fenstern haben 0 bis 8 Abschnitte «zu
-  wenige Betriebstage». «nie gemessen» wird zuerst geprüft: Ein Abschnitt mit weniger als 100 Fahrten und ohne Fahrt
-  im Fenster zählt dort, nicht unter «zu wenige Fahrten».
+  Betriebstage, wie im Befund zu #39), keiner «zu wenige Betriebstage». Die Mindestzahlen des ganzen Zeitraums werden
+  zuerst geprüft: Diese 130 Abschnitte haben in jedem der 13 Fenster «zu wenige Fahrten», auch in Fenstern ohne
+  Fahrt. Von den 394 anderen haben je Fenster 0 bis 24 «keine Fahrt im Fenster» (Morgenspitze 12, Tag 24,
+  Abendspitze 11, Abend/Nacht 16, Sa/So 18, sonst 0) und 0 bis 8 «zu wenige Betriebstage».
+- **Nach dem Review geprüft (2026-11-14):** Die neue Reihenfolge der Gründe darf nur die Spalte `grund` ändern.
+  Erwartung vor dem Lauf, aus der alten Tabelle gerechnet: «zu wenige Fahrten» 130 in jedem Fenster, «keine Fahrt im
+  Fenster» = alte Spalte «nie gemessen» − (130 − alte Spalte «zu wenige Fahrten»), «zu wenige Betriebstage» gleich;
+  alle 39 Zahlen sind eingetroffen. Nach `uv run build` (nur `ranking` gebaut) und neuem Lauf von Notebook 10: (a),
+  (b) und (c) gehalten mit denselben Zahlen (10 von 10 Zeilen, 13 von 13 Fenstern, kleinster Anteil 99.2 %), und die
+  Zahl der Verstärker, Absorber und neutralen ist in allen 13 Fenstern gleich. Vergleich aller 6'812 Zeilen der
+  alten Datei (`…_27b2ff15`) mit der neuen (`…_b176f2ef`): `fahrten`, `tage`, `klasse` und `rang` sind in jeder
+  Zeile gleich. `grund` ändert sich in 848 Zeilen: 767 von «nie gemessen» zu «zu wenige Fahrten», 81 zu «keine Fahrt
+  im Fenster»; die 4'994 Zeilen mit Wert, die 923 mit «zu wenige Fahrten» und die 47 mit «zu wenige Betriebstage»
+  bleiben. Die Mittel, Intervallgrenzen und der Zuwachs weichen in der letzten Stelle ab (Mittel und Grenzen
+  höchstens 2 × 10⁻¹⁵ min, Zuwachs höchstens 2 × 10⁻¹⁰ min). Das kommt nicht von der Änderung: Zwei Läufe desselben
+  Codes weichen gleich stark voneinander ab (höchstens 3 × 10⁻¹⁵ und 1.5 × 10⁻¹⁰ min), weil DuckDB parallel summiert.
 - **Grenzen:**
   - (a) und (b) sind Rechenproben gegen die Notebooks 07 und 08. Sie zeigen, dass `ranking.py` gleich filtert,
     zuordnet und zählt, nicht, dass die Regeln selbst richtig sind. Tagesmittel, Intervall und Klasse haben keine
@@ -1865,3 +1885,27 @@ Zeilen = 524 Abschnitte × 13 Fenster, jede mit Wert oder Grund. Die Klassenmitt
 - **Übernommen/verworfen:** Übernommen: der Plan des Agenten mit den Ergänzungen von schwagia (Erwartung für (c),
   Kommentar zu Bern im Build-Test, Halt nach dem ersten Commit). Verworfen (schwagia): Notebook-Nummer 09, sie ist
   für Issue #36 reserviert.
+
+## 2026-11-14 — Entscheidung: Name und Reihenfolge der Gründe (Team: schwagia, Hn1016; Review PR zu Issue #38)
+
+Anlass: Review von Hn1016 auf den PR zu Issue #38. Ersetzt im Eintrag «Details der Rangliste» vom 2026-11-12 in
+Punkt 4 den Namen des ersten Grundes und die Reihenfolge der Prüfung.
+
+- **Alte Regel:** Gründe in dieser Reihenfolge geprüft: «nie gemessen» (keine Fahrt im Fenster), «zu wenige Fahrten»
+  (weniger als `MIN_TRIPS` im ganzen Zeitraum), «zu wenige Betriebstage» (weniger als `MIN_DAYS` im ganzen Zeitraum
+  oder weniger als `MIN_DAYS_WINDOW` im Fenster).
+- **Neue Regel:** Der Grund «nie gemessen» heisst «keine Fahrt im Fenster». Geprüft wird in dieser Reihenfolge:
+  1. «zu wenige Fahrten»: weniger als `MIN_TRIPS` Fahrten im ganzen Zeitraum.
+  2. «zu wenige Betriebstage»: weniger als `MIN_DAYS` Betriebstage im ganzen Zeitraum.
+  3. «keine Fahrt im Fenster».
+  4. «zu wenige Betriebstage»: weniger als `MIN_DAYS_WINDOW` Betriebstage im Fenster.
+- **Grund (Review Hn1016):** «nie gemessen» bedeutet im One-Pager und im Log vom 2026-10-25 einen Halt ohne
+  `REAL`-Zeit. Ein Abschnitt ohne Fahrt in einem Fenster ist etwas anderes; derselbe Name für beides führt im
+  Bericht in die Irre.
+- **Folge der Reihenfolge:** Ein Abschnitt, der die Mindestzahl im ganzen Zeitraum nicht erfüllt, hat in allen 13
+  Fenstern denselben Grund. Die Spalte «zu wenige Fahrten» zählt darum in jedem Fenster 130. Werte, Klassen und
+  Ränge ändern sich nicht (Befund zu Issue #38, «Nach dem Review geprüft»).
+- **Umsetzung:** `src/sbb_delays/ranking.py`, Kopf von `tests/fixtures/ranking_cases.csv`, `tests/test_ranking.py`,
+  `tests/test_build.py` (ein Abschnitt mit 30 Fahrten: 13 × «zu wenige Fahrten»), Spalte `keine_fahrt` in
+  `notebooks/10_rangliste_pruefung.py`. Die Daten der Fixture und die Erwartungswerte der Fälle mit Wert sind nicht
+  geändert.

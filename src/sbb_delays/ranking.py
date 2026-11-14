@@ -10,9 +10,11 @@ log of 2026-11-12, «Details der Rangliste»:
   daily means; its 95 % interval (t distribution over the operating days) gives the class.
 - Class: «Verstärker» if the interval lies above 0 and tagesmittel >= min_effect, «Absorber» if
   it lies below 0 and tagesmittel <= -min_effect, else «neutral». Early arrivals are not capped.
-- Reason instead of a value, checked in this order: «nie gemessen» (no trip in the window),
-  «zu wenige Fahrten» (fewer than min_trips in the whole period), «zu wenige Betriebstage»
-  (fewer than min_days in the whole period or fewer than min_days_window in the window).
+- Reason instead of a value, checked in this order (log 2026-11-14, «Name und Reihenfolge der
+  Gründe»): «zu wenige Fahrten» (fewer than min_trips in the whole period), «zu wenige
+  Betriebstage» (fewer than min_days in the whole period), «keine Fahrt im Fenster», «zu wenige
+  Betriebstage» (fewer than min_days_window in the window). «nie gemessen» is not a reason
+  here: it names a stop without a REAL time (log 2026-10-25).
 - Time of day by the scheduled departure at A, start included, end excluded; weekday, season
   and timetable by BETRIEBSTAG.
 """
@@ -146,12 +148,15 @@ def ranking(
         """,
     ).pl()
 
+    # the minimums of the whole period first: such a section has the same reason in every window
     reason = (
-        pl.when(pl.col("fahrten") == 0)
-        .then(pl.lit("nie gemessen"))
-        .when(pl.col("fahrten_zeitraum") < min_trips)
+        pl.when(pl.col("fahrten_zeitraum") < min_trips)
         .then(pl.lit("zu wenige Fahrten"))
-        .when((pl.col("tage_zeitraum") < min_days) | (pl.col("tage") < min_days_window))
+        .when(pl.col("tage_zeitraum") < min_days)
+        .then(pl.lit("zu wenige Betriebstage"))
+        .when(pl.col("fahrten") == 0)
+        .then(pl.lit("keine Fahrt im Fenster"))
+        .when(pl.col("tage") < min_days_window)
         .then(pl.lit("zu wenige Betriebstage"))
     )
     table = table.with_columns(grund=reason)

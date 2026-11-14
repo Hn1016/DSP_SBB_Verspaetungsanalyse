@@ -101,22 +101,25 @@ def test_base_case_with_value(result, case):
         (8500011, 4, 2, "zu wenige Betriebstage"),
     ],
 )
-def test_base_case_with_reason(result, a_id, trips, days, reason):
-    for row in rows(result, a_id, BASE_WINDOWS):
+def test_base_case_with_reason_has_it_in_all_13_windows(result, a_id, trips, days, reason):
+    # the minimums of the whole period are checked before the window
+    all_rows = rows(result, a_id, ALL_WINDOWS)
+
+    assert len(all_rows) == 13
+    for row in all_rows:
+        in_base = row["fenster"] in BASE_WINDOWS
         assert row["grund"] == reason
-        assert (row["fahrten"], row["tage"]) == (trips, days)
+        assert (row["fahrten"], row["tage"]) == ((trips, days) if in_base else (0, 0))
         assert [row[c] for c in [*VALUE_COLUMNS, "zuwachs", "rang"]] == [None] * 8
 
 
-@pytest.mark.parametrize(
-    "a_id", [8500001, 8500003, 8500005, 8500007, 8500009, 8500011, 8500013, 8500015]
-)
-def test_base_case_is_never_measured_in_the_other_8_windows(result, a_id):
+@pytest.mark.parametrize("a_id", [VALUE_CASES[case][0] for case in VALUE_CASES])
+def test_base_case_with_value_has_no_trip_in_the_other_8_windows(result, a_id):
     others = rows(result, a_id, other_windows(BASE_WINDOWS))
 
     assert len(others) == 8
     for row in others:
-        assert row["grund"] == "nie gemessen"
+        assert row["grund"] == "keine Fahrt im Fenster"
         assert (row["fahrten"], row["tage"]) == (0, 0)
 
 
@@ -139,7 +142,7 @@ def test_window_borders(result):
         "Fahrplan 2025": 1,
         "Fahrplan 2026": 4,
     }
-    assert reasons["Sommer"] == reasons["Herbst"] == "nie gemessen"
+    assert reasons["Sommer"] == reasons["Herbst"] == "keine Fahrt im Fenster"
 
 
 def test_every_section_has_one_row_per_window(result):

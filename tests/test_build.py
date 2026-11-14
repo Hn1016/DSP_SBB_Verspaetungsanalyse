@@ -130,14 +130,15 @@ def test_first_run_downloads_then_loads(env, capsys):
     assert build.sections_parquet().name == f"sections_2026-09_2026-09_{build.rules_hash()}.parquet"
     assert re.fullmatch(r"[0-9a-f]{8}", build.rules_hash())
     assert duckdb.read_parquet(str(build.sections_parquet())).count("*").fetchone()[0] == 30
-    # the one section in each of the 13 windows; 30 trips are below MIN_TRIPS, so no value
+    # the one section in each of the 13 windows; 30 trips are below MIN_TRIPS, so no value in
+    # any window, also in those without a trip
     ranking_hash = build.rules_hash([*build.RULE_FILES, build.RANKING_FILE])
     assert build.ranking_parquet().name == f"ranking_2026-09_2026-09_{ranking_hash}.parquet"
     assert ranking_hash != build.rules_hash()
     reasons = duckdb.sql(
         f"select grund, count(*) from read_parquet('{build.ranking_parquet()}') group by all"
     ).fetchall()
-    assert sorted(reasons) == [("nie gemessen", 7), ("zu wenige Fahrten", 6)]
+    assert reasons == [("zu wenige Fahrten", 13)]
 
 
 def test_second_run_skips_every_step(env, capsys):
