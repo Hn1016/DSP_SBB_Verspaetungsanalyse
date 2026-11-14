@@ -1685,3 +1685,51 @@ Zürich fahren; an den Daten ist das nicht geprüft. Die drei fielen im Befund z
   sie nicht gezählt.
 - *Folge bei Widerlegung:* Der Befund nennt die betroffenen Abschnitte mit Zahl der Fahrten. Ob sie ausgeschlossen
   oder separat ausgewiesen werden, entscheidet das Team; die Aussage im One-Pager bleibt bis dahin stehen.
+
+## 2026-11-14 — Befund: LEB, MBC und ZB im Kanton Zürich (Issue #36)
+
+Berechnet in `notebooks/09_betreiber_zuerich.py` nach der Hypothese oben (Commit `5efaf1b`, gepusht vor dem Zählen).
+Basis: 49'767'826 Abschnittsfahrten in der Schweiz, 1.8.2025 bis 31.7.2026, davon 7'739'652 mit beiden Halten im
+Kanton Zürich (wie Befund zu #33). Jede Abschnittsfahrt hat über `BETRIEBSTAG` und `ZEILE` genau einen Betreiber an A.
+
+**Gestützt: 0 Abschnittsfahrten von LEB, MBC und ZB im Kanton Zürich.**
+
+| Betreiber | Abschnittsfahrten Schweiz | Abschnittsfahrten Kanton Zürich | Zeilen an Zürcher Halten, alle Status |
+|---|---|---|---|
+| LEB | 595'499 | 0 | 0 |
+| MBC | 190'099 | 0 | 0 |
+| ZB | 982'143 | 0 | 0 |
+
+- Gegenprobe Abkürzung: Alle drei kommen in der Schweiz vor; die Abkürzungen gehören zu «Lausanne-Echallens-Bercher»,
+  «Transports de la région Morges-Bière-Cossonay» und «Zentralbahn» (`BETREIBER_NAME`).
+- Gegenprobe Messung: Auch ohne Bedingung `REAL` hat keiner der drei eine Zeile an einem Zürcher Halt.
+- Betroffene Abschnitte: keine.
+
+**Die fünf Betreiber mit den meisten Abschnittsfahrten im Kanton Zürich**
+
+| Betreiber | Abschnittsfahrten | Anteil |
+|---|---|---|
+| SBB | 5'592'970 | 72.3 % |
+| THURBO | 976'719 | 12.6 % |
+| SZU | 871'212 | 11.3 % |
+| AVA-bd | 188'234 | 2.4 % |
+| SOB-sob | 110'456 | 1.4 % |
+
+Die fünf decken 7'739'591 der 7'739'652 Zürcher Abschnittsfahrten ab; 61 entfallen auf weitere Betreiber.
+
+- **Folge:** Die Aussage im One-Pager («LEB, MBC und ZB fahren nicht im Kanton Zürich; ein Ausschluss ist nicht
+  nötig») ist an den Daten bestätigt. Keine Änderung am Raum.
+
+## 2026-11-14 — KI-Einsatz: Issue #36
+
+- **Aufgabe:** prüfen, ob LEB, MBC und ZB im Kanton Zürich Abschnittsfahrten haben.
+- **Mine:** das Issue mit der Erwartung (schwagia); die Entscheide zur Zählweise (cengihas): beide Gegenproben
+  aufnehmen, Betreiber am Halt A.
+- **Delegated:** Claude Code hat den Hypothesen-Eintrag, das Notebook 09, den Befund und diesen Eintrag geschrieben.
+  Vorschläge des Agenten, von cengihas entschieden: die zwei Gegenproben und der Betreiber am Halt A. Entscheid des
+  Agenten nach dem Lauf: die Zeile, wie viele Zürcher Abschnittsfahrten die fünf Betreiber abdecken.
+- **Prüfung:** Die Verbindung mit den Tagesdateien ergibt so viele Abschnittsfahrten wie das Abschnitts-File
+  (49'767'826), keine ohne Betreiber; die Zürcher Summe entspricht dem Befund zu #33. `ruff` und `marimo check`
+  laufen durch. `uv run pytest` unter Windows: 61 bestanden, 1 fehlgeschlagen
+  (`test_force_rebuilds_processed_but_not_raw`: `Path.rename` in `build.py` überschreibt unter Windows keine bestehende
+  Datei); der Fehler liegt nicht in diesem Paket und ist nicht behoben.
