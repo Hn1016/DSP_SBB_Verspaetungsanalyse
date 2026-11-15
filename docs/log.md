@@ -2269,3 +2269,141 @@ Für diesen Zeitraum und diese Basis ist zur Haltverspätung noch nichts gerechn
   Schweiz. (b) kann scheitern, wenn die rohe Top 10 nicht von Halten mit Soll-Haltezeit 0 bestimmt ist oder der
   Referenzwert sie nicht verändert. (c) kann scheitern, wenn frühe Ankünfte häufig und gross sind; dann hängt die
   Rangliste stark von Entscheid 2 ab.
+
+## 2026-11-15 — Befund: Referenzwert je Soll-Haltezeit für die Haltverspätung (Issue #46)
+
+Berechnet in `notebooks/12_referenzwert_halte.py` nach der Entscheidung und der Hypothese (Commit `2542ce5`, gepusht
+vor dem Rechnen). Basis: Halte im Kanton Zürich laut Schnappschuss vom 2026-10-05, 1.8.2025 bis 31.7.2026.
+
+**Basis**
+
+| Schritt | Halteereignisse |
+|---|---|
+| Zürcher Halteereignisse aus `quality.delays()` mit Soll-Ankunft und Soll-Abfahrt | 7'689'546 |
+| davon Durchfahrten (`DURCHFAHRT_TF`), ausgeschlossen | 6'716 |
+| davon Ankunft oder Abfahrt nicht `REAL`, ausgeschlossen | 66'668 |
+| davon Soll-Abfahrt vor Soll-Ankunft, ausgeschlossen | 23 |
+| **Halteereignisse der Auswertung** | **7'616'139** |
+
+Das sind 152 Halte an 365 Betriebstagen. Alle 152 erfüllen die Mindestzahl; der kleinste hat 9'257 Halteereignisse
+(Langnau-Gattikon), die wenigsten Betriebstage sind 271. Die Mindestzahl schliesst hier also nichts aus. Fünf weitere
+Halte haben Halteereignisse, aber keines mit Ankunft und Abfahrt `REAL` (Neuthal 264, Bäretswil 192,
+Ettenhausen-Emmetschloo 160, Sihlwald 19, Zürich Langstrasse 1); sie haben keinen Wert.
+
+**Klassenmittel der Haltverspätung je Soll-Haltezeit (min) und frühe Ankünfte**
+
+| Soll-Haltezeit | Halteereignisse | Anteil | Mittel ungekappt | Mittel gekappt (Referenzwert) | Differenz | Ankunft früh |
+|---|---|---|---|---|---|---|
+| 0 min | 4'837'547 | 63.5 % | +0.69 | +0.62 | 0.07 | 18.0 % |
+| 1 min | 2'038'037 | 26.8 % | +0.12 | +0.06 | 0.07 | 17.1 % |
+| 2 min | 465'382 | 6.1 % | +0.19 | +0.06 | 0.13 | 27.4 % |
+| 3 min und mehr | 275'173 | 3.6 % | +0.11 | −0.03 | 0.13 | 27.9 % |
+| alle | 7'616'139 | 100 % | +0.49 | +0.41 | 0.07 | 18.7 % |
+
+«Ankunft früh»: Ankunftsverspätung unter 0. Eine frühe Ankunft ist im Mittel 0.39 min zu früh; 1.1 % aller
+Halteereignisse haben eine Ankunft mehr als 1 Minute zu früh.
+
+**Top 10 nach dem Mittel pro Fahrt (min), roh und mit Referenzwert, beide mit gekappter Ankunft**
+
+«Klasse»: häufigste Klasse der Soll-Haltezeit des Halts, in Klammern der Anteil seiner Halteereignisse in Klasse 0.
+
+| Rang | Halt (roh) | Klasse | Fahrten | Mittel | Halt (mit Referenzwert) | Klasse | Fahrten | Mittel |
+|---|---|---|---|---|---|---|---|---|
+| 1 | Horgen Oberdorf | 0 (99.9 %) | 27'488 | 1.20 | Horgen Oberdorf | 0 (99.9 %) | 27'488 | 0.59 |
+| 2 | Dietikon Stoffelbach | 0 (100 %) | 47'251 | 0.97 | Dietikon Stoffelbach | 0 (100 %) | 47'251 | 0.35 |
+| 3 | Zürich Hardbrücke | 0 (99.5 %) | 231'593 | 0.90 | Zürich Flughafen | 2 (2.3 %) | 97'829 | 0.31 |
+| 4 | Dielsdorf | 0 (100 %) | 27'861 | 0.85 | Zürich Hardbrücke | 0 (99.5 %) | 231'593 | 0.29 |
+| 5 | Opfikon | 0 (100 %) | 25'562 | 0.81 | Dielsdorf | 0 (100 %) | 27'861 | 0.23 |
+| 6 | Otelfingen Golfpark | 0 (100 %) | 27'242 | 0.79 | Dietikon | 1 (0.1 %) | 76'237 | 0.22 |
+| 7 | Männedorf | 0 (100 %) | 31'810 | 0.79 | Saland | 2 (0.4 %) | 28'573 | 0.19 |
+| 8 | Zürich Affoltern | 0 (100 %) | 28'966 | 0.76 | Opfikon | 0 (100 %) | 25'562 | 0.19 |
+| 9 | Pfäffikon ZH | 0 (100 %) | 26'013 | 0.76 | Kloten | 1 (31.6 %) | 26'551 | 0.18 |
+| 10 | Zürich Wiedikon | 0 (100 %) | 82'607 | 0.76 | Otelfingen Golfpark | 0 (100 %) | 27'242 | 0.17 |
+
+**Top 10 nach der Hauptkennzahl (Mittel × Fahrten, min im Zeitraum), ohne eigene Erwartung**
+
+| Rang | Halt (roh) | Klasse | Fahrten | Mittel | Zuwachs | Halt (mit Referenzwert) | Klasse | Fahrten | Mittel | Zuwachs |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 1 | Zürich Hardbrücke | 0 (99.5 %) | 231'593 | 0.90 | 209'142 | Zürich HB | 2 (0.0 %) | 443'394 | 0.15 | 67'501 |
+| 2 | Zürich Stadelhofen | 1 (39.7 %) | 255'395 | 0.45 | 114'196 | Zürich Hardbrücke | 0 (99.5 %) | 231'593 | 0.29 | 66'170 |
+| 3 | Zürich HB | 2 (0.0 %) | 443'394 | 0.18 | 79'116 | Zürich Stadelhofen | 1 (39.7 %) | 255'395 | 0.17 | 42'560 |
+| 4 | Zürich Wiedikon | 0 (100 %) | 82'607 | 0.76 | 62'426 | Zürich Flughafen | 2 (2.3 %) | 97'829 | 0.31 | 30'561 |
+| 5 | Dietlikon | 0 (89.9 %) | 73'554 | 0.72 | 53'242 | Dietikon | 1 (0.1 %) | 76'237 | 0.22 | 17'108 |
+| 6 | Stettbach | 0 (63.0 %) | 112'760 | 0.43 | 48'102 | Dietikon Stoffelbach | 0 (100 %) | 47'251 | 0.35 | 16'531 |
+| 7 | Zürich Altstetten | 1 (33.7 %) | 148'982 | 0.32 | 47'847 | Horgen Oberdorf | 0 (99.9 %) | 27'488 | 0.59 | 16'084 |
+| 8 | Dietikon Stoffelbach | 0 (100 %) | 47'251 | 0.97 | 45'838 | Winterthur | 2 (0.0 %) | 144'092 | 0.09 | 12'320 |
+| 9 | Schlieren | 0 (100 %) | 57'467 | 0.75 | 43'367 | Dietlikon | 0 (89.9 %) | 73'554 | 0.16 | 11'804 |
+| 10 | Zürich Tiefenbrunnen | 0 (99.7 %) | 56'412 | 0.72 | 40'672 | Zürich Wiedikon | 0 (100 %) | 82'607 | 0.14 | 11'192 |
+
+Nach der Hauptkennzahl haben roh 7 und mit Referenzwert 5 Halte überwiegend Soll-Haltezeit 0; 6 stehen in beiden
+Top 10.
+
+- **(a) für Klasse 0 gehalten, für die Klassen 1 und 2 nicht gehalten.** Ungekappt: Klasse 0 +0.69 min (Erwartung 0.5
+  bis 0.8), Klasse 1 +0.12 min und Klasse 2 +0.19 min (Erwartung je 0.2 bis 0.5). Die Verzerrung durch die
+  Soll-Haltezeit besteht im ganzen Zeitraum, und der Abstand zwischen Klasse 0 und den übrigen ist grösser als
+  erwartet: 0.50 bis 0.58 min statt 0.23 bis 0.40 min im Befund vom 2026-10-06 (September 2026, ganze Schweiz).
+  Woher der Unterschied zum 2026-10-06 kommt (Raum, Zeitraum oder Durchfahrten), ist nicht untersucht.
+- **(b) roh gehalten, mit Referenzwert und für die Überschneidung nicht gehalten.** Roh haben 10 der Top 10
+  überwiegend Soll-Haltezeit 0 (Erwartung mindestens 7). Mit Referenzwert sind es 6 (Erwartung höchstens 5). 6 Halte
+  stehen in beiden Top 10 (Erwartung höchstens 5): Horgen Oberdorf, Dietikon Stoffelbach, Zürich Hardbrücke,
+  Dielsdorf, Opfikon, Otelfingen Golfpark. Beide Male um einen Halt verfehlt.
+- **(c) gehalten.** Das Mittel über alle Halteereignisse ist gekappt 0.07 min kleiner als ungekappt (+0.41 statt
+  +0.49 min; Erwartung höchstens 0.2). 18.7 % der Halteereignisse haben eine frühe Ankunft.
+- **Vergleich, nach dem ersten Lauf vom Agenten ergänzt (keine Prüfung, keine Erwartung davor):** 119 der 152 Halte
+  (78.3 %) haben überwiegend Soll-Haltezeit 0. Zehn zufällig gewählte Halte hätten im Mittel etwa 8 davon. Roh sind
+  es 10, mit Referenzwert 6. Die Erwartung «höchstens 5» lag unter dem, was ohne jede Verzerrung zu erwarten ist.
+- **Grenzen:**
+  - Der Referenzwert hebt den Unterschied zwischen den Klassen auf (jedes Klassenmittel ist danach null, die Summe
+    über alle Halteereignisse ebenfalls). Er hebt nicht auf, was innerhalb der Klasse 0 liegt: Dort ist die
+    Haltverspätung die tatsächliche Haltezeit (bei früher Ankunft ab der Soll-Zeit), und der Wert mit Referenzwert
+    ist die mittlere Haltezeit des Halts minus 0.62 min. Ob der Fahrplan an einem Halt 0.3 oder 0.9 min Haltezeit
+    vorsieht, steht nicht in den Daten. Ein Halt der Klasse 0 mit hohem Wert hält länger als der Durchschnitt; ob er
+    länger hält als geplant, lässt sich so nicht sagen.
+  - Die Werte mit Referenzwert liegen eng: Rang 5 bis 12 nach dem Mittel pro Fahrt liegen zwischen 0.23 und
+    0.17 min, Rang 10, 11 und 12 (Otelfingen Golfpark, Zürich Stadelhofen, Männedorf) gerundet alle bei 0.17 min. Die
+    Zählungen in (b) hängen an Unterschieden von unter 0.01 min. Intervalle und Stabilität sind nicht gerechnet.
+  - Das Kappen ist im Gesamtmittel klein (0.07 min), in den Klassen ab 1 Minute aber so gross wie das Klassenmittel
+    selbst (Klasse 1: +0.12 ungekappt, +0.06 gekappt; Klasse 3 und mehr: +0.11 und −0.03).
+  - Mit Referenzwert haben 54 der 152 Halte ein positives Mittel, roh 142. Der Wert heisst «mehr als ein
+    durchschnittlicher Halt gleicher Soll-Haltezeit», nicht gemessene Minuten.
+  - Nach der Hauptkennzahl steht mit Referenzwert Zürich HB auf Rang 1 mit 0.15 min pro Fahrt; der Rang kommt von
+    443'394 Halteereignissen. Verstärker und Absorber sind für Halte nicht bestimmt.
+  - Keine Zeitfenster, keine Kennzahlen, keine Ursache (laut Issue nicht Teil davon). Zu A10 («offen für Halte»)
+    sagt der Befund nur, dass die Mindestzahl für alle 152 Halte erfüllt ist, nicht, wie breit die Intervalle sind.
+- **Entscheidung zu A8 (Vorschlag des Agenten, vom Team zu bestätigen):**
+  - A8 gilt als «teilweise»: Der Referenzwert je Soll-Haltezeit entfernt die Verzerrung zwischen den Klassen; in der
+    Klasse 0 (63.5 % der Halteereignisse, 119 von 152 Halten) misst der Wert weiterhin die Haltezeit gegenüber dem
+    Durchschnitt und nicht gegenüber dem Fahrplan.
+  - Für die Halte gilt die Haltverspätung mit gekappter Ankunft und Referenzwert je Klasse (Entscheide 2 und 5); roh
+    ist sie nicht brauchbar (10 von 10 in Klasse 0). Der Bericht nennt die Grenze der Klasse 0 im selben Abschnitt
+    wie die Rangliste der Halte.
+  - Zu den nicht gehaltenen Erwartungen (a) für die Klassen 1 und 2 und (b) entscheidet das Team; hier ist nichts
+    geändert. Offene Möglichkeit aus dem Log vom 2026-10-06, nicht gerechnet: Halt und folgenden Abschnitt gemeinsam
+    betrachten.
+
+## 2026-11-15 — KI-Einsatz: Issue #46
+
+- **Aufgabe:** prüfen, ob ein Referenzwert je Soll-Haltezeit die Verzerrung der Haltverspätung aufhebt (A8): Regeln
+  und Erwartungen festhalten, dann Klassenmittel und Top 10 der Zürcher Halte roh und mit Referenzwert rechnen.
+- **Mine (schwagia):** die sieben Entscheide (Definition, Kappen, Durchfahrten, Klassen, Referenzwert, Einheit,
+  Mindestzahl); die Erwartungen (a) bis (c) mit ihren Werten und die Folge bei Widerlegung; dass die Top 10 nach der
+  Hauptkennzahl ohne Erwartung danebensteht; die Änderung im Plan, (a) an den ungekappten Klassenmitteln zu prüfen
+  (der Agent hatte gekappt vorgeschlagen); der Ablauf (Plan, Commit, eigener Push vor dem Rechnen).
+- **Delegated:** Claude Code hat die Einträge im Log, das Notebook 12 und die Zeile A8 in `docs/assumptions.md`
+  geschrieben. Vom Agenten stammen: die Präzisierungen 2 bis 5 der Hypothese (im Plan von schwagia bestätigt); die
+  Alternativen zu den Entscheiden 1, 3, 4, 5, 6, 7 und die Begründung zu 1; die Absätze «Was roh und mit
+  Referenzwert in (b) heisst» und «Was die Erwartungen prüfen können» (vor dem Push bestätigt); im Befund die Tabelle
+  «Basis», die Mediane im Notebook, der nachträgliche Vergleich mit dem Anteil aller Halte in Klasse 0, die Grenzen
+  und der Vorschlag zur Entscheidung.
+- **Prüfung:**
+  - Die Schritte der Basis gehen auf: 7'689'546 − 6'716 − 66'668 − 23 = 7'616'139. Die Summe der Halteereignisse
+    über die vier Klassen ergibt ebenfalls 7'616'139.
+  - Die Summe der Haltverspätung nach Abzug des Referenzwerts über alle Halteereignisse ist 0.
+  - Das Klassenmittel der Klasse 0 (ungekappt +0.69 min) liegt beim Wert vom 2026-10-06 (+0.67 min, andere Basis).
+  - Nicht geprüft: die Top 10 gegen eine zweite, unabhängige Rechnung; Intervalle; Stabilität über die Fahrpläne.
+  - `uv run pytest`, `ruff` und `marimo check` laufen durch. Kein Code in `src` geändert.
+- **Reihenfolge:** Entscheidung und Hypothese `2542ce5` committet, von schwagia gepusht, erst danach das Notebook
+  geschrieben und gerechnet. Die Erwartungen sind nicht geändert. Nach dem ersten Lauf kam eine Zeile dazu (Anteil
+  aller Halte mit überwiegend Soll-Haltezeit 0); sie ist im Notebook und im Befund als nachträglich bezeichnet.
+- **Übernommen/verworfen:** Übernommen: die Präzisierungen 2 bis 5 und die ergänzten Alternativen. Verworfen
+  (schwagia): (a) an den gekappten Klassenmitteln zu prüfen. Offen: der Vorschlag zur Entscheidung zu A8.
