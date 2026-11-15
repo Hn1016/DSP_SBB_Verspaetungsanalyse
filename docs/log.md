@@ -1953,7 +1953,8 @@ Zürich fahren; an den Daten ist das nicht geprüft. Die drei fielen im Befund z
 
 ## 2026-11-14 — Befund: LEB, MBC und ZB im Kanton Zürich (Issue #36)
 
-Berechnet in `notebooks/09_betreiber_zuerich.py` nach der Hypothese oben (Commit `5efaf1b`, gepusht vor dem Zählen).
+Berechnet in `notebooks/09_betreiber_zuerich.py` nach der Hypothese oben (Commit `5efaf1b`, gepusht am 2026-11-14 um
+14:31:36 laut Aktivität des Branches auf GitHub; Notebook `6a20dc4` gepusht um 14:36:38).
 Basis: 49'767'826 Abschnittsfahrten in der Schweiz, 1.8.2025 bis 31.7.2026, davon 7'739'652 mit beiden Halten im
 Kanton Zürich (wie Befund zu #33). Jede Abschnittsfahrt hat über `BETRIEBSTAG` und `ZEILE` genau einen Betreiber an A.
 
