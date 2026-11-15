@@ -2185,3 +2185,83 @@ Abschnitten (Top 10 der rohen Rangliste davon 28.8 %).
   der harten Grenze für die Stabilitätsprüfung festgehalten. Claude Code hat beide Punkte eingetragen.
 - **Übernommen/verworfen:** Übernommen: beide Vorschläge des Agenten. Verworfen: Top 10 nach der Hauptkennzahl mit
   gekennzeichneten neutralen Abschnitten; roh als Hauptzahl.
+
+## 2026-11-15 — Hypothese: Stabilität der Rangliste (Issue #48, vor der Analyse notiert)
+
+Anlass: One-Pager «Was», Stabilität der Rangliste über zufällige Zeitfenster und zwischen den beiden Fahrplänen. Die
+Schwellen stehen im Eintrag «Stabilität» vom 2026-11-10 (Issue #32) und werden hier nicht geändert. Basis: die 394
+Zürcher Abschnitte mit Wert im Fenster «ganzer Zeitraum» (Befund #38), 1.8.2025 bis 31.7.2026.
+
+- **Erwartung (schwagia, im Issue):** Die Rangliste ist stabil nach allen drei Kriterien:
+  - (1) Spearman-Rangkorrelation zwischen Fahrplan 2025 und Fahrplan 2026 mindestens 0.7.
+  - (2) Mindestens 7 der Top 10 kommen in beiden Fahrplänen vor.
+  - (3) Über 20 Paare zufälliger 4-Wochen-Fenster ist der Median der Spearman-Rangkorrelation mindestens 0.7.
+- **Urteil:** «stabil», wenn (1), (2) und (3) gehalten sind; sonst «nicht stabil», mit dem Kriterium, das nicht
+  gehalten ist. Ein Wert knapp unter einer Schwelle gilt als nicht gehalten.
+- **Vermutung des Agenten, ohne Folge für das Urteil:** Der Median aus (3) liegt unter dem Wert aus (1), weil ein
+  4-Wochen-Fenster rund fünfmal weniger Betriebstage hat als der kürzere Fahrplan.
+- **Was schon bekannt ist:** die Top 10 im ganzen Zeitraum (Befund #23) und je Fenster die Zahl der Abschnitte mit
+  Wert und der Klassen (Befund #38: Fahrplan 2025 390 mit Wert, 140 Verstärker; Fahrplan 2026 394, 142). Nicht
+  angeschaut: die Ränge und die Top 10 je Fahrplan, jede Korrelation, jede Rangliste eines 4-Wochen-Fensters.
+- *Folge bei Widerlegung:* Die Schwellen werden nicht angepasst. Der Bericht nennt die Rangliste dann «nicht stabil»
+  und sagt, an welchem Kriterium es liegt; das Team entscheidet nach dem Befund, was das für die Top 10 heisst.
+
+## 2026-11-15 — Entscheidung: Durchführung der Stabilitätsprüfung (Issue #48, vor der Analyse notiert)
+
+- **Entscheidung (Vorschlag im Issue von schwagia; Einzelheiten vom Agenten, im Review zu bestätigen):**
+  1. **Spearman.** Über die Hauptkennzahl (`zuwachs`) aller Abschnitte, die in beiden verglichenen Teilen einen Wert
+     haben, also Verstärker, Absorber und neutrale zusammen. Gleiche Werte bekommen den mittleren Rang
+     (`scipy.stats.spearmanr`). Die Zahl der Abschnitte je Vergleich steht daneben.
+  2. **Fahrpläne.** Aus der Ranglisten-Datei des Pipeline-Schritts `ranking`, Fenster «Fahrplan 2025» (1.8. bis
+     13.12.2025) und «Fahrplan 2026» (14.12.2025 bis 31.7.2026); nichts wird neu gerechnet.
+  3. **Top 10.** Je Teil die zehn Abschnitte der Klasse «Verstärker» dieses Teils mit der grössten Hauptkennzahl
+     (Eintrag «Top 10 nur aus Verstärkern»). (2) zählt die Abschnitte, die in beiden Top 10 stehen. Die Top 10 der
+     Absorber wird gleich verglichen, ohne Erwartung.
+  4. **4-Wochen-Fenster.** 28 aufeinanderfolgende Betriebstage (`BETRIEBSTAG`), ganz im Zeitraum; jedes Fenster
+     enthält jeden Wochentag viermal. Mögliche Anfänge: 1.8.2025 bis 4.7.2026 (338 Tage).
+  5. **Die 20 Paare.** `numpy.random.default_rng(48)` zieht je Paar zwei Anfänge gleichverteilt aus den 338 Tagen.
+     Überlappen sich die beiden Fenster (Anfänge weniger als 28 Tage auseinander), wird das Paar verworfen und neu
+     gezogen, bis 20 Paare vorliegen. Der Seed ist die Nummer des Issues und wird nach dem ersten Lauf nicht
+     geändert.
+  6. **Wert in einem 4-Wochen-Fenster.** Ein Abschnitt der Basis hat einen Wert, wenn er im Fenster mindestens 20
+     Betriebstage mit Messung hat (`MIN_DAYS_WINDOW`; `MIN_DAYS = 30` ist in 28 Tagen nicht erreichbar). Keine
+     eigene Mindestzahl an Fahrten im Fenster, wie in den 13 Fenstern von `ranking`. Referenzwert: die Klassenmittel
+     des ganzen Zeitraums, für alle Fenster gleich. Klasse nach denselben Regeln (95-%-Intervall über die
+     Tagesmittel, 0.25 min). Gerechnet wird mit `ranking.ranking()` auf den Abschnittsfahrten des Fensters;
+     `ranking.py` wird nicht geändert.
+  7. **Zufallsfenster, was gezeigt wird.** Spearman je Paar, Median, kleinster und grösster Wert. Ohne Erwartung
+     daneben: je Paar die Zahl der Abschnitte mit Wert in beiden Fenstern, die Überschneidung der Top 10, und ob
+     die beiden Fenster im selben Fahrplan liegen, in verschiedenen, oder ob eines den Fahrplanwechsel vom
+     14.12.2025 enthält.
+  8. **Wechsel in der Top 10.** Jeder Abschnitt, der in der Top 10 des einen Teils steht und in der des anderen
+     nicht, bekommt genau einen Grund, in dieser Reihenfolge geprüft:
+     - «kein Wert»: im anderen Teil ohne Wert.
+     - «Klassenwechsel an der Grenze»: im anderen Teil «neutral», das Intervall liegt dort ganz über 0, und das
+       Mittel der Tagesmittel liegt unter 0.25 min. Der Abschnitt ist nur wegen `MIN_EFFECT` kein Verstärker.
+     - «Klassenwechsel, anderer»: im anderen Teil «neutral» mit einem Intervall, das die 0 enthält, oder «Absorber».
+     - «Rang»: im anderen Teil Verstärker, aber nicht unter den zehn grössten.
+     Zum Vergleich steht daneben die Überschneidung der zehn grössten nach der Hauptkennzahl allein, ohne Klasse.
+  9. **Autokorrelation.** Für die Top 10 der Verstärker im ganzen Zeitraum: Korrelation des Tagesmittels nach
+     Referenzwert mit dem des Vortags (Verzögerung 1 Kalendertag), über alle Paare aufeinanderfolgender
+     Betriebstage, an denen der Abschnitt an beiden Tagen eine Messung hat. Beschreibend, ohne Erwartung.
+- **Begründung:**
+  - Zu 1: Das Kriterium aus #32 spricht von der Rangliste, nicht von der Top 10; darum alle Abschnitte mit Wert.
+    Die Top 10 prüft (2) getrennt.
+  - Zu 6: derselbe Massstab in beiden Fenstern eines Paars. Mit einem Klassenmittel je Fenster würde ein
+    Unterschied im allgemeinen Niveau zweier Monate aus dem Vergleich verschwinden.
+  - Zu 8: Die Grenze bei 0.25 min ist hart (Review PR #47); ohne die Trennung sähe die Top 10 instabiler aus, als
+    sie ist.
+- **Alternativen:** Spearman nur über die Verstärker, verworfen (dann hängt die Menge der verglichenen Abschnitte
+  von der Klasse ab). Fenster, die den Fahrplanwechsel enthalten, ausschliessen, verworfen: Sie werden gezogen wie
+  alle anderen und ausgewiesen.
+- **Grenzen, vor dem Lauf bekannt:**
+  - Die 20 Paare stammen aus demselben Jahr und teilen sich Tage; sie sind nicht unabhängig. Der Median ist eine
+    Beschreibung, kein Test, und bekommt kein Intervall.
+  - In einem 4-Wochen-Fenster ruht das Intervall auf 20 bis 28 Tagesmitteln und ist breiter als im ganzen Zeitraum;
+    weniger Abschnitte werden Verstärker. Für die Zufallsfenster gibt es darum kein Kriterium zur Top 10.
+  - Die Hauptkennzahl hängt von der Zahl der Fahrten ab. Die beiden Fahrpläne sind verschieden lang (135 und 230
+    Tage); Spearman vergleicht Ränge je Teil, die Länge fällt heraus. Eine hohe Korrelation kann aber zum Teil
+    daher kommen, dass viel befahrene Abschnitte in beiden Teilen viel befahren sind. Das prüft der Vergleich mit
+    der Baseline «sortiert nach Zugzahl» im Paket Kennzahlen, nicht dieses Paket.
+  - Positive Autokorrelation der Tagesmittel heisst: Das Intervall aus `ranking` ist zu schmal, und es gibt eher
+    zu viele Verstärker und Absorber als zu wenige (Befund #38, Grenze «Betriebstage als unabhängig»).
