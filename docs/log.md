@@ -2265,3 +2265,106 @@ Zürcher Abschnitte mit Wert im Fenster «ganzer Zeitraum» (Befund #38), 1.8.20
     der Baseline «sortiert nach Zugzahl» im Paket Kennzahlen, nicht dieses Paket.
   - Positive Autokorrelation der Tagesmittel heisst: Das Intervall aus `ranking` ist zu schmal, und es gibt eher
     zu viele Verstärker und Absorber als zu wenige (Befund #38, Grenze «Betriebstage als unabhängig»).
+
+## 2026-11-15 — Befund: Stabilität der Rangliste (Issue #48)
+
+Berechnet in `notebooks/13_stabilitaet.py` nach der Hypothese und der Entscheidung zur Durchführung (Commit
+`e1afe77`, vor dem Lauf gepusht). Basis: die 394 Zürcher Abschnitte mit Wert im ganzen Zeitraum, Ranglisten-Datei
+`ranking_2025-08_2026-07_b176f2ef.parquet`.
+
+| Prüfung | Ergebnis | Erwartung | Gehalten |
+|---|---|---|---|
+| (1) Spearman zwischen Fahrplan 2025 und 2026 | 0.979 (390 Abschnitte) | ≥ 0.7 | ja |
+| (2) Top 10 der Verstärker in beiden Fahrplänen | 9 | ≥ 7 | ja |
+| (3) Median Spearman über 20 Paare von 4-Wochen-Fenstern | 0.985 (0.964 bis 0.998) | ≥ 0.7 | ja |
+
+- **Urteil nach den Kriterien aus Issue #32: stabil.** Alle drei Erwartungen sind gehalten, die Schwellen sind
+  nicht angepasst.
+- **Die Vermutung des Agenten ist nicht eingetroffen:** Der Median der Zufallsfenster (0.985) liegt nicht unter dem
+  Wert zwischen den Fahrplänen (0.979).
+- **Fahrpläne:** 390 der 394 Abschnitte haben in beiden Fahrplänen einen Wert (4 haben im Fahrplan 2025 zu wenige
+  Betriebstage). Die ersten acht Verstärker sind dieselben; Rang 7 und 8 tauschen. Bei den Absorbern stehen
+  ebenfalls 9 in beiden Top 10; nach der Hauptkennzahl allein, ohne Klasse, auch 9.
+- **Wechsel in der Top 10 der Verstärker zwischen den Fahrplänen, 2 Abschnitte:**
+  - Winterthur → Zürich Flughafen: Fahrplan 2025 Rang 9 mit 0.61 min, Fahrplan 2026 neutral mit 0.07 min (Intervall
+    [0.03, 0.11]). Nach der Regel vor dem Lauf ein «Klassenwechsel an der Grenze».
+  - Zürich Oerlikon → Zürich Flughafen: Fahrplan 2026 Rang 9 mit 0.38 min, Fahrplan 2025 Verstärker mit 0.30 min,
+    aber nicht unter den zehn grössten. Grund «Rang».
+  - Absorber: je ein Abschnitt, beide mit Grund «Rang» (Zürich Schweighof → Zürich Triemli, Winterthur Grüze →
+    Winterthur).
+- **Die Regel «Klassenwechsel an der Grenze» war zu weit gefasst.** Sie fragt nur, ob das Intervall im anderen Teil
+  über 0 liegt und das Mittel unter 0.25 min, nicht, wie nahe an 0.25 min der Wert ist. Winterthur → Zürich
+  Flughafen fällt von 0.61 auf 0.07 min: Das ist keine knappe Verschiebung an der Schwelle wie im Beispiel aus dem
+  Review zu PR #47 (0.26 und 0.24 min), sondern ein Abschnitt, der im Fahrplan 2026 kaum mehr Verspätung aufbaut.
+  Die Regel wird nicht nachträglich geändert; die Tabelle im Notebook zeigt die Mittel beider Teile. Ein knapper
+  Wechsel an der Schwelle kommt zwischen den Fahrplänen nicht vor.
+- **Zufallsfenster:** 20 Paare aus 40 verschiedenen Fenstern, 5 überlappende Paare verworfen. Je Paar 342 bis 386
+  Abschnitte mit Wert in beiden Fenstern. Ohne Erwartung:
+  - Top 10 in beiden Fenstern: Median 9, kleinster Wert 7 (elfmal 9, achtmal 8, einmal 7).
+  - Von den 60 Wechseln in den Top 10 haben 53 den Grund «Rang», 6 «Klassenwechsel, anderer», 1 «Klassenwechsel an
+    der Grenze», 0 «kein Wert». Der eine Fall an der Grenze ist wieder Winterthur → Zürich Flughafen (0.60 und
+    0.18 min, Intervall [0.00, 0.35]), also ebenfalls kein knapper Wechsel.
+  - Verstärker je Fenster: 123 bis 141 (ganzer Zeitraum 142). Die vor dem Lauf genannte Grenze «weniger Abschnitte
+    werden Verstärker» wirkt nur schwach.
+  - Paare in verschiedenen Fahrplänen (6 Paare) haben 0.964 bis 0.988 (Median 0.968), Paare im selben Fahrplan
+    (7 Paare) 0.981 bis 0.998; die 7 Paare mit einem Fenster über dem Fahrplanwechsel 0.973 bis 0.997.
+- **Kommt die Korrelation vom Volumen? (nach dem Befund gerechnet, ohne Erwartung)** Die Hauptkennzahl ist Mittel ×
+  Fahrten, und die Zahl der Fahrten ist über die Zeit stabil. Dieselbe Korrelation über das Mittel pro Fahrt nach
+  Referenzwert, ohne Volumen: 0.985 zwischen den Fahrplänen, Median der 20 Paare 0.987 (kleinster Wert 0.970). Über
+  die Zahl der Fahrten allein: 0.955 und 0.970. Die Stabilität kommt also nicht vom Volumen; auch das Mittel pro
+  Fahrt hält seine Reihenfolge. Massstab: Werden die Abschnitte des zweiten Fahrplans zufällig vertauscht, ist der
+  Betrag der Korrelation im Median 0.036 und höchstens 0.157 (1000 Vertauschungen). Die Prüfung hätte scheitern
+  können.
+- **Autokorrelation der Tagesmittel, Top 10 der Verstärker im ganzen Zeitraum (beschreibend):** bei allen zehn
+  positiv, 0.13 (Zürich Oerlikon → Zürich Hardbrücke) bis 0.55 (Zürich Flughafen → Zürich Oerlikon), Median 0.30;
+  je 364 Paare aufeinanderfolgender Tage. Die Betriebstage sind nicht unabhängig, das Intervall aus `ranking` ist
+  zu schmal (Grenze aus Befund #38). Für die Top 10 ändert das die Klasse nicht: Ihre Mittel liegen bei 0.39 bis
+  1.78 min. Für Abschnitte nahe 0.25 min oder nahe 0 ist es nicht geprüft.
+- **Nebenbefund:** Mit der Regel aus Issue #45 besteht die Top 10 der Verstärker im ganzen Zeitraum aus den
+  bisherigen Rängen 1 bis 6 und 8 bis 10 und neu Zürich Stadelhofen → Uster (0.77 min, 20'631 min Zuwachs, bisher
+  Rang 11). Der Anteil am positiven Zuwachs ist nicht gerechnet (Paket Kennzahlen).
+- **Grenzen:**
+  - Stabil heisst: Die Reihenfolge der Abschnitte bleibt über die Zeit. Es sagt nichts darüber, warum ein
+    Abschnitt Verspätung aufbaut. Eine Fahrzeit, die im Fahrplan dauerhaft zu knapp oder zu grosszügig ist, ergibt
+    ebenfalls ein stabiles Muster.
+  - Spearman über alle 390 Abschnitte misst die ganze Rangliste, von den Absorbern bis zu den Verstärkern. Ein
+    hoher Wert schliesst Wechsel an der Spitze nicht aus; dafür steht Kriterium (2).
+  - Ein Jahr, zwei Fahrpläne: Es gibt genau einen Fahrplanwechsel. Ob die Rangliste über weitere Wechsel hält,
+    zeigt das nicht.
+  - Die 20 Paare teilen sich Tage und sind nicht unabhängig; der Median ist eine Beschreibung, kein Test. Ein
+    anderer Seed ist nicht gerechnet.
+  - Der Referenzwert ist in allen Fenstern derselbe (Klassenmittel des ganzen Zeitraums). Er enthält die Tage
+    beider Fenster eines Paars, aber auch alle anderen.
+  - Nur Abschnitte, keine Halte; die Stabilität über Tageszeit, Wochentag und Jahreszeit ist nicht Teil dieses
+    Pakets.
+- **Entscheidung (Vorschlag des Agenten, von Hn1016 übernommen; zur Bestätigung durch schwagia im Review):** Die
+  Rangliste der Abschnitte gilt als stabil nach Issue #32. Der Bericht nennt Winterthur → Zürich Flughafen als den
+  Abschnitt, der mit dem Fahrplanwechsel aus der Top 10 fällt, und die Autokorrelation der Tagesmittel als Grenze
+  des Intervalls. An `ranking.py` und an den Schwellen ändert sich nichts.
+
+## 2026-11-15 — KI-Einsatz: Issue #48
+
+- **Aufgabe:** die Rangliste der Abschnitte zwischen den beiden Fahrplänen und über 20 Paare zufälliger
+  4-Wochen-Fenster vergleichen und nach den Kriterien aus Issue #32 beurteilen.
+- **Mine:** das Issue mit der Erwartung, der Basis und dem Vorschlag zur Durchführung (schwagia); die Freigabe von
+  Hypothese und Durchführung vor dem Push (Hn1016).
+- **Delegated:** Claude Code hat die Einträge im Log und das Notebook 13 geschrieben. Entscheide des Agenten, vor
+  dem Lauf festgehalten: Spearman über alle Abschnitte mit Wert; 28 Betriebstage je Fenster; Seed 48 und das
+  Verwerfen überlappender Paare; keine Mindestzahl an Fahrten im Fenster; die vier Gründe für einen Wechsel in der
+  Top 10; Fenster über dem Fahrplanwechsel nicht ausschliessen. Nach dem Lauf vom Agenten ergänzt: der Abschnitt
+  «Kommt die Korrelation vom Volumen?» und der Hinweis, dass die Regel «Klassenwechsel an der Grenze» zu weit
+  gefasst war.
+- **Prüfung:**
+  - Der Wert (1) ist ein zweites Mal gerechnet, als Pearson-Korrelation der mittleren Ränge in Polars statt mit
+    `scipy.stats.spearmanr`: 0.9788, gleich.
+  - Die Summen gehen auf: 20 Paare mit Überschneidung 9, 8 und 7 (elf-, acht- und einmal) ergeben 60 Wechsel, die
+    Gründe zählen 53 + 6 + 1 + 0 = 60.
+  - Jedes der 40 Fenster hat höchstens 28 Betriebstage je Abschnitt; die Basis hat 394 Abschnitte wie im Befund #38.
+  - Die Vertauschung zeigt, dass die Korrelation nicht von selbst hoch ist (höchstens 0.157).
+  - Nicht geprüft: ein zweiter Seed; die Werte der 4-Wochen-Fenster gegen eine zweite Rechnung (sie kommen aus
+    `ranking.ranking()`, das durch die Fixture geprüft ist).
+- **Reihenfolge:** Hypothese und Durchführung `e1afe77` gepusht, danach das Notebook geschrieben und zum ersten Mal
+  gerechnet. Seed, Regeln und Erwartungen sind nach dem ersten Lauf nicht geändert. Nach dem ersten Lauf dazu
+  gekommen sind nur die Spalten und der Abschnitt zum Volumen und eine Anmerkung im Notebook.
+- **Übernommen/verworfen:** Übernommen: Durchführung und Befund des Agenten. Verworfen: die Regel «Klassenwechsel an
+  der Grenze» nachträglich enger zu fassen (wäre eine Regel nach dem Ergebnis).
