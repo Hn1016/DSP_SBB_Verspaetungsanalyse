@@ -2185,3 +2185,87 @@ Abschnitten (Top 10 der rohen Rangliste davon 28.8 %).
   der harten Grenze für die Stabilitätsprüfung festgehalten. Claude Code hat beide Punkte eingetragen.
 - **Übernommen/verworfen:** Übernommen: beide Vorschläge des Agenten. Verworfen: Top 10 nach der Hauptkennzahl mit
   gekennzeichneten neutralen Abschnitten; roh als Hauptzahl.
+
+## 2026-11-15 — Entscheidung: Haltverspätung und Referenzwert der Halte (Issue #46)
+
+Anlass: A8 «Referenzwert genügt» (`docs/assumptions.md`) und der offene Punkt «Referenzwert je Soll-Haltezeit» im
+One-Pager. Die sieben Entscheide stammen von schwagia und standen fest, bevor gerechnet wurde. Wo «vom Agenten
+ergänzt» steht, hat Claude Code die Alternative oder die Begründung dazugeschrieben; sie ist im Review zu prüfen.
+
+1. **Haltverspätung (schwagia):** Abfahrtsverspätung minus Ankunftsverspätung am selben Halteereignis, beide `REAL`,
+   aus `quality.delays()`.
+   - *Alternative (vom Agenten ergänzt):* auch `PROGNOSE`-Zeiten verwenden, damit Halte mit Lücken einen Wert
+     bekommen. Verworfen: Nur `REAL` ist eine Messung (Log 2026-10-25); `PROGNOSE` fliesst nicht in Ranglisten ein.
+   - *Begründung (vom Agenten ergänzt):* Definition aus der Aufgabenstellung; die Bereinigungsregeln liegen nur in
+     `quality.delays()` (Review PR #2, Log 2026-10-28).
+2. **Frühe Ankünfte (schwagia):** Die Ankunftsverspätung wird bei 0 gekappt: Haltverspätung = Abfahrtsverspätung −
+   max(Ankunftsverspätung, 0).
+   - *Begründung:* Eine frühe Ankunft mit pünktlicher Abfahrt baut am Halt keine Verspätung auf; den Gewinn verbucht
+     der Abschnitt davor als Absorber.
+   - *Alternative:* nicht kappen; dann addieren sich Halt und Abschnitt zur Gesamtverspätung. Verworfen, weil ein
+     Halt nach einem Abschnitt mit Reserve als Verstärker erschiene.
+   - *Folge:* Mit Kappen addieren sich Abschnitte und Halte einer Fahrt nicht mehr genau zur Verspätung am Ende. Wie
+     viel das Kappen ausmacht, prüft Erwartung (c) im Hypothesen-Eintrag.
+3. **Durchfahrten (schwagia):** Halteereignisse mit `DURCHFAHRT_TF` sind ausgeschlossen: ohne Halt keine Haltezeit.
+   In den Abschnitten bleiben Durchfahrten Punkte (Issue #24). Halte mit Soll-Haltezeit 0 (Soll-Ankunft und
+   Soll-Abfahrt in derselben Minute) sind keine Durchfahrten und bleiben drin, als Klasse 0.
+   - *Alternative (vom Agenten ergänzt):* Durchfahrten als Klasse 0 mitführen. Verworfen aus dem Grund oben: Der Zug
+     hält nicht, die Differenz der beiden Zeiten ist keine Haltezeit.
+4. **Klassen der Soll-Haltezeit (schwagia):** 0 (Soll-Ankunft und Soll-Abfahrt in derselben Minute), 1, 2, 3 und mehr
+   Minuten.
+   - *Alternative (vom Agenten ergänzt):* nur zwei Klassen (0 und ab 1 Minute) oder Klassen bis 5 und mehr wie bei
+     den Abschnitten (Issue #23). Nicht gerechnet. Zwei Klassen würden die Spanne von 0.27 bis 0.44 min ab 1 Minute
+     (Log 2026-10-06) in einen Wert legen. Ob 3 und mehr Minuten genug Halteereignisse für feinere Klassen hätte,
+     zeigt erst der Anteil je Klasse im Befund.
+5. **Referenzwert (schwagia):** Mittel der Haltverspätung (nach Entscheid 2) der Klasse über alle Zürcher
+   Halteereignisse im Zeitraum aus `period.py`, für alle Halte gleich (wie Issue #23). Von jedem Halteereignis wird
+   das Mittel seiner Klasse abgezogen.
+   - *Alternative (vom Agenten ergänzt):* ein Referenzwert je Fahrplan oder je Linie. Verworfen wie bei den
+     Abschnitten: ein Massstab für alle; Zeitfenster gehören nicht zu diesem Paket (Issue #46, «Nicht Teil davon»).
+6. **Einheit (schwagia):** pro Halt (`BPUIC`), beide Richtungen zusammen (wie Issue #14).
+   - *Alternative (vom Agenten ergänzt):* je Richtung, wie bei den Abschnitten (Eintrag «Richtung», 2026-11-10).
+     Verworfen: Ein Halteereignis hat in den Daten keine Richtung; sie müsste aus dem Nachbarhalt abgeleitet werden.
+7. **Mindestzahl (schwagia):** wie bei den Abschnitten mindestens 100 Fahrten und mindestens 30 Betriebstage im
+   Zeitraum (Eintrag «Systematisch», 2026-11-10).
+   - *Alternative (vom Agenten ergänzt):* 20 Fahrten wie in Issue #14 oder eine eigene Mindestzahl für Halte.
+     Verworfen: dieselbe Regel für Abschnitte und Halte. Ob sie für Halte genügt, ist Teil von A10 («offen für
+     Halte») und nicht Teil dieses Pakets.
+
+## 2026-11-15 — Hypothese: Referenzwert je Soll-Haltezeit für die Haltverspätung (Issue #46, vor der Analyse notiert)
+
+Anlass: A8 (mittel/tief, offen). Der Nebenbefund vom 2026-10-06 (September 2026, ganze Schweiz, ohne Kappen): Bei
+Soll-Haltezeit 0 ist die Haltverspätung im Mittel 0.67 min, ab 1 Minute 0.27 bis 0.44 min. Basis hier: Zürcher Halte
+laut Schnappschuss vom 2026-10-05, August 2025 bis Juli 2026 (`period.py`), Halteereignisse aus `quality.delays()`
+mit Ankunft und Abfahrt `REAL`, Regeln aus dem Eintrag «Entscheidung: Haltverspätung und Referenzwert der Halte».
+Für diesen Zeitraum und diese Basis ist zur Haltverspätung noch nichts gerechnet.
+
+- **Erwartung (schwagia):**
+  - (a) Rohe Klassenmittel: Klasse 0 zwischen 0.5 und 0.8 min; Klassen 1 und 2 je zwischen 0.2 und 0.5 min.
+  - (b) Top 10 nach dem Mittel pro Fahrt, mit Mindestzahl: Roh haben mindestens 7 Halte überwiegend Soll-Haltezeit 0;
+    mit Referenzwert höchstens 5; höchstens 5 Halte stehen in beiden Top 10.
+  - (c) Kappen: Das Mittel der Haltverspätung mit gekappter Ankunft ist höchstens 0.2 min kleiner als ohne Kappen.
+- **Ohne eigene Erwartung (schwagia):** Die Top 10 nach der Hauptkennzahl (Mittel × Fahrten) steht daneben, roh und
+  mit Referenzwert. Lehre aus Issue #23 (Review PR #37): Die Verzerrung betrifft das Mittel pro Fahrt.
+- **Präzisierung (schwagia, im Plan bestätigt):**
+  1. (a) wird an den ungekappten Klassenmitteln geprüft (Abfahrtsverspätung − Ankunftsverspätung), weil die Spannen
+     aus dem ungekappten Befund vom 2026-10-06 stammen und (a) fragt, ob die Verzerrung durch die Soll-Haltezeit im
+     ganzen Zeitraum besteht. Die gekappten Klassenmittel stehen daneben, ohne eigene Erwartung; was das Kappen
+     ausmacht, prüft (c).
+  2. «Überwiegend Soll-Haltezeit 0» in (b): Mehr als 50 % der Halteereignisse des Halts liegen in Klasse 0. Die
+     Spalte «Klasse» der Top 10 zeigt die häufigste Klasse des Halts und den Anteil der Klasse 0.
+  3. (c) vergleicht das Mittel über alle Zürcher Halteereignisse der Basis: ungekappt minus gekappt, erwartet
+     höchstens 0.2 min. Die Differenz je Klasse steht daneben, ohne eigene Erwartung.
+  4. «Fahrten» pro Halt sind Halteereignisse mit Ankunft und Abfahrt `REAL`. Start- und Endhalt einer Fahrt fallen
+     damit weg, weil ihnen eine der beiden Zeiten fehlt. Mindestzahl: mindestens 100 solche Halteereignisse an
+     mindestens 30 Betriebstagen.
+  5. Halteereignisse mit Soll-Abfahrt vor Soll-Ankunft fallen weg (wie `quality.dwell_bias`); ihre Anzahl steht im
+     Befund.
+- **Was «roh» und «mit Referenzwert» in (b) heisst (vom Agenten ergänzt, von schwagia vor dem Push bestätigt):** In
+  beiden Top 10 ist die Haltverspätung gekappt (Entscheid 2). Roh: Mittel je Halt. Mit Referenzwert: Mittel je Halt
+  nach Abzug des Klassenmittels (Entscheid 5). Rang mit `rank()`, absteigend.
+- **Folge bei Widerlegung:** Das Team entscheidet; nichts wird automatisch geändert.
+- **Was die Erwartungen prüfen können (vom Agenten ergänzt, von schwagia vor dem Push bestätigt):** (a) kann
+  scheitern, wenn die Verzerrung im Kanton Zürich über zwölf Monate anders ist als im September 2026 in der ganzen
+  Schweiz. (b) kann scheitern, wenn die rohe Top 10 nicht von Halten mit Soll-Haltezeit 0 bestimmt ist oder der
+  Referenzwert sie nicht verändert. (c) kann scheitern, wenn frühe Ankünfte häufig und gross sind; dann hängt die
+  Rangliste stark von Entscheid 2 ab.
