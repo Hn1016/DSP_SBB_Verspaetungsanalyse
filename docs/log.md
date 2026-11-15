@@ -2052,9 +2052,12 @@ Datensätze von data.sbb.ch, Abruf 2026-11-14, Prüfsummen in `data/raw/manifest
     Richtungen.
   - Die Länge aus der Differenz der Kilometer gilt nur auf einer Linie. Ob sie dort der gefahrenen Länge
     entspricht, ist nicht geprüft.
-  - Die Datensätze sind der Stand vom 2026-11-14; data.sbb.ch liefert nur den aktuellen Stand.
+  - Die Datensätze sind der Stand vom 2026-11-14; data.sbb.ch liefert nur den aktuellen Stand. Wer später frisch
+    lädt, bekommt einen anderen Stand. Das Notebook vergleicht darum die Prüfsummen der geladenen Dateien mit denen
+    dieses Befunds und meldet eine Abweichung deutlich (Review schwagia). Einen festen Schnappschuss als Release wie
+    bei der Haltestellenliste (#26) gibt es nicht, weil die Datensätze für die Rangliste nicht verwendet werden.
   - Nur die 394 Abschnitte mit Wert; die 130 mit «zu wenige Fahrten» sind nicht zugeordnet.
-- **Entscheidung (Hn1016, 2026-11-14, auf Vorschlag des Agenten; zur Bestätigung durch schwagia im Review), Status in
+- **Entscheidung (Team: schwagia, Hn1016; 2026-11-14 auf Vorschlag des Agenten, bestätigt im Review), Status in
   `docs/assumptions.md`:** A6 ist für die Länge widerlegt und für die Zugzahl nur teilweise gestützt. Es gilt Plan B
   für beide Grössen:
   - Länge: Luftlinie aus den Koordinaten der Service Points, für alle Abschnitte gleich gerechnet. Die Zuordnung
@@ -2064,8 +2067,10 @@ Datensätze von data.sbb.ch, Abruf 2026-11-14, Prüfsummen in `data/raw/manifest
   - Zugzahl: Fahrten aus den IstDaten. Sie gibt es für alle 394 Abschnitte, je Richtung und für genau den Zeitraum
     der Rangliste; `zugzahlen` deckt 86 % ab, gilt für ein anderes Jahr und gibt bei 70 Abschnitten keine einzelne
     Zahl.
-  - Plan B wird in diesem Paket nicht umgesetzt. Die 275 Längen aus der Zuordnung können später zeigen, wie weit die
-    Luftlinie von der Streckenlänge abweicht; das ist kein Teil dieses Pakets.
+  - Plan B wird in diesem Paket nicht umgesetzt. Ob die Luftlinie für «pro km» taugt, wird im Paket Kennzahlen
+    geprüft, an den 275 Längen aus der Zuordnung, mit der Erwartung vor dem Lauf. Vorschlag von schwagia aus dem
+    Review, dort festzulegen: Die Luftlinie beträgt im Median mindestens 85 % der Streckenlänge, und die
+    Rangkorrelation der beiden Längen ist mindestens 0.9.
 
 ## 2026-11-14 — KI-Einsatz: Issue #42
 
@@ -2087,12 +2092,20 @@ Datensätze von data.sbb.ch, Abruf 2026-11-14, Prüfsummen in `data/raw/manifest
     `zugzahlen_pro_monat_…`. Korrigiert wurde die Funktion (Muster mit Jahreszahl), nicht der Test.
   - Jeder der 394 Abschnitte hat je Ziel genau einen Status; die Summen der Tabelle ergeben 394.
   - Nicht geprüft: ob der kürzeste Weg der gefahrene ist, und die Längen gegen eine zweite Quelle.
+  - Im Review (2026-11-15): Mit den Dateien des Befunds zeigt das Notebook «Die geladenen Datensätze haben die
+    Prüfsummen des Befunds #42» und dieselbe Tabelle (275/2/117 und 340/4/50). Mit veränderten Kopien beider Dateien
+    (andere Zeilenenden, sonst gleicher Inhalt) erscheint die Meldung «Anderer Stand als im Befund #42» mit beiden
+    Dateinamen. Die Meldung kann also auslösen; ob sie bei einem echten neuen Stand von data.sbb.ch auslöst, ist
+    nicht mit einem zweiten Abruf geprüft.
 - **Reihenfolge:** Hypothese `d451249` gepusht, dann die beiden Datensätze geladen und ihr Aufbau angeschaut (ohne
   die 394 Abschnitte), dann der Nachtrag `80e83dc` gepusht, erst danach die Zuordnung. Die Erwartungen sind nicht
   geändert.
 - **Abweichung beim Bau:** `sections` und `ranking` wurden lokal direkt gebaut (`build.build_sections()`,
   `build.build_ranking()`), nicht mit `uv run build`, weil die Monatsarchive aus Platzgründen lokal gelöscht sind;
   die Tagesdateien in `data/processed/istdaten_rail/` sind unverändert.
+- **Im Review (2026-11-15, schwagia):** die Prüfsummen-Meldung im Notebook; die Entscheidung als Team-Entscheid;
+  die Prüfung der Luftlinie im Paket Kennzahlen mit den vorgeschlagenen Erwartungen. Claude Code hat die drei Punkte
+  umgesetzt und die Meldung mit einer veränderten Kopie eines Datensatzes ausgelöst (Prüfung unten).
 - **Übernommen/verworfen:** Übernommen: Plan und Zählweise des Agenten; der Vorschlag «Plan B für beide Grössen»
   (Hn1016, nach der Gegenüberstellung mit der Alternative «Plan B nur für die Länge»). Verworfen: Plan B nur für
   die Länge.

@@ -111,8 +111,8 @@ Offen:
 7. Prüfungen nach Abschnitt 3 der Richtlinien, dann Karte und Bericht.
 
 Offen:
-- Wie weit die Luftlinie von der Streckenlänge abweicht; die 275 Abschnitte mit Länge aus data.sbb.ch können das
-  zeigen (Log 2026-11-14, Befund #42).
+- Wie weit die Luftlinie von der Streckenlänge abweicht; wird im Paket Kennzahlen an den 275 Abschnitten mit Länge
+  aus data.sbb.ch geprüft, mit der Erwartung vor dem Lauf (Log 2026-11-14, Befund #42).
 
 ## Nicht-Ziele (Non-goals)
 

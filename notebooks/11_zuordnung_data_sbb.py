@@ -13,10 +13,10 @@ def _():
     import polars as pl
 
     from sbb_delays import build
-    from sbb_delays.download import fetch_sbb_dataset, service_points_snapshot
+    from sbb_delays.download import fetch_sbb_dataset, service_points_snapshot, sha256sum
 
     con = duckdb.connect()
-    return build, con, deque, fetch_sbb_dataset, mo, pl, service_points_snapshot
+    return build, con, deque, fetch_sbb_dataset, mo, pl, service_points_snapshot, sha256sum
 
 
 @app.cell
@@ -41,7 +41,33 @@ def _(mo):
 
 
 @app.cell
-def _(build, con, fetch_sbb_dataset, service_points_snapshot):
+def _(fetch_sbb_dataset, mo, sha256sum):
+    # data.sbb.ch serves only the current state. The finding in the log was computed on the
+    # snapshots of 2026-11-14 with these checksums (data/raw/manifest.csv); review PR #43.
+    FINDING_SHA256 = {
+        "linie-mit-betriebspunkten": (
+            "497f0e22a32ecd10b4164d99acb079ac15781f3a513d37e5d65664e0a9359e4f"
+        ),
+        "zugzahlen": "5da2d8bfeb666ffd241223245592ab4de5099524f553108b82b688eee247395f",
+    }
+    datasets = {name: fetch_sbb_dataset(name) for name in FINDING_SHA256}
+    _other = [
+        path.name for name, path in datasets.items() if sha256sum(path) != FINDING_SHA256[name]
+    ]
+    mo.callout(
+        mo.md(
+            f"**Anderer Stand als im Befund #42:** {', '.join(_other)}. Die Zahlen unten können "
+            "von denen im Log (2026-11-14) abweichen."
+        ),
+        kind="danger",
+    ) if _other else mo.md(
+        "Die geladenen Datensätze haben die Prüfsummen des Befunds #42 (Stand 2026-11-14)."
+    )
+    return (datasets,)
+
+
+@app.cell
+def _(build, con, datasets, service_points_snapshot):
     YEAR = 2025  # latest year in zugzahlen (log 2026-11-14, addendum)
 
     con.execute(
@@ -65,7 +91,7 @@ def _(build, con, fetch_sbb_dataset, service_points_snapshot):
         f"""
         create or replace table lines as
         select bpuic, linie, km, linienname
-        from read_csv('{fetch_sbb_dataset("linie-mit-betriebspunkten")}', delim=';', header=true)
+        from read_csv('{datasets["linie-mit-betriebspunkten"]}', delim=';', header=true)
         """
     )
     # One edge per pair of operating points: passenger trains of YEAR, both directions added;
@@ -77,7 +103,7 @@ def _(build, con, fetch_sbb_dataset, service_points_snapshot):
                sum(anzahl_zuege) as zuege
         from (
             select distinct pid_abschnitt, in_richtung, von_bpuic, bis_bpuic, anzahl_zuege
-            from read_csv('{fetch_sbb_dataset("zugzahlen")}', delim=';', header=true)
+            from read_csv('{datasets["zugzahlen"]}', delim=';', header=true)
             where jahr = {YEAR} and geschaeftscode = 'Personenverkehr'
               and von_bpuic is not null and bis_bpuic is not null
         )
