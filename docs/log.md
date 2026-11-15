@@ -2347,6 +2347,13 @@ Top 10.
   überwiegend Soll-Haltezeit 0 (Erwartung mindestens 7). Mit Referenzwert sind es 6 (Erwartung höchstens 5). 6 Halte
   stehen in beiden Top 10 (Erwartung höchstens 5): Horgen Oberdorf, Dietikon Stoffelbach, Zürich Hardbrücke,
   Dielsdorf, Opfikon, Otelfingen Golfpark. Beide Male um einen Halt verfehlt.
+  - Rang 10 bis 12 mit Referenzwert (Otelfingen Golfpark, Zürich Stadelhofen, Männedorf) liegen innerhalb von
+    0.01 min. Die Zählung «6» hängt davon ab: Otelfingen Golfpark und Männedorf haben überwiegend Soll-Haltezeit 0,
+    Zürich Stadelhofen nicht (39.7 %).
+  - **Lehre (schwagia):** Die Erwartung «höchstens 5» lag unter dem Anteil, den zehn zufällige Halte ohne Verzerrung
+    hätten (78.3 % überwiegend Klasse 0, also etwa 8). Sie war damit schlecht gewählt; für die Pipeline Halte wird
+    eine Erwartung an diesem Grundanteil gemessen. Der Vergleich mit dem Grundanteil ist nachträglich (nächster
+    Punkt) und zählt nicht als gehalten; (b) bleibt mit Referenzwert und für die Überschneidung nicht gehalten.
 - **(c) gehalten.** Das Mittel über alle Halteereignisse ist gekappt 0.07 min kleiner als ungekappt (+0.41 statt
   +0.49 min; Erwartung höchstens 0.2). 18.7 % der Halteereignisse haben eine frühe Ankunft.
 - **Vergleich, nach dem ersten Lauf vom Agenten ergänzt (keine Prüfung, keine Erwartung davor):** 119 der 152 Halte
@@ -2370,15 +2377,17 @@ Top 10.
     443'394 Halteereignissen. Verstärker und Absorber sind für Halte nicht bestimmt.
   - Keine Zeitfenster, keine Kennzahlen, keine Ursache (laut Issue nicht Teil davon). Zu A10 («offen für Halte»)
     sagt der Befund nur, dass die Mindestzahl für alle 152 Halte erfüllt ist, nicht, wie breit die Intervalle sind.
-- **Entscheidung zu A8 (Vorschlag des Agenten, vom Team zu bestätigen):**
-  - A8 gilt als «teilweise»: Der Referenzwert je Soll-Haltezeit entfernt die Verzerrung zwischen den Klassen; in der
+- **Entscheidung zu A8 (schwagia, 2026-11-15; zur Bestätigung durch Hn1016 im Review; Vorschlag des Agenten
+  übernommen):**
+  - A8 gilt als «teilweise», Evidenz «mittel»: Der Referenzwert je Soll-Haltezeit entfernt die Verzerrung zwischen den Klassen; in der
     Klasse 0 (63.5 % der Halteereignisse, 119 von 152 Halten) misst der Wert weiterhin die Haltezeit gegenüber dem
     Durchschnitt und nicht gegenüber dem Fahrplan.
-  - Für die Halte gilt die Haltverspätung mit gekappter Ankunft und Referenzwert je Klasse (Entscheide 2 und 5); roh
-    ist sie nicht brauchbar (10 von 10 in Klasse 0). Der Bericht nennt die Grenze der Klasse 0 im selben Abschnitt
-    wie die Rangliste der Halte.
-  - Zu den nicht gehaltenen Erwartungen (a) für die Klassen 1 und 2 und (b) entscheidet das Team; hier ist nichts
-    geändert. Offene Möglichkeit aus dem Log vom 2026-10-06, nicht gerechnet: Halt und folgenden Abschnitt gemeinsam
+  - **Folge:** Der Pipeline-Schritt für Halte verwendet den Referenzwert je Soll-Haltezeit und die gekappte Ankunft
+    (Entscheide 1 bis 7); roh ist die Haltverspätung nicht brauchbar (10 von 10 in Klasse 0). Der Bericht nennt die
+    Einschränkung, dass der Wert in Klasse 0 die Haltezeit gegenüber dem Durchschnitt misst, nicht gegenüber dem
+    Fahrplan.
+  - Die nicht gehaltenen Erwartungen (a) für die Klassen 1 und 2 und (b) ändern an den Entscheiden 1 bis 7 nichts.
+    Offene Möglichkeit aus dem Log vom 2026-10-06, nicht gerechnet: Halt und folgenden Abschnitt gemeinsam
     betrachten.
 
 ## 2026-11-15 — KI-Einsatz: Issue #46
@@ -2406,4 +2415,8 @@ Top 10.
   geschrieben und gerechnet. Die Erwartungen sind nicht geändert. Nach dem ersten Lauf kam eine Zeile dazu (Anteil
   aller Halte mit überwiegend Soll-Haltezeit 0); sie ist im Notebook und im Befund als nachträglich bezeichnet.
 - **Übernommen/verworfen:** Übernommen: die Präzisierungen 2 bis 5 und die ergänzten Alternativen. Verworfen
-  (schwagia): (a) an den gekappten Klassenmitteln zu prüfen. Offen: der Vorschlag zur Entscheidung zu A8.
+  (schwagia): (a) an den gekappten Klassenmitteln zu prüfen. Übernommen (schwagia, 2026-11-15, zur Bestätigung
+  durch Hn1016 im Review): der Vorschlag zur Entscheidung zu A8.
+- **Nach dem Befund (schwagia):** die Entscheidung zu A8 mit ihrer Folge für den Pipeline-Schritt Halte; die Lehre
+  zu (b), dass die Erwartung «höchstens 5» unter dem Grundanteil lag; der Hinweis, dass die Zählung «6» an Rang 10
+  bis 12 hängt. Claude Code hat die drei Punkte eingetragen.
