@@ -64,10 +64,12 @@ zwischen den beiden Fahrplänen (Rangkorrelation).
 
 **Regeln für die Top 10 (entschieden vom Team, Log 2026-11-15, Issue #45):**
 
-- **Top 10:** die zehn Verstärker mit der grössten Hauptkennzahl; die Liste der Absorber entsprechend nur aus
-  Absorbern. Ein neutraler Abschnitt steht nicht in der Top 10, auch wenn seine Hauptkennzahl dafür reicht. Er
-  bleibt mit Rang und Klasse in der Rangliste, und der Bericht nennt ihn mit Wert und Grund (heute Zürich HB →
-  Zürich Hardbrücke, 0.19 min pro Fahrt). Die Schwelle von 0.25 min bleibt (Log «Top 10 nur aus Verstärkern»).
+- **Top 10:** die zehn Verstärker mit der grössten Hauptkennzahl; bei den Absorbern die zehn mit dem negativsten
+  Zuwachs, also die, die am meisten Verspätung abbauen. Ein neutraler Abschnitt steht nicht in der Top 10, auch wenn
+  seine Hauptkennzahl dafür reicht. Er bleibt mit Rang und Klasse in der Rangliste, und der Bericht nennt ihn mit
+  Wert und Grund (heute Zürich HB → Zürich Hardbrücke, 0.19 min pro Fahrt). Die Schwelle von 0.25 min bleibt. Die
+  Stabilitätsprüfung weist aus, wie viele Wechsel in der Top 10 von einem Klassenwechsel an dieser Grenze kommen
+  (Log «Top 10 nur aus Verstärkern»).
 - **Anteil der Top 10 am positiven Zuwachs:** relativ zum Klassenmittel der Soll-Fahrzeit, wie die Rangliste selbst.
   Der Bericht nennt die Zahl als «mehr Verspätung als ein durchschnittlicher Abschnitt gleicher Soll-Fahrzeit»,
   nicht als gemessene Minuten. Als Begleitzahl steht daneben der rohe Anteil derselben zehn Abschnitte am rohen

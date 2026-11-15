@@ -2117,9 +2117,10 @@ Anlass: Review zum PR zu Issue #38. Rang 7 der Rangliste, Zürich HB → Zürich
 Hauptkennzahl (Mittel × Fahrten) und die Klasse (Mittel der Tagesmittel ab 0.25 min) messen Verschiedenes.
 
 - **Entscheidung (Team: schwagia, Hn1016; Vorschlag Hn1016, Bestätigung im Review):** Die Top 10 der Verstärker sind
-  die zehn Abschnitte der Klasse «Verstärker» mit der grössten Hauptkennzahl. Die Liste der Absorber wird
-  entsprechend nur aus Abschnitten der Klasse «Absorber» gebildet. Das gilt je Zeitfenster mit der Klasse dieses
-  Fensters, also auch für «7 der Top 10 in beiden Fahrplänen» (Eintrag «Stabilität»).
+  die zehn Abschnitte der Klasse «Verstärker» mit der grössten Hauptkennzahl. Die Top 10 der Absorber sind die zehn
+  Abschnitte der Klasse «Absorber» mit dem negativsten Zuwachs (kleinste Hauptkennzahl), also die, die am meisten
+  Verspätung abbauen. Das gilt je Zeitfenster mit der Klasse dieses Fensters, also auch für «7 der Top 10 in beiden
+  Fahrplänen» (Eintrag «Stabilität»).
 - **Alternative:** Top 10 nach der Hauptkennzahl allein, neutrale Abschnitte gekennzeichnet und im Bericht genannt.
   Verworfen: Die Frage der Aufgabenstellung lautet, welche Abschnitte Verspätungen systematisch vergrössern.
   «Systematisch» ist mit der Klasse festgelegt (Eintrag «Systematisch»). Eine Top 10 der Verstärker mit einem
@@ -2137,6 +2138,10 @@ Hauptkennzahl (Mittel × Fahrten) und die Klasse (Mittel der Tagesmittel ab 0.25
     «Positiver Zuwachs»), nicht nur über die Verstärker.
   - Der Vergleich mit der Baseline «sortiert nach Zugzahl» (Eintrag «Hauptkennzahl») wird damit wichtiger: Die
     Top 10 kann weiterhin vor allem Volumen abbilden, nur nicht mehr mit einem Mittel unter 0.25 min.
+  - Für die Stabilitätsprüfung (Review schwagia): Ein Abschnitt mit 0.26 min im Fahrplan 2025 und 0.24 min im
+    Fahrplan 2026 fällt aus der Top 10, obwohl sich sein Rang kaum ändert; die Liste sieht dann instabiler aus, als
+    sie ist. Das wird hier nicht gelöst. Die Stabilitätsprüfung weist aus, wie viele Wechsel in der Top 10 von einem
+    Klassenwechsel an der Grenze von 0.25 min kommen.
 - **Grenze:** Die Grenze bei 0.25 min ist hart. Ein Abschnitt mit 0.24 min und sehr vielen Fahrten fehlt in der
   Top 10, einer mit 0.25 min steht darin. Der Bericht nennt darum die neutralen Abschnitte mit hoher Hauptkennzahl.
 
@@ -2176,5 +2181,7 @@ Abschnitten (Top 10 der rohen Rangliste davon 28.8 %).
 - **Prüfung:** Die genannten Zahlen (0.19 min, 128'172 Fahrten, 21.8 %, 28.8 %, die beiden Totale, die Klassenmittel)
   sind aus den Befunden #23 und #38 im Log übernommen, nicht neu gerechnet. Kein Code geändert; `uv run pytest` und
   `ruff` laufen durch.
+- **Im Review (2026-11-15, schwagia):** die Sortierung der Absorber ausgeschrieben (negativster Zuwachs); die Folge
+  der harten Grenze für die Stabilitätsprüfung festgehalten. Claude Code hat beide Punkte eingetragen.
 - **Übernommen/verworfen:** Übernommen: beide Vorschläge des Agenten. Verworfen: Top 10 nach der Hauptkennzahl mit
   gekennzeichneten neutralen Abschnitten; roh als Hauptzahl.
