@@ -2377,18 +2377,19 @@ Top 10.
     443'394 Halteereignissen. Verstärker und Absorber sind für Halte nicht bestimmt.
   - Keine Zeitfenster, keine Kennzahlen, keine Ursache (laut Issue nicht Teil davon). Zu A10 («offen für Halte»)
     sagt der Befund nur, dass die Mindestzahl für alle 152 Halte erfüllt ist, nicht, wie breit die Intervalle sind.
-- **Entscheidung zu A8 (schwagia, 2026-11-15; zur Bestätigung durch Hn1016 im Review; Vorschlag des Agenten
-  übernommen):**
-  - A8 gilt als «teilweise», Evidenz «mittel»: Der Referenzwert je Soll-Haltezeit entfernt die Verzerrung zwischen den Klassen; in der
-    Klasse 0 (63.5 % der Halteereignisse, 119 von 152 Halten) misst der Wert weiterhin die Haltezeit gegenüber dem
-    Durchschnitt und nicht gegenüber dem Fahrplan.
-  - **Folge:** Der Pipeline-Schritt für Halte verwendet den Referenzwert je Soll-Haltezeit und die gekappte Ankunft
-    (Entscheide 1 bis 7); roh ist die Haltverspätung nicht brauchbar (10 von 10 in Klasse 0). Der Bericht nennt die
-    Einschränkung, dass der Wert in Klasse 0 die Haltezeit gegenüber dem Durchschnitt misst, nicht gegenüber dem
-    Fahrplan.
-  - Die nicht gehaltenen Erwartungen (a) für die Klassen 1 und 2 und (b) ändern an den Entscheiden 1 bis 7 nichts.
-    Offene Möglichkeit aus dem Log vom 2026-10-06, nicht gerechnet: Halt und folgenden Abschnitt gemeinsam
-    betrachten.
+- **Entscheidung zu A8 (Team: schwagia, Hn1016; im Review geändert):**
+  - A8 bleibt «offen», Evidenz «tief»: Verzerrung im ganzen Zeitraum bestätigt, Referenzwert per Konstruktion
+    klassenneutral; ob der Wert in Klasse 0 den Betrieb misst, nicht geprüft (Review Hn1016). Vor dem Review stand
+    hier «teilweise», Evidenz «mittel» (schwagia, Vorschlag des Agenten).
+  - **Folge:** Die Regeln 1 bis 7 gelten vorläufig. Ob Halte allein eine Rangliste bekommen, entscheidet das Team
+    nach dem Paket «Halt und folgender Abschnitt» (Review Hn1016).
+  - Die nicht gehaltenen Erwartungen (a) für die Klassen 1 und 2 und (b) ändern an den Regeln 1 bis 7 nichts.
+- **Im Review (Hn1016):** An Zürich Hardbrücke und Zürich Wiedikon steht einem positiven Wert am Halt ein grösserer
+  negativer Wert auf den Abschnitten danach gegenüber (Hardbrücke +66'170 min am Halt, −144'801 min auf den
+  Abschnitten danach; roh +209'142 und −307'549). Vermutung: Bei Soll-Haltezeit 0 wird dieselbe Minute am Halt als
+  Verspätung und auf dem Abschnitt danach als Abbau gezählt; der Referenzwert behebt das nicht. Das betrifft auch
+  die Absorber-Liste der Abschnitte. Geprüft sind nur diese Halte und die Summen; ein Hinweis, kein Befund. Horgen
+  Oberdorf und Dielsdorf zeigen das Muster nicht.
 
 ## 2026-11-15 — KI-Einsatz: Issue #46
 
@@ -2398,6 +2399,10 @@ Top 10.
   Mindestzahl); die Erwartungen (a) bis (c) mit ihren Werten und die Folge bei Widerlegung; dass die Top 10 nach der
   Hauptkennzahl ohne Erwartung danebensteht; die Änderung im Plan, (a) an den ungekappten Klassenmitteln zu prüfen
   (der Agent hatte gekappt vorgeschlagen); der Ablauf (Plan, Commit, eigener Push vor dem Rechnen).
+- **Mine (Hn1016, im Review):** der Vergleich des Werts am Halt mit den Abschnitten danach an Zürich Hardbrücke,
+  Zürich Wiedikon, Horgen Oberdorf und Dielsdorf, mit der Vermutung zur doppelt gezählten Minute; A8 zurück auf
+  «offen», Evidenz «tief»; die Regeln 1 bis 7 nur vorläufig und das Paket «Halt und folgender Abschnitt» vor einer
+  Rangliste der Halte.
 - **Delegated:** Claude Code hat die Einträge im Log, das Notebook 12 und die Zeile A8 in `docs/assumptions.md`
   geschrieben. Vom Agenten stammen: die Präzisierungen 2 bis 5 der Hypothese (im Plan von schwagia bestätigt); die
   Alternativen zu den Entscheiden 1, 3, 4, 5, 6, 7 und die Begründung zu 1; die Absätze «Was roh und mit
@@ -2416,7 +2421,13 @@ Top 10.
   aller Halte mit überwiegend Soll-Haltezeit 0); sie ist im Notebook und im Befund als nachträglich bezeichnet.
 - **Übernommen/verworfen:** Übernommen: die Präzisierungen 2 bis 5 und die ergänzten Alternativen. Verworfen
   (schwagia): (a) an den gekappten Klassenmitteln zu prüfen. Übernommen (schwagia, 2026-11-15, zur Bestätigung
-  durch Hn1016 im Review): der Vorschlag zur Entscheidung zu A8.
+  durch Hn1016 im Review): der Vorschlag zur Entscheidung zu A8; im Review von Hn1016 nicht bestätigt (nächster
+  Punkt).
 - **Nach dem Befund (schwagia):** die Entscheidung zu A8 mit ihrer Folge für den Pipeline-Schritt Halte; die Lehre
   zu (b), dass die Erwartung «höchstens 5» unter dem Grundanteil lag; der Hinweis, dass die Zählung «6» an Rang 10
   bis 12 hängt. Claude Code hat die drei Punkte eingetragen.
+- **Im Review (2026-11-15, Hn1016):** Die Entscheidung zu A8 ist geändert («offen», «tief», Regeln vorläufig), der
+  Absatz «Im Review (Hn1016)» im Befund ergänzt und `docs/assumptions.md` nachgeführt. Claude Code hat das
+  eingetragen. Die Zahlen zu den Abschnitten nach Zürich Hardbrücke (−144'801 und −307'549 min) stammen aus dem
+  Review und sind vom Agenten nicht nachgerechnet; die Werte am Halt (+66'170 und +209'142 min) stehen im Befund.
+  Verworfen damit: der Vorschlag des Agenten «teilweise», Evidenz «mittel».
