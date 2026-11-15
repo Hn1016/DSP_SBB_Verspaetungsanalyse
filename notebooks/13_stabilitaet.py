@@ -336,6 +336,7 @@ def _(
                 "spearman": round(_rho, 3),
                 "spearman_pro_fahrt": round(spearman(_w1, _w2, "mittel_referenz")[0], 3),
                 "spearman_fahrten": round(spearman(_w1, _w2, "fahrten")[0], 3),
+                "spearman_roh": round(spearman(_w1, _w2, "mittel_roh")[0], 3),
                 "verstaerker_1": _w1.filter(pl.col("klasse") == "Verstärker").height,
                 "verstaerker_2": _w2.filter(pl.col("klasse") == "Verstärker").height,
                 "top10_1": top10(_w1).height,
@@ -413,6 +414,11 @@ def _(mo):
     (`mittel_referenz`, ohne Volumen) und über die Zahl der Fahrten allein, dazu als Massstab die
     Korrelation der Hauptkennzahl, wenn die Abschnitte des zweiten Fahrplans zufällig vertauscht
     werden (Median über 1000 Vertauschungen).
+
+    Im Review zu PR #50 dazugekommen (schwagia): Der Referenzwert ist das Klassenmittel des ganzen
+    Zeitraums und in beiden Teilen derselbe. Hat ein Abschnitt in beiden Teilen dieselbe
+    Soll-Fahrzeit, trägt dieser Abzug zur Korrelation bei, ohne etwas über den Betrieb zu sagen.
+    Darum dieselbe Korrelation über das rohe Mittel pro Fahrt (`mittel_roh`, ohne Referenzwert).
     """)
     return
 
@@ -427,19 +433,20 @@ def _(KEY, np, per_pair, pl, spearman, stats, tt_2025, tt_2026):
         abs(stats.spearmanr(_both["zuwachs"], _rng.permutation(_both["zuwachs_2"])).statistic)
         for _ in range(1000)
     ]
+    _sizes = {
+        "Hauptkennzahl": ("zuwachs", "spearman"),
+        "Mittel pro Fahrt": ("mittel_referenz", "spearman_pro_fahrt"),
+        "Mittel pro Fahrt, roh (ohne Referenzwert)": ("mittel_roh", "spearman_roh"),
+        "Zahl der Fahrten": ("fahrten", "spearman_fahrten"),
+    }
     volume = pl.DataFrame(
         {
-            "groesse": ["Hauptkennzahl", "Mittel pro Fahrt", "Zahl der Fahrten"],
+            "groesse": list(_sizes),
             "spearman_fahrplaene": [
-                round(spearman(tt_2025, tt_2026, c)[0], 3)
-                for c in ["zuwachs", "mittel_referenz", "fahrten"]
+                round(spearman(tt_2025, tt_2026, c)[0], 3) for c, _ in _sizes.values()
             ],
-            "median_20_paare": [
-                per_pair[c].median() for c in ["spearman", "spearman_pro_fahrt", "spearman_fahrten"]
-            ],
-            "min_20_paare": [
-                per_pair[c].min() for c in ["spearman", "spearman_pro_fahrt", "spearman_fahrten"]
-            ],
+            "median_20_paare": [per_pair[c].median() for _, c in _sizes.values()],
+            "min_20_paare": [per_pair[c].min() for _, c in _sizes.values()],
         }
     )
     shuffled = pl.DataFrame(
@@ -448,7 +455,7 @@ def _(KEY, np, per_pair, pl, spearman, stats, tt_2025, tt_2026):
             "vertauscht_max_betrag": [round(float(np.max(_shuffled)), 3)],
         }
     )
-    volume.head(3)
+    volume.head(len(_sizes))
     return shuffled, volume
 
 

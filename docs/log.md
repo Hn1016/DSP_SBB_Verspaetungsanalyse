@@ -2315,6 +2315,13 @@ Berechnet in `notebooks/13_stabilitaet.py` nach der Hypothese und der Entscheidu
   Fahrt hält seine Reihenfolge. Massstab: Werden die Abschnitte des zweiten Fahrplans zufällig vertauscht, ist der
   Betrag der Korrelation im Median 0.036 und höchstens 0.157 (1000 Vertauschungen). Die Prüfung hätte scheitern
   können.
+- **Kommt die Korrelation vom Referenzwert? (im Review zu PR #50 gerechnet, Frage von schwagia, ohne Erwartung)**
+  Der Referenzwert ist das Klassenmittel des ganzen Zeitraums und in beiden Teilen derselbe; bei gleicher
+  Soll-Fahrzeit wird in beiden Teilen dieselbe Zahl abgezogen. Dieselbe Korrelation über das rohe Mittel pro Fahrt,
+  ohne Referenzwert: 0.986 zwischen den Fahrplänen, Median der 20 Paare 0.989 (0.974 bis 0.997). Der Abzug macht
+  die Korrelation also nicht höher; mit Referenzwert sind es 0.985 und 0.987. Was das nicht zeigt: Auch das rohe
+  Mittel enthält den Unterschied zwischen den Klassen der Soll-Fahrzeit (+0.22 bis −0.78 min, Befund #23), und der
+  ändert sich mit dem Fahrplan kaum. «Vom Betrieb getragen» ist damit nicht belegt (erste Grenze unten).
 - **Autokorrelation der Tagesmittel, Top 10 der Verstärker im ganzen Zeitraum (beschreibend):** bei allen zehn
   positiv, 0.13 (Zürich Oerlikon → Zürich Hardbrücke) bis 0.55 (Zürich Flughafen → Zürich Oerlikon), Median 0.30;
   je 364 Paare aufeinanderfolgender Tage. Die Betriebstage sind nicht unabhängig, das Intervall aus `ranking` ist
@@ -2366,5 +2373,14 @@ Berechnet in `notebooks/13_stabilitaet.py` nach der Hypothese und der Entscheidu
 - **Reihenfolge:** Hypothese und Durchführung `e1afe77` gepusht, danach das Notebook geschrieben und zum ersten Mal
   gerechnet. Seed, Regeln und Erwartungen sind nach dem ersten Lauf nicht geändert. Nach dem ersten Lauf dazu
   gekommen sind nur die Spalten und der Abschnitt zum Volumen und eine Anmerkung im Notebook.
+- **Zeiten (Review PR #50, Frage von schwagia), alle 2026-11-15, MEZ:**
+  - 17:20:59 Commit `e1afe77`, 17:21:01 gepusht (`git reflog show origin/feat/issue-48-stability --date=iso`).
+  - 17:22:47 Ausgabe des ersten Laufs gespeichert (Erstellzeit der Ausgabedatei des Agenten, lokal, nicht im
+    Repository). Das Notebook hat der Agent zwischen Push und erstem Lauf geschrieben; ein Lauf dauert 7 Sekunden
+    (40 Fenster auf den Zürcher Abschnittsfahrten im Speicher).
+  - 17:27:48 Commit `6da799b` mit Notebook und Befund, 17:27:50 gepusht.
+  - Belegt ist damit der Push vor dem ersten Lauf durch das Reflog; die Zeit des ersten Laufs steht nur lokal.
+- **Im Review (2026-11-15, schwagia):** die Zeiten oben; die Korrelation über das rohe Mittel pro Fahrt (Zeile im
+  Notebook, Absatz im Befund). Claude Code hat beides eingetragen und gerechnet.
 - **Übernommen/verworfen:** Übernommen: Durchführung und Befund des Agenten. Verworfen: die Regel «Klassenwechsel an
   der Grenze» nachträglich enger zu fassen (wäre eine Regel nach dem Ergebnis).
