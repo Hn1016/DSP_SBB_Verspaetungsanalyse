@@ -144,3 +144,23 @@ def test_pinned_checksum_is_the_one_in_the_manifest():
     row = rows[f"service_points/service-points-ch_{period.SERVICE_POINTS_DATE}.csv"]
     assert row["sha256"] == period.SERVICE_POINTS_SHA256
     assert row["url"] == download.SERVICE_POINTS_RELEASE_URL.format(date=period.SERVICE_POINTS_DATE)
+
+
+def test_fetch_sbb_dataset_returns_the_newest_snapshot_without_download(tmp_path, monkeypatch):
+    for day in ["2026-11-14", "2026-12-01"]:
+        (tmp_path / f"zugzahlen_{day}.csv").write_text("jahr;anzahl_zuege\n")
+    (tmp_path / "zugzahlen_pro_monat_2026-12-24.csv").write_text("x\n")  # another dataset
+    monkeypatch.setattr(download, "fetch", lambda *args, **kwargs: pytest.fail("no download"))
+
+    assert download.fetch_sbb_dataset("zugzahlen", tmp_path).name == "zugzahlen_2026-12-01.csv"
+
+
+def test_fetch_sbb_dataset_downloads_a_dated_snapshot(tmp_path, monkeypatch):
+    calls = []
+    monkeypatch.setattr(download, "fetch", lambda url, dest: calls.append((url, dest)) or dest)
+
+    path = download.fetch_sbb_dataset("zugzahlen", tmp_path)
+
+    assert path.parent == tmp_path
+    assert path.name.startswith("zugzahlen_20") and path.suffix == ".csv"
+    assert calls[0][0].startswith("https://data.sbb.ch/") and "/zugzahlen/" in calls[0][0]
