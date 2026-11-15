@@ -2,8 +2,9 @@
 
 Stand: 2026-10-17, Schritt 2 und «Fertig» nachgeführt am 2026-10-29, Prüfungen an die Richtlinien v3 angeglichen am
 2026-11-01, Regeln für die Rangliste festgelegt am 2026-11-10 (Issue #32), Länge und Zugzahl nach Plan B am 2026-11-14
-(Issue #42). Quellen: Aufgabenstellung (`docs/requirements.md`) und die Entscheidungen im Projektlog (`docs/log.md`).
-Was dort nicht entschieden ist, steht hier als **offen**.
+(Issue #42), Top 10 und Bezugsgrösse des Anteils am 2026-11-15 (Issue #45). Quellen: Aufgabenstellung
+(`docs/requirements.md`) und die Entscheidungen im Projektlog (`docs/log.md`). Was dort nicht entschieden ist, steht
+hier als **offen**.
 
 ## Warum (Why)
 
@@ -61,12 +62,21 @@ zwischen den beiden Fahrplänen (Rangkorrelation).
   7 der Top 10 in beiden vorkommen; über 20 Paare zufälliger 4-Wochen-Fenster ist der Median der Korrelation
   mindestens 0.7. Die Erwartung kommt ins Paket Stabilitätsprüfung (Log «Stabilität»).
 
+**Regeln für die Top 10 (entschieden vom Team, Log 2026-11-15, Issue #45):**
+
+- **Top 10:** die zehn Verstärker mit der grössten Hauptkennzahl; bei den Absorbern die zehn mit dem negativsten
+  Zuwachs, also die, die am meisten Verspätung abbauen. Ein neutraler Abschnitt steht nicht in der Top 10, auch wenn
+  seine Hauptkennzahl dafür reicht. Er bleibt mit Rang und Klasse in der Rangliste, und der Bericht nennt ihn mit
+  Wert und Grund (heute Zürich HB → Zürich Hardbrücke, 0.19 min pro Fahrt). Die Schwelle von 0.25 min bleibt. Die
+  Stabilitätsprüfung weist aus, wie viele Wechsel in der Top 10 von einem Klassenwechsel an dieser Grenze kommen
+  (Log «Top 10 nur aus Verstärkern»).
+- **Anteil der Top 10 am positiven Zuwachs:** relativ zum Klassenmittel der Soll-Fahrzeit, wie die Rangliste selbst.
+  Der Bericht nennt die Zahl als «mehr Verspätung als ein durchschnittlicher Abschnitt gleicher Soll-Fahrzeit»,
+  nicht als gemessene Minuten. Als Begleitzahl steht daneben der rohe Anteil derselben zehn Abschnitte am rohen
+  positiven Zuwachs (Log «Bezugsgrösse für den Anteil der Top 10»). Beide Zahlen rechnet das Paket Kennzahlen.
+
 Offen:
-- Der Referenzwert je Soll-Haltezeit für die Haltverspätung (A8).
-- Bezugsgrösse für den Anteil der Top 10 am positiven Zuwachs: roh oder relativ zum Klassenmittel der Soll-Fahrzeit.
-  Mit Referenzwert ist die Summe über alle Fahrten null, und etwa die Hälfte der Abschnitte hat per Konstruktion
-  einen positiven Zuwachs (Log 2026-11-10, Befund #23: roh 28.8 %, mit Referenzwert 21.8 %). Entscheid im Paket
-  Kennzahlen.
+- Der Referenzwert je Soll-Haltezeit für die Haltverspätung (A8, Issue #46).
 
 ## Wie (How)
 

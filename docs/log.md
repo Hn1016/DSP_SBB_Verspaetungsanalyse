@@ -2109,3 +2109,79 @@ Datensätze von data.sbb.ch, Abruf 2026-11-14, Prüfsummen in `data/raw/manifest
 - **Übernommen/verworfen:** Übernommen: Plan und Zählweise des Agenten; der Vorschlag «Plan B für beide Grössen»
   (Hn1016, nach der Gegenüberstellung mit der Alternative «Plan B nur für die Länge»). Verworfen: Plan B nur für
   die Länge.
+
+## 2026-11-15 — Entscheidung: Top 10 nur aus Verstärkern (Issue #45)
+
+Anlass: Review zum PR zu Issue #38. Rang 7 der Rangliste, Zürich HB → Zürich Hardbrücke, hat 0.19 min pro Fahrt
+(Intervall [0.18, 0.19]) und ist «neutral»; der Rang kommt von 128'172 Fahrten (Befunde #23 und #38). Die
+Hauptkennzahl (Mittel × Fahrten) und die Klasse (Mittel der Tagesmittel ab 0.25 min) messen Verschiedenes.
+
+- **Entscheidung (Team: schwagia, Hn1016; Vorschlag Hn1016, Bestätigung im Review):** Die Top 10 der Verstärker sind
+  die zehn Abschnitte der Klasse «Verstärker» mit der grössten Hauptkennzahl. Die Top 10 der Absorber sind die zehn
+  Abschnitte der Klasse «Absorber» mit dem negativsten Zuwachs (kleinste Hauptkennzahl), also die, die am meisten
+  Verspätung abbauen. Das gilt je Zeitfenster mit der Klasse dieses Fensters, also auch für «7 der Top 10 in beiden
+  Fahrplänen» (Eintrag «Stabilität»).
+- **Alternative:** Top 10 nach der Hauptkennzahl allein, neutrale Abschnitte gekennzeichnet und im Bericht genannt.
+  Verworfen: Die Frage der Aufgabenstellung lautet, welche Abschnitte Verspätungen systematisch vergrössern.
+  «Systematisch» ist mit der Klasse festgelegt (Eintrag «Systematisch»). Eine Top 10 der Verstärker mit einem
+  Abschnitt, den die eigene Regel neutral nennt, widerspricht sich vor Lesern, die keine Data Scientists sind.
+- **Keine Option:** `MIN_EFFECT` zu ändern. Die Schwelle von 0.25 min wurde vor dem Ergebnis festgelegt (Eintrag
+  «Systematisch», 2026-11-10); sie nach dem Blick auf Rang 7 zu senken, wäre eine Regel nach dem Ergebnis.
+- **Was nicht still wegfällt:** Die Rangliste (`ranking`) behält alle Abschnitte mit Wert, Rang nach der
+  Hauptkennzahl und Klasse; an ihr ändert sich nichts. Der Bericht nennt jeden neutralen Abschnitt, der nach der
+  Hauptkennzahl allein in der Top 10 stünde, mit Wert und Grund (Eintrag «Wert oder Grund»).
+- **Folgen:**
+  - Im ganzen Zeitraum fällt Zürich HB → Zürich Hardbrücke aus der Top 10, und ein Verstärker rückt nach. Welcher,
+    und wie sich der Anteil der Top 10 ändert (bisher 21.8 %, Befund #23), rechnet das Paket Kennzahlen; hier ist
+    nichts gerechnet.
+  - Das Total des positiven Zuwachses bleibt die Summe über alle Abschnitte mit positivem Mittel (Eintrag
+    «Positiver Zuwachs»), nicht nur über die Verstärker.
+  - Der Vergleich mit der Baseline «sortiert nach Zugzahl» (Eintrag «Hauptkennzahl») wird damit wichtiger: Die
+    Top 10 kann weiterhin vor allem Volumen abbilden, nur nicht mehr mit einem Mittel unter 0.25 min.
+  - Für die Stabilitätsprüfung (Review schwagia): Ein Abschnitt mit 0.26 min im Fahrplan 2025 und 0.24 min im
+    Fahrplan 2026 fällt aus der Top 10, obwohl sich sein Rang kaum ändert; die Liste sieht dann instabiler aus, als
+    sie ist. Das wird hier nicht gelöst. Die Stabilitätsprüfung weist aus, wie viele Wechsel in der Top 10 von einem
+    Klassenwechsel an der Grenze von 0.25 min kommen.
+- **Grenze:** Die Grenze bei 0.25 min ist hart. Ein Abschnitt mit 0.24 min und sehr vielen Fahrten fehlt in der
+  Top 10, einer mit 0.25 min steht darin. Der Bericht nennt darum die neutralen Abschnitte mit hoher Hauptkennzahl.
+
+## 2026-11-15 — Entscheidung: Bezugsgrösse für den Anteil der Top 10 (Issue #45)
+
+Anlass: One-Pager, offener Punkt «Bezugsgrösse für den Anteil der Top 10 am positiven Zuwachs». Befund #23: Mit
+Referenzwert ist das Total 1'675'940 min auf 213 Abschnitten (Top 10 davon 21.8 %), roh 528'437 min auf 100
+Abschnitten (Top 10 der rohen Rangliste davon 28.8 %).
+
+- **Entscheidung (Team: schwagia, Hn1016; Vorschlag Hn1016, Bestätigung im Review):** Der Anteil der Top 10 wird
+  relativ zum Klassenmittel der Soll-Fahrzeit gerechnet: Zähler und Total mit Referenzwert, wie im Eintrag
+  «Positiver Zuwachs» vom 2026-11-10.
+- **Begleitzahl:** Der Bericht nennt daneben den rohen Anteil: den rohen Zuwachs derselben zehn Abschnitte, geteilt
+  durch das rohe Total des positiven Zuwachses. Die 28.8 % aus Befund #23 sind nicht diese Zahl; sie gelten für die
+  Top 10 der rohen Rangliste, also für andere Abschnitte.
+- **Alternative:** roh als Hauptzahl. Verworfen: Die Rangliste ordnet nach dem Wert mit Referenzwert, weil die rohe
+  Streckenverspätung mit der Soll-Fahrzeit sinkt (+0.22 min bei 1 Minute, −0.78 min bei 5 Minuten und mehr, Befund
+  #23). Ein roher Anteil für eine Top 10 mit Referenzwert mischt zwei Massstäbe, und das rohe Total hat dieselbe
+  Verzerrung, die der Referenzwert entfernt.
+- **Was die Zahl heisst:** Mit Referenzwert ist die Summe über alle Fahrten null, und etwa die Hälfte der Abschnitte
+  hat per Konstruktion einen positiven Zuwachs. Der Anteil bedeutet «Anteil an der Verspätung über dem Durchschnitt
+  der Abschnitte gleicher Soll-Fahrzeit», nicht «Anteil an den gemessenen Minuten». Der Bericht schreibt das im
+  selben Satz wie die Zahl; die Begleitzahl ist für Leser, die gemessene Minuten erwarten.
+- **Nicht gerechnet:** Beide Zahlen für die neue Top 10 (Eintrag «Top 10 nur aus Verstärkern») kommen aus dem Paket
+  Kennzahlen.
+
+## 2026-11-15 — KI-Einsatz: Issue #45
+
+- **Aufgabe:** zwei Regeln festhalten, ohne Code und ohne Berechnung: wie die Top 10 gebildet wird und gegen welche
+  Bezugsgrösse ihr Anteil gerechnet wird.
+- **Mine:** das Issue mit den Varianten und dem Ausschluss einer Änderung von `MIN_EFFECT` (schwagia); die Wahl der
+  beiden Varianten (Hn1016, zur Bestätigung durch schwagia im Review).
+- **Delegated:** Claude Code hat die beiden Einträge und die Änderungen im One-Pager geschrieben und beide Varianten
+  mit Begründung vorgeschlagen. Vom Agenten stammen auch: die Begleitzahl als roher Anteil derselben zehn Abschnitte
+  (statt der 28.8 % der rohen Top 10), dass das Total nicht auf Verstärker eingeschränkt wird, und dass die Regel je
+  Zeitfenster gilt.
+- **Prüfung:** Die genannten Zahlen (0.19 min, 128'172 Fahrten, 21.8 %, 28.8 %, die beiden Totale, die Klassenmittel)
+  sind aus den Befunden #23 und #38 im Log übernommen, nicht neu gerechnet. Kein Code geändert; `uv run pytest` und
+  `ruff` laufen durch.
+- **Im Review (2026-11-15, schwagia):** die Sortierung der Absorber ausgeschrieben (negativster Zuwachs); die Folge
+  der harten Grenze für die Stabilitätsprüfung festgehalten. Claude Code hat beide Punkte eingetragen.
+- **Übernommen/verworfen:** Übernommen: beide Vorschläge des Agenten. Verworfen: Top 10 nach der Hauptkennzahl mit
+  gekennzeichneten neutralen Abschnitten; roh als Hauptzahl.
