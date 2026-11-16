@@ -126,7 +126,7 @@ def build_sections(force: bool = False) -> str:
     con = quality.connect(ISTDATEN_RAIL)
     tmp = target.with_suffix(".parquet.part")
     sections.sections(con, START, END).write_parquet(str(tmp), compression="zstd")
-    tmp.rename(target)
+    tmp.replace(target)
     # older files of the same period (other rules, or from before the checksum was in the name)
     for old in PROCESSED.glob(f"{sections_prefix()}*.parquet"):
         if old != target:
@@ -157,7 +157,7 @@ def build_ranking(force: bool = False) -> str:
     table = ranking.ranking(passages, ranking.class_means(passages))
     tmp = target.with_suffix(".parquet.part")
     table.write_parquet(tmp, compression="zstd")
-    tmp.rename(target)
+    tmp.replace(target)
     for old in PROCESSED.glob(f"{ranking_prefix()}*.parquet"):  # older rules, as for sections
         if old != target:
             old.unlink()

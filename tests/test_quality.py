@@ -42,7 +42,8 @@ def con(tmp_path):
         "number;designationOfficial;hasGeolocation;wgs84East;wgs84North\n"
         "8503000;Zürich HB;true;8.54;47.38\n"
         "8500218;Olten;true;7.91;47.35\n"
-        "8507000;Bern;true;7.44;46.95\n"
+        "8507000;Bern;true;7.44;46.95\n",
+        encoding="utf-8",
     )
     return quality.connect(rail_dir, service_points)
 

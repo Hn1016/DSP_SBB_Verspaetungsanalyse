@@ -115,7 +115,7 @@ def fetch(url: str, dest: Path, overwrite: bool = False, sha256: str | None = No
     if sha256 and (actual := sha256sum(tmp)) != sha256:
         tmp.unlink()
         raise ValueError(f"checksum {actual} instead of {sha256}")
-    tmp.rename(dest)
+    tmp.replace(dest)
     append_manifest(dest, url)
     return dest
 

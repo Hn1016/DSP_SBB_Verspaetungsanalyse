@@ -90,7 +90,7 @@ def csv_to_rail_parquet(csv_path: Path, parquet_path: Path) -> int:
     if written != expected:
         tmp.unlink()
         raise RuntimeError(f"{csv_path.name}: wrote {written} rows, expected {expected}")
-    tmp.rename(parquet_path)
+    tmp.replace(parquet_path)
     return written
 
 
