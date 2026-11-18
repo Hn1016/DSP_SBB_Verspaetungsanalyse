@@ -1938,7 +1938,7 @@ Zürich fahren; an den Daten ist das nicht geprüft. Die drei fielen im Befund z
 31.7.2026, beide Halte im Kanton Zürich (Kanton aus dem Schnappschuss der Haltestellenliste, `period.py`).
 
 - **Erwartung (schwagia, im Issue):** 0 Abschnittsfahrten von LEB, MBC und ZB im Kanton Zürich.
-- **Wie gezählt wird (Entscheid cengihas):**
+- **Wie gezählt wird (Entscheid hasan8953):**
   - Betreiber einer Abschnittsfahrt: `BETREIBER_ABK` am Halt A, aus den Tagesdateien über `BETRIEBSTAG` und `ZEILE`,
     weil er im Abschnitts-File fehlt. Eine Fahrt hat nur einen Betreiber (Befund H2, 2026-10-06).
   - Gegenprobe Abkürzung: Dieselbe Zählung für die ganze Schweiz. Hat dort einer der drei 0 Abschnittsfahrten, ist
@@ -1989,10 +1989,10 @@ Die fünf decken 7'739'591 der 7'739'652 Zürcher Abschnittsfahrten ab; 61 entfa
 ## 2026-11-14 — KI-Einsatz: Issue #36
 
 - **Aufgabe:** prüfen, ob LEB, MBC und ZB im Kanton Zürich Abschnittsfahrten haben.
-- **Mine:** das Issue mit der Erwartung (schwagia); die Entscheide zur Zählweise (cengihas): beide Gegenproben
+- **Mine:** das Issue mit der Erwartung (schwagia); die Entscheide zur Zählweise (hasan8953): beide Gegenproben
   aufnehmen, Betreiber am Halt A.
 - **Delegated:** Claude Code hat den Hypothesen-Eintrag, das Notebook 09, den Befund und diesen Eintrag geschrieben.
-  Vorschläge des Agenten, von cengihas entschieden: die zwei Gegenproben und der Betreiber am Halt A. Entscheid des
+  Vorschläge des Agenten, von hasan8953 entschieden: die zwei Gegenproben und der Betreiber am Halt A. Entscheid des
   Agenten nach dem Lauf: die Zeile, wie viele Zürcher Abschnittsfahrten die fünf Betreiber abdecken.
 - **Prüfung:** Die Verbindung mit den Tagesdateien ergibt so viele Abschnittsfahrten wie das Abschnitts-File
   (49'767'826), keine ohne Betreiber; die Zürcher Summe entspricht dem Befund zu #33. `ruff` und `marimo check`
@@ -2721,8 +2721,12 @@ Berechnet in `notebooks/13_stabilitaet.py` nach der Hypothese und der Entscheidu
   `FileExistsError: [WinError 183] Eine Datei kann nicht erstellt werden, wenn sie bereits vorhanden ist:
   '....csv.part' -> '....csv'`.
 - **Nachher** (Commit `6e553eb`, gleiche Bedingungen): `84 passed, 2 xfailed in 639.11s`. Die Erwartung hält.
+- **Nach dem Review (schwagia):** Der Test für `fetch` kann in der CI nicht scheitern, weil `rename` unter Linux
+  auch überschreibt. Neu prüft `tests/test_source.py`, dass in `src` kein `.rename(` steht; dieser Test scheitert auf
+  jedem System. Erwartung vor dem Lauf: gegen `src` von `a4c1962` rot mit den vier Stellen, gegen den Fix grün.
+  Ergebnis: rot mit `build.py:129`, `build.py:160`, `download.py:118`, `load.py:93`; gegen den Fix `1 passed`.
 - **Grenzen:** Gemessen auf einem Windows-Rechner. Die CI bleibt auf Linux (Entscheid im Issue), ein neuer
-  Windows-Fehler fällt dort also weiterhin nicht auf. Weitere Dateizugriffe ohne Kodierung (z. B. in
+  Windows-Fehler fällt dort also weiterhin nicht auf; nur der Rückfall auf `rename` wird jetzt gefangen. Weitere Dateizugriffe ohne Kodierung (z. B. in
   `tests/test_download.py`) lösen keinen Fehler aus und sind nicht geändert.
 
 ## 2026-11-16 — KI-Einsatz: Issue #51
@@ -2730,11 +2734,14 @@ Berechnet in `notebooks/13_stabilitaet.py` nach der Hypothese und der Entscheidu
 - **Aufgabe:** die vier `rename` durch `replace` ersetzen, die Testdatei in `test_quality.py` als UTF-8 schreiben,
   einen Test für `fetch` mit `overwrite=True` ergänzen.
 - **Mine:** das Issue (schwagia); der Entscheid, `encoding` und einen Test für `fetch` ins Paket zu nehmen und die
-  CI auf Linux zu lassen (cengihas, im Kommentar zum Issue vorgeschlagen, von schwagia angenommen).
+  CI auf Linux zu lassen (hasan8953, im Kommentar zum Issue vorgeschlagen, von schwagia angenommen).
 - **Delegated (Vorarbeit, 2026-11-15):** Claude Code hat auf `main` `c7764df` gemessen (2 statt 1 failed, 11 errors
-  ohne `PYTHONUTF8`) und den Text des Kommentars vorbereitet; cengihas hat ihn gepostet.
+  ohne `PYTHONUTF8`) und den Text des Kommentars vorbereitet; hasan8953 hat ihn gepostet.
 - **Delegated:** Claude Code hat den Test, die Änderungen in `src` und `tests/test_quality.py`, die Messungen und
   diesen Eintrag geschrieben. Entscheide des Agenten: Name und Inhalt des Tests (er prüft auch, dass keine
   `.part`-Datei bleibt); den Test als eigenen Commit vor dem Fix, damit der rote Lauf in der Geschichte steht.
+- **Delegated (nach dem Review):** Claude Code hat `tests/test_source.py` geschrieben, gegen den alten Stand geprüft
+  und den Namen im Log angepasst. Mine: den Vorschlag von schwagia übernehmen; «hasan8953» auch in den Einträgen zu
+  Issue #36 einsetzen.
 - **Prüfung:** die Messungen vorher und nachher oben; `uv run ruff check .` und `uv run ruff format --check .`
   laufen durch; `grep -rn ".rename(" src` findet nichts mehr.
