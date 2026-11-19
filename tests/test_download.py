@@ -164,3 +164,19 @@ def test_fetch_sbb_dataset_downloads_a_dated_snapshot(tmp_path, monkeypatch):
     assert path.parent == tmp_path
     assert path.name.startswith("zugzahlen_20") and path.suffix == ".csv"
     assert calls[0][0].startswith("https://data.sbb.ch/") and "/zugzahlen/" in calls[0][0]
+
+
+def test_fetch_with_overwrite_replaces_an_existing_file(tmp_path, monkeypatch):
+    manifest = tmp_path / "manifest.csv"
+    monkeypatch.setattr(
+        download, "append_manifest", functools.partial(download.append_manifest, manifest=manifest)
+    )
+    monkeypatch.setattr(download.requests, "get", lambda url, **kwargs: FakeResponse(b"new\n"))
+    dest = tmp_path / "a.csv"
+    dest.write_bytes(b"old\n")
+
+    path = download.fetch("https://example.org/a.csv", dest, overwrite=True)
+
+    assert path == dest
+    assert dest.read_bytes() == b"new\n"
+    assert not dest.with_suffix(".csv.part").exists()
