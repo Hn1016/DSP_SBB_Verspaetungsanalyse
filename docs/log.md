@@ -2889,3 +2889,103 @@ Notebook `notebooks/15_kennzahlen.py`. Basis: 394 Zürcher Abschnitte mit Wert i
   beschreibend» gewählt von Hn1016 statt eines eigenen Pakets) und der Satz zu roh und relativ. Claude Code hat beides
   gerechnet und eingetragen. Vom Agenten ergänzt: Die Rechenprobe gilt nur mit den Gewichten `regr_sxx`, nicht mit
   der Zahl der Fahrten; die Lesart «Reserven» bleibt eine mögliche Erklärung, weil A7 die Ursache offen lässt.
+
+## 2026-11-22 — Entscheidung: Halt und folgender Abschnitt, Durchführung (Issue #55)
+
+Anlass: Review zu PR #49 (Hn1016). An Zürich Hardbrücke und Zürich Wiedikon steht einem positiven Wert am Halt ein
+grösserer negativer Wert auf den Abschnitten danach gegenüber (Eintrag «Befund: Referenzwert je Soll-Haltezeit»,
+2026-11-15, «Im Review»). Die vier Entscheide stammen von schwagia und standen fest, bevor gerechnet wurde. Wo «vom
+Agenten ergänzt» steht, hat Claude Code die Alternative oder die Begründung dazugeschrieben; schwagia hat sie vor dem
+Push bestätigt.
+
+1. **Wert am Halt (schwagia):** wie in Issue #46 (`notebooks/12_referenzwert_halte.py`): Haltverspätung mit
+   gekappter Ankunft, Referenzwert je Soll-Haltezeit (0, 1, 2, 3+), ohne Durchfahrten, Mindestzahl 100 Fahrten und
+   30 Betriebstage; pro Halt Zuwachs = Mittel nach Referenzwert × Fahrten.
+   - *Alternative (vom Agenten ergänzt, von schwagia vor dem Push bestätigt):* die ungekappte Haltverspätung. Halt an A
+     ungekappt plus Abschnitt A→B ergibt Ankunftsverspätung an B minus Ankunftsverspätung an A, also die Variante
+     «Halt mit Abschnitt danach» (Ankunft zu Ankunft), nicht die gemeinsame Einheit «Abschnitt mit Halt am Ende»
+     (Abfahrt zu Abfahrt, Entscheid 3). Verworfen: Der Wert am Halt soll wie in #46 gerechnet werden.
+   - *Begründung (vom Agenten ergänzt, von schwagia vor dem Push bestätigt):* Die Regeln 1 bis 7 aus #46 gelten
+     vorläufig (Entscheidung zu A8, 2026-11-15); geprüft wird genau dieser Wert.
+2. **Wert der Abschnitte danach (schwagia):** Summe des Zuwachses aller Zürcher Abschnitte mit Wert, deren Halt A
+   dieser Halt ist, aus der Ranglisten-Datei (Fenster «ganzer Zeitraum»), alle Klassen. Die Zahl der Abschnitte ohne
+   Wert ab dem Halt steht daneben.
+   - *Alternative (vom Agenten ergänzt, von schwagia vor dem Push bestätigt):* nur der Abschnitt mit den meisten
+     Fahrten ab dem Halt, oder die Abschnitte je Richtung getrennt. Verworfen: Der Wert am Halt umfasst beide
+     Richtungen (Entscheid 6 aus #46); die Summe über alle Abschnitte ab dem Halt ist das Gegenstück dazu.
+   - *Begründung (vom Agenten ergänzt, von schwagia vor dem Push bestätigt):* Die Ranglisten-Datei ist die Grundlage
+     der Rangliste; der Vergleich soll zeigen, was an ihr hängt, und nicht eine eigene Rechnung der Abschnitte.
+3. **Gemeinsame Einheit ohne Doppelzählung, «Abschnitt mit Halt am Ende» (schwagia):** Abfahrtsverspätung an B minus
+   Abfahrtsverspätung an A (= Streckenverspätung plus ungekappte Haltverspätung an B). Referenzwert je Klasse der
+   Soll-Zeit von Abfahrt A bis Abfahrt B (0, 1, 2, 3, 4, 5+ min), über alle Zürcher Einheiten des Zeitraums. Fahrten,
+   die in B enden, fallen weg (Anzahl im Befund). Mindestzahl wie bei den Abschnitten.
+   - *Alternative (vom Agenten ergänzt, von schwagia vor dem Push bestätigt):* «Halt mit Abschnitt danach»
+     (Abfahrtsverspätung an B minus Ankunftsverspätung an A) oder die Ankunft an B kappen wie am Halt. Verworfen:
+     Die erste Form verliert die Starthalte, die zweite zählt eine frühe Ankunft an B weder auf dem Abschnitt noch am
+     Halt, und die Einheiten einer Fahrt addierten sich nicht mehr zur Verspätung am Ende.
+   - *Begründung (vom Agenten ergänzt, von schwagia vor dem Push bestätigt):* Ab der ersten Abfahrt addieren sich
+     die Einheiten einer Fahrt genau zur Abfahrtsverspätung am letzten Halt mit Abfahrt; keine Minute wird doppelt
+     oder gar nicht gezählt. Klasse, Intervall über die Tagesmittel und Mindestwirkung 0.25 min wie in `ranking`,
+     damit die Top 10 mit der Top 10 der Abschnitte vergleichbar ist.
+4. **Rangkorrelation (schwagia):** Spearman über alle Halte mit beiden Werten.
+   - *Alternative (vom Agenten ergänzt, von schwagia vor dem Push bestätigt):* Pearson auf den Zuwachs. Verworfen:
+     Der Zuwachs ist durch wenige Halte mit vielen Fahrten (Zürich HB, Zürich Hardbrücke) bestimmt; Pearson hinge an
+     ihnen.
+   - *Begründung (vom Agenten ergänzt, von schwagia vor dem Push bestätigt):* Die Frage ist, ob ein hoher Rang am Halt
+     mit einem tiefen Rang danach einhergeht; das misst eine Rangkorrelation.
+
+- **Präzisierung (schwagia, im Plan bestätigt):**
+  1. **Durchfahrt an B:** Eine Einheit, deren B eine Durchfahrt (`DURCHFAHRT_TF`) ist, bleibt drin. In den Abschnitten
+     zählt eine Durchfahrt als Punkt (Issue #24); so bleiben die Einheiten einer Fahrt lückenlos.
+  2. **Abfahrt an B nicht `REAL`:** Die Einheit fällt weg. Ihre Anzahl steht im Befund, getrennt von den Fahrten, die
+     in B enden.
+  3. **Fehlende Werte in (b) und (c):** Ein Halt der Top 10 ohne Abschnitt mit Wert danach zählt in (b) als «nicht
+     negativ». Ein Absorber, dessen Halt A keinen Wert am Halt hat, zählt in (c) als «nicht positiv». Beides macht es
+     schwerer, die Erwartung zu halten; die Fälle werden im Befund genannt.
+  4. **Nur Abschnitte im Kanton:** Die Ranglisten-Datei enthält nur Abschnitte mit beiden Halten im Kanton Zürich.
+     Abschnitte ab einem Zürcher Halt mit B ausserhalb fehlen im Wert der Abschnitte danach; das steht als Grenze im
+     Befund.
+  5. **Top 10 der Halte in (b):** Rang nach dem Zuwachs mit Referenzwert, `rank()` absteigend, wie `rang_referenz`
+     in `notebooks/12_referenzwert_halte.py`.
+- **Umsetzung:** `notebooks/14_halt_und_abschnitt.py`, Kanton Zürich wie in `notebooks/07` und `12`. Kein Code in
+  `src`, keine Änderung an `ranking.py`; die Einheit wird mit `ranking.class_means()` und `ranking.ranking()`
+  bewertet, wie sie sind.
+
+## 2026-11-22 — Hypothese: Halt und folgender Abschnitt (Issue #55, vor der Analyse notiert)
+
+Anlass: Vermutung aus dem Review zu PR #49 (Hn1016): Bei Soll-Haltezeit 0 wird die Haltezeit am Halt als Verspätung
+und auf dem Abschnitt danach als Abbau gezählt. Basis: Halte und Abschnitte im Kanton Zürich laut Schnappschuss vom
+2026-10-05, 1.8.2025 bis 31.7.2026 (`period.py`), Regeln aus dem Eintrag «Entscheidung: Halt und folgender
+Abschnitt, Durchführung». Bekannt sind nur die Zahlen an Zürich Hardbrücke aus dem Review (+66'170 min am Halt,
+−144'801 min auf den Abschnitten danach; roh +209'142 und −307'549), dass Horgen Oberdorf und Dielsdorf das Muster
+nicht zeigen, und die Top 10 der Halte und der Verstärker-Abschnitte aus #46 und #53. Nicht angeschaut: die Werte
+der Abschnitte danach für alle anderen Halte, jede Rangkorrelation, die Absorber-Liste nach ihrem Halt A, jede Zahl
+zur gemeinsamen Einheit.
+
+- **Erwartungen (schwagia):**
+  - (a) Die Spearman-Rangkorrelation zwischen Wert am Halt und Wert der Abschnitte danach ist höchstens −0.4.
+  - (b) Mindestens 7 der Top 10 Halte (Zuwachs mit Referenzwert) haben einen negativen Wert auf den Abschnitten
+    danach.
+  - (c) Mindestens 6 der 10 grössten Absorber der Abschnitte (Ranglisten-Datei, ganzer Zeitraum, Klasse Absorber,
+    negativster Zuwachs) beginnen an einem Halt mit positivem Wert am Halt.
+- **Beschreibend, ohne Erwartung (schwagia):** die Top 10 der gemeinsamen Einheit (Verstärker nach denselben Regeln wie
+  `ranking`: Intervall über die Tagesmittel, 0.25 min) und ihre Überschneidung mit der Top 10 der
+  Verstärker-Abschnitte; Zürich Hardbrücke und Zürich Wiedikon mit allen Zahlen.
+- **Folge (schwagia):** Halten (a) bis (c), wird dieselbe Minute doppelt gezählt. Das Team entscheidet zwischen (1)
+  eigene Rangliste der Halte nach #46, (2) gemeinsame Einheit als Rangliste für Halte und Abschnitte, (3) keine
+  eigene Halte-Rangliste. Nichts wird automatisch geändert.
+- **Was die Erwartungen prüfen können (vom Agenten ergänzt, von schwagia vor dem Push bestätigt):**
+  - (a) kann scheitern, wenn das Muster von Hardbrücke und Wiedikon auf wenige Halte beschränkt ist (wie Horgen
+    Oberdorf und Dielsdorf zeigen, gilt es nicht überall). Dann ist die Doppelzählung ein Einzelfall und keine Folge
+    der Regeln.
+  - (b) kann scheitern, wenn die Top 10 der Halte vor allem Halte mit Soll-Haltezeit ab 1 Minute oder mit Abschnitten
+    danach ohne Reserve enthält. Dann trüge eine Halte-Rangliste eigene Information.
+  - (c) kann scheitern, wenn die grossen Absorber der Abschnitte an Halten mit tiefem Wert am Halt beginnen. Dann
+    wäre die Absorber-Liste nicht durch die Haltezeit davor erklärt und so zu lesen, wie sie steht.
+  - Keine der drei ist per Konstruktion sicher: Der Wert am Halt ist gekappt und nach Referenzwert je Soll-Haltezeit,
+    der Wert danach nach Referenzwert je Soll-Fahrzeit; beide Referenzwerte sind über alle Zürcher Ereignisse gerechnet,
+    nicht je Halt.
+  - Wert am Halt und Wert der Abschnitte danach enthalten beide die Abfahrtsverspätung an A, mit entgegengesetztem
+    Vorzeichen. Messfehler oder Eigenheiten der Abfahrt an A begünstigen darum eine negative Korrelation; (a) ist
+    nicht sicher, aber begünstigt. (b) und (c) prüfen dasselbe an einzelnen Halten und Absorbern und sind darum
+    wichtiger.
