@@ -414,5 +414,89 @@ def _(focus, pl, sections, unit_ranking):
     return
 
 
+@app.cell
+def _(mo):
+    mo.md("""
+    ## Im Review ergänzt (Hn1016): Einheit «Ankunft A → Ankunft B»
+
+    Haltverspätung an A ungekappt plus Abschnitt A→B = Ankunftsverspätung an B −
+    Ankunftsverspätung an A. Referenzwert je Klasse der Soll-Zeit Ankunft A bis Ankunft B
+    (0 … 5+ min), Klasse mit `ranking.ranking()`. Zürcher Abschnittsfahrten aus der
+    Abschnittsdatei; weg fallen Fahrten, die in A beginnen (keine Soll-Ankunft an A), deren
+    Ankunft an A nicht `REAL` ist, oder deren Soll-Ankunft an B vor der an A liegt. Eine
+    Durchfahrt an A bleibt drin. Rechenprobe aus dem Review: Hardbrücke → HB −0.68 → −0.32,
+    Hardbrücke → Altstetten −0.68 → −0.43, Hardbrücke → Oerlikon −0.38 → −0.01, Wiedikon →
+    Enge −1.34 → −1.09, Wiedikon → HB −0.85 → −0.66; 94 von 122 Absorbern bleiben Absorber.
+    """)
+    return
+
+
+@app.cell
+def _(con, pl, ranking, sections, unit_ranking):
+    assert unit_ranking is not None  # runs after the cell that builds cleaned_zh and zsec
+    con.execute(
+        """
+        create or replace view units_arr as
+        select s.a_id, s.b_id, s.BETRIEBSTAG, s.abfahrt_a,
+               s.an_delay_b - a.an_delay as section_delay,
+               datediff('minute', a.ANKUNFTSZEIT, b.ANKUNFTSZEIT) as scheduled_min
+        from zsec s
+        join cleaned_zh a on a.BETRIEBSTAG = s.BETRIEBSTAG and a.ZEILE = s.zeile_a
+        join cleaned_zh b on b.BETRIEBSTAG = s.BETRIEBSTAG and b.ZEILE = s.zeile_b
+        where a.ANKUNFTSZEIT is not null and a.an_delay is not null
+          and b.ANKUNFTSZEIT >= a.ANKUNFTSZEIT
+        """
+    )
+    _rel = con.view("units_arr")
+    arr_ranking = ranking.ranking(_rel, ranking.class_means(_rel)).filter(
+        pl.col("fenster") == "ganzer Zeitraum"
+    )
+    arr_compare = sections.filter(pl.col("grund").is_null()).join(
+        arr_ranking.select("a_id", "b_id", "klasse", "mittel_referenz", "zuwachs", "grund"),
+        on=["a_id", "b_id"],
+        how="left",
+        suffix="_einheit",
+    )
+    _abs = arr_compare.filter(pl.col("klasse") == "Absorber")
+    pl.DataFrame(
+        {
+            "zahl": [
+                "Einheiten Ankunft A → Ankunft B",
+                "Absorber-Abschnitte mit Wert",
+                "davon als Einheit Absorber",
+                "davon als Einheit neutral",
+                "davon als Einheit Verstärker",
+                "davon als Einheit ohne Wert",
+            ],
+            "wert": [
+                _rel.count("*").fetchone()[0],
+                _abs.height,
+                _abs.filter(pl.col("klasse_einheit") == "Absorber").height,
+                _abs.filter(pl.col("klasse_einheit") == "neutral").height,
+                _abs.filter(pl.col("klasse_einheit") == "Verstärker").height,
+                _abs.filter(pl.col("klasse_einheit").is_null()).height,
+            ],
+        }
+    )
+    return (arr_compare,)
+
+
+@app.cell
+def _(arr_compare, pl, top_absorbers):
+    top_absorbers.select("a_id", "b_id").join(arr_compare, on=["a_id", "b_id"], how="left").select(
+        "abschnitt",
+        "fahrten",
+        pl.col("mittel_referenz").round(2).alias("mittel_ref_abschnitt"),
+        pl.col("mittel_referenz_einheit").round(2).alias("mittel_ref_einheit"),
+        pl.col("zuwachs").round().alias("zuwachs_abschnitt"),
+        pl.col("zuwachs_einheit").round(),
+        pl.col("klasse_einheit"),
+        (1 - pl.col("mittel_referenz_einheit") / pl.col("mittel_referenz"))
+        .round(2)
+        .alias("anteil_haltezeit_davor"),
+    )
+    return
+
+
 if __name__ == "__main__":
     app.run()
