@@ -156,6 +156,11 @@ def _(mo):
 @app.cell
 def _(build, con, ranking):
     ranking.zurich_sections(con, build.sections_parquet()).create_view("zsec", replace=True)
+    # B is always a Zurich stop: filter before the join (review Hn1016, memory)
+    con.execute(
+        "create or replace table cleaned_zh as "
+        "select * from cleaned where BPUIC in (select BPUIC from zh)"
+    )
     con.execute(
         """
         create or replace table units_all as
@@ -163,7 +168,7 @@ def _(build, con, ranking):
                b.ABFAHRTSZEIT as abfahrt_b, b.ab_delay as ab_delay_b,
                b.DURCHFAHRT_TF as durchfahrt_b
         from zsec s
-        join cleaned b on b.BETRIEBSTAG = s.BETRIEBSTAG and b.ZEILE = s.zeile_b
+        join cleaned_zh b on b.BETRIEBSTAG = s.BETRIEBSTAG and b.ZEILE = s.zeile_b
         """
     )
     con.execute(
