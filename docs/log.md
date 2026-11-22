@@ -2806,3 +2806,68 @@ nicht geändert. Basis: die Ranglisten-Datei des Pipeline-Schritts `ranking`, Fe
   7. **Pünktliche Abfahrt (4b).** Nur Fahrten mit Abfahrtsverspätung an A von höchstens 1 Minute, frühe Abfahrten
      eingeschlossen. Klasse mit `ranking.ranking()`, Referenzwert und Mindestzahlen wie im ganzen Zeitraum. Gezählt
      wird, wie viele der zehn Abschnitte aus Punkt 1 dort Verstärker sind.
+
+## 2026-11-22 — Befund: Kennzahlen der Rangliste (Issue #53)
+
+Notebook `notebooks/15_kennzahlen.py`. Basis: 394 Zürcher Abschnitte mit Wert im Fenster «ganzer Zeitraum»,
+1.8.2025 bis 31.7.2026; Top 10 = die zehn Verstärker mit dem grössten Zuwachs.
+
+- **(1) gehalten.** An den 275 Abschnitten mit eindeutiger Länge beträgt die Luftlinie im Median 95.9 % der
+  Streckenlänge (erwartet ≥ 85 %); Spearman der beiden Längen 0.988 (erwartet ≥ 0.9). Am weitesten auseinander:
+  Kloten ↔ Kloten Balsberg (1.21 km Luftlinie, 2.50 km Strecke, 48.5 %), Marthalen ↔ Andelfingen (65.9 %), Ossingen ↔
+  Stammheim (72.1 %). «Pro Luftlinien-km» trägt im Bericht.
+- **(2) gehalten.** Die Top 10 erklären 21.58 % des positiven Zuwachses nach Referenzwert (erwartet 15 bis 22 %).
+  Aus der Abschnittsdatei nachgerechnet, ohne die Ranglisten-Datei: 21.58 %, Abweichung 0.000 Prozentpunkte
+  (erwartet ≤ 0.1). Begleitzahl nach #45: Dieselben zehn Abschnitte haben 11.93 % des rohen positiven Zuwachses.
+- **(3) gehalten.** 3 der Top 10 stehen auch in der Top 10 nach Zahl der Fahrten (erwartet ≤ 4): Zürich HB →
+  Zürich Oerlikon, Zürich Oerlikon → Zürich Hardbrücke, Zürich Flughafen → Zürich Oerlikon. Die vier Abschnitte mit
+  den meisten Fahrten (je rund 128'000) sind neutral oder Absorber: Zürich Hardbrücke → Zürich HB (Absorber, −0.68
+  min pro Fahrt), Zürich HB → Zürich Hardbrücke (neutral, 0.19), Zürich Stadelhofen → Zürich HB (neutral, −0.19),
+  Zürich HB → Zürich Stadelhofen (neutral, −0.00).
+- **(4) gehalten.** Steigung der Streckenverspätung auf die Abfahrtsverspätung an A über alle 7'738'519 Fahrten
+  −0.082 (Korrelation −0.19), innerhalb der Abschnitte −0.017 Minuten pro Minute. Wie in der Hypothese notiert, war
+  das Vorzeichen fast sicher; innerhalb der Abschnitte ist der Zusammenhang klein.
+- **(4b) gehalten.** Mit nur den Fahrten, die A höchstens 1 Minute verspätet verlassen, bleiben alle 10 der Top 10
+  Verstärker (erwartet ≥ 7). Das Mittel pro Fahrt bleibt gleich oder steigt leicht (z. B. Zürich Stadelhofen → Uster
+  0.76 → 0.92). Die Top 10 zeigen also nicht nur, dass pünktliche Züge nichts aufzuholen haben.
+- **Top 10 (beschreibend):**
+
+  | Rang | Abschnitt | Fahrten | Zuwachs (min) | Mittel ref. | Mittel roh | Luftlinie (km) | ref. pro km |
+  | --- | --- | --- | --- | --- | --- | --- | --- |
+  | 1 | Zürich HB → Zürich Oerlikon | 75'748 | 70'872 | 0.94 | 0.18 | 3.72 | 0.251 |
+  | 2 | Zürich Oerlikon → Zürich Hardbrücke | 73'486 | 65'570 | 0.89 | 0.25 | 3.56 | 0.250 |
+  | 3 | Zürich Flughafen → Zürich Oerlikon | 58'589 | 47'814 | 0.82 | 0.09 | 4.53 | 0.180 |
+  | 4 | Effretikon → Dietlikon | 36'704 | 30'857 | 0.84 | 0.13 | 5.11 | 0.165 |
+  | 5 | Zürich HB → Zürich Wiedikon | 41'688 | 29'644 | 0.71 | 0.45 | 1.46 | 0.486 |
+  | 6 | Winterthur → Stettbach | 26'710 | 26'406 | 0.99 | 0.21 | 14.95 | 0.066 |
+  | 7 | Thalwil → Zürich Enge | 13'398 | 23'829 | 1.78 | 1.00 | 7.99 | 0.222 |
+  | 8 | Uster → Zürich Stadelhofen | 27'321 | 23'694 | 0.87 | 0.09 | 12.95 | 0.067 |
+  | 9 | Zürich Stadelhofen → Stettbach | 56'560 | 22'338 | 0.39 | −0.35 | 4.95 | 0.080 |
+  | 10 | Zürich Stadelhofen → Uster | 26'986 | 20'631 | 0.76 | −0.01 | 12.95 | 0.059 |
+
+- **Nebenbefund für den Bericht:** Zwei der Top 10 haben ein negatives rohes Mittel (Zürich Stadelhofen → Stettbach
+  −0.35, Zürich Stadelhofen → Uster −0.01): Die Züge holen dort in Minuten gemessen Verspätung auf, nur weniger als ein
+  durchschnittlicher Zürcher Abschnitt gleicher Soll-Fahrzeit. Das ist die Lesart aus #45 («mehr Verspätung als ein
+  durchschnittlicher Abschnitt gleicher Soll-Fahrzeit») und muss im Bericht so stehen, nicht als gemessene Minuten.
+  Daher auch der Abstand zwischen 21.58 % (relativ) und 11.93 % (roh).
+- **Nicht Teil davon:** Absorber und Halte (warten auf #55). Zürich HB → Zürich Wiedikon (Rang 5) liegt an einem der
+  beiden Halte aus #55; ob dort eine Minute doppelt gezählt wird, klärt #55.
+- **Status in `docs/assumptions.md`:** A6 ergänzt: Die Luftlinie trägt als Länge (Plan B).
+
+## 2026-11-22 — KI-Einsatz: Issue #53
+
+- **Aufgabe:** die Kennzahlen der Rangliste rechnen und mit je einer Prüfung absichern.
+- **Mine:** das Issue mit den Kennzahlen und der Prüfung der Luftlinie (schwagia); die Erwartungswerte, darunter die
+  zusätzliche Prüfung (4b), und die Freigabe von Hypothese und Durchführung vor dem Push (Hn1016).
+- **Delegated:** Claude Code hat den Plan der Prüfungen vorgeschlagen, darunter den Hinweis, dass (4) kaum
+  scheitern kann, die Einträge im Log, das Notebook 15 und die Nachführung in One-Pager und `docs/assumptions.md`
+  geschrieben. Die Nachrechnung in (2) rechnet die Klassenmittel selbst in SQL, nur die Mindestzahlen kommen aus
+  `ranking.py`.
+- **Prüfung:** (2) ist die Nachrechnung selbst; die Basis hat 394 Abschnitte wie im Befund #38; Zürich
+  Stadelhofen → Uster steht in der Top 10 wie in #48. Nicht geprüft: die Luftlinie gegen eine zweite Formel; die
+  Regression gegen ein zweites Werkzeug.
+- **Reihenfolge und Zeiten (2026-11-22, MEZ):** 14:40:08 Commit `4023693` mit Hypothese und Durchführung, 14:40:10
+  gepusht (`git reflog show origin/feat/issue-53-kennzahlen --date=iso`); danach das Notebook geschrieben; 14:41:48
+  Start des ersten Laufs (lokal, nicht im Repository). Erwartungen und Durchführung sind nach dem Lauf nicht geändert.
+- **Übernommen/verworfen:** Übernommen: Plan und Befund. Verworfen: nur das Vorzeichen in (4) als Prüfung zu nehmen
+  (kann kaum scheitern).

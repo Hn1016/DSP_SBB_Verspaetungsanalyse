@@ -120,9 +120,8 @@ Offen:
    2026-11-14, Befund #42).
 7. Prüfungen nach Abschnitt 3 der Richtlinien, dann Karte und Bericht.
 
-Offen:
-- Wie weit die Luftlinie von der Streckenlänge abweicht; wird im Paket Kennzahlen an den 275 Abschnitten mit Länge
-  aus data.sbb.ch geprüft, mit der Erwartung vor dem Lauf (Log 2026-11-14, Befund #42).
+Die Luftlinie beträgt an den 275 Abschnitten mit Länge aus data.sbb.ch im Median 95.9 % der Streckenlänge,
+Spearman 0.988 (Log 2026-11-22, Befund #53).
 
 ## Nicht-Ziele (Non-goals)
 
