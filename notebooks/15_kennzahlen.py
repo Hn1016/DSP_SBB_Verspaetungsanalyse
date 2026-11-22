@@ -339,6 +339,76 @@ def _(base, con, pl, ranking, zh):
 @app.cell
 def _(mo):
     mo.md("""
+    ## Regression je Abschnitt (im Review ergänzt, PR #56)
+
+    Je Abschnitt Streckenverspätung nach Referenzwert auf die Abfahrtsverspätung an A:
+    Achsenabschnitt = Zuwachs bei pünktlicher Abfahrt (konstanter Betrag), Steigung = Änderung je
+    Minute eingehender Verspätung (proportional). Beschreibend, ohne Erwartung. Die Steigung ist
+    nach unten verzerrt: Die Abfahrtsverspätung an A steht mit negativem Vorzeichen in der
+    Streckenverspätung (Hypothese, Punkt 4).
+
+    Rechenprobe: Die Steigung innerhalb der Abschnitte aus (4) ist das Mittel der Steigungen je
+    Abschnitt, gewichtet mit der Quadratsumme der Abfahrtsverspätung um ihr Mittel je Abschnitt
+    (`regr_sxx`), nicht mit der Zahl der Fahrten.
+    """)
+    return
+
+
+@app.cell
+def _(base, con, means, mo, pl, top10, zh):
+    _reference = ", ".join(f"('{k}', {m!r})" for k, m in means.items())
+    con.register("with_value_names", base.select("a_id", "b_id", "abschnitt"))
+    per_section_fit = zh.query(
+        "zh",
+        f"""
+        with reference(k, m) as (values {_reference}),
+        trips as (
+            select z.a_id, z.b_id, z.ab_delay_a as x, z.section_delay - r.m as y
+            from zh z
+            join reference r
+              on r.k = case when z.scheduled_min >= 5 then '5+' else z.scheduled_min::varchar end
+            semi join with_value_names v on v.a_id = z.a_id and v.b_id = z.b_id
+        )
+        select a_id, b_id, count(*) as fahrten, regr_intercept(y, x) as achsenabschnitt,
+               regr_slope(y, x) as steigung, regr_sxx(y, x) as sxx, avg(x) as mittel_abfahrt_a
+        from trips group by a_id, b_id
+        """,
+    ).pl()
+    _valid = per_section_fit.filter(pl.col("sxx") > 0)
+    _weighted = (_valid["steigung"] * _valid["sxx"]).sum() / _valid["sxx"].sum()
+    _by_trips = (_valid["steigung"] * _valid["fahrten"]).sum() / _valid["fahrten"].sum()
+    _check = pl.DataFrame(
+        {
+            "pruefung": [
+                "Rechenprobe: Mittel der Steigungen, gewichtet mit regr_sxx",
+                "zum Vergleich: gewichtet mit Fahrten (keine Probe)",
+            ],
+            "ergebnis": [round(_weighted, 4), round(_by_trips, 4)],
+            "erwartung": ["= Steigung innerhalb der Abschnitte aus (4)", "beschreibend"],
+            "abschnitte": [_valid.height, _valid.height],
+        }
+    )
+    _top = (
+        top10.select("rang_top", "abschnitt", "a_id", "b_id", "mittel_referenz")
+        .join(
+            per_section_fit.select(
+                "a_id",
+                "b_id",
+                pl.col("achsenabschnitt").round(2),
+                pl.col("steigung").round(3),
+                pl.col("mittel_abfahrt_a").round(2),
+            ),
+            on=["a_id", "b_id"],
+        )
+        .sort("rang_top")
+    )
+    mo.vstack([_check, _top.drop("a_id", "b_id").with_columns(pl.col("mittel_referenz").round(2))])
+    return (per_section_fit,)
+
+
+@app.cell
+def _(mo):
+    mo.md("""
     ## (4b) Nur pünktliche Abfahrten an A
 
     Fahrten mit Abfahrtsverspätung an A von höchstens 1 Minute, frühe eingeschlossen. Klasse mit

@@ -2849,7 +2849,21 @@ Notebook `notebooks/15_kennzahlen.py`. Basis: 394 Zürcher Abschnitte mit Wert i
   −0.35, Zürich Stadelhofen → Uster −0.01): Die Züge holen dort in Minuten gemessen Verspätung auf, nur weniger als ein
   durchschnittlicher Zürcher Abschnitt gleicher Soll-Fahrzeit. Das ist die Lesart aus #45 («mehr Verspätung als ein
   durchschnittlicher Abschnitt gleicher Soll-Fahrzeit») und muss im Bericht so stehen, nicht als gemessene Minuten.
-  Daher auch der Abstand zwischen 21.58 % (relativ) und 11.93 % (roh).
+  Daher auch der Abstand zwischen 21.58 % (relativ) und 11.93 % (roh). 8 der Top 10 sind auch roh positiv, 2 nur
+  relativ zum Klassenmittel (im Review ergänzt, PR #56, schwagia). Bei langen Abschnitten ist das Klassenmittel
+  negativ; ob das an Fahrzeitreserven oder an der Rundung liegt, ist offen (A7). Der Bericht beschreibt die zwei
+  darum als «baut weniger ab als ein durchschnittlicher Abschnitt gleicher Soll-Fahrzeit»; Reserven sind eine
+  mögliche Erklärung, kein Befund.
+- **Regression je Abschnitt (im Review ergänzt, PR #56, schwagia; beschreibend, ohne Erwartung):** Die
+  Aufgabenstellung verlangt je Abschnitt Achsenabschnitt (konstanter Betrag) und Steigung (proportional). Bei allen
+  Top 10 liegt der Achsenabschnitt nahe am Mittel (0.40 bis 1.89 min) und die Steigung nahe 0: von −0.162 (Thalwil →
+  Zürich Enge) bis +0.007 (Winterthur → Stettbach), bei 8 der 10 zwischen −0.05 und +0.01. Die Top 10 addieren also
+  einen etwa konstanten Betrag und verstärken nicht proportional. Die Steigung ist nach unten verzerrt, weil die
+  Abfahrtsverspätung an A mit negativem Vorzeichen in der Streckenverspätung steht (Hypothese, Punkt 4); eine
+  proportionale Verstärkung wäre daher schwer zu sehen. Über alle 394 Abschnitte: Median −0.009, 123 mit positiver
+  Steigung. Rechenprobe: Das Mittel der Steigungen je Abschnitt, gewichtet mit der Quadratsumme der
+  Abfahrtsverspätung um ihr Mittel (`regr_sxx`), ergibt −0.0166 wie die Steigung innerhalb der Abschnitte aus (4);
+  mit Fahrten gewichtet wären es −0.028.
 - **Nicht Teil davon:** Absorber und Halte (warten auf #55). Zürich HB → Zürich Wiedikon (Rang 5) liegt an einem der
   beiden Halte aus #55; ob dort eine Minute doppelt gezählt wird, klärt #55.
 - **Status in `docs/assumptions.md`:** A6 ergänzt: Die Luftlinie trägt als Länge (Plan B).
@@ -2871,3 +2885,7 @@ Notebook `notebooks/15_kennzahlen.py`. Basis: 394 Zürcher Abschnitte mit Wert i
   Start des ersten Laufs (lokal, nicht im Repository). Erwartungen und Durchführung sind nach dem Lauf nicht geändert.
 - **Übernommen/verworfen:** Übernommen: Plan und Befund. Verworfen: nur das Vorzeichen in (4) als Prüfung zu nehmen
   (kann kaum scheitern).
+- **Im Review (2026-11-22, schwagia):** die Regression je Abschnitt aus der Aufgabenstellung (Option «hier,
+  beschreibend» gewählt von Hn1016 statt eines eigenen Pakets) und der Satz zu roh und relativ. Claude Code hat beides
+  gerechnet und eingetragen. Vom Agenten ergänzt: Die Rechenprobe gilt nur mit den Gewichten `regr_sxx`, nicht mit
+  der Zahl der Fahrten; die Lesart «Reserven» bleibt eine mögliche Erklärung, weil A7 die Ursache offen lässt.
