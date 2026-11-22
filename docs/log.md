@@ -3118,37 +3118,79 @@ hat einen Wert am Halt.
   Oerlikon → Hardbrücke +1.15 (Zuwachs 84'708), Zürich HB → Hardbrücke +0.51 (58'464), Zürich Altstetten → Hardbrücke
   +0.96 (40'878), Zürich HB → Wiedikon +0.87 (36'262), Zürich Enge → Wiedikon +0.39 (16'029).
 
-  **Lesart (Lesart des Agenten, von schwagia übernommen):** Die Abschnitte nach Hardbrücke und Wiedikon bleiben Absorber, wenn die Haltezeit an
-  Hardbrücke und Wiedikon gar nicht in ihnen steht (Einheit von Abfahrt zu Abfahrt). Ihr negativer Wert kommt also
-  nicht davon, dass sie die Haltezeit davor zurückzahlen. Die Abschnitte nach Hardbrücke führen nach Zürich HB,
-  Zürich Oerlikon und Zürich Altstetten, die nach Wiedikon nach Zürich HB und Zürich Enge; dort holen die Züge
-  gegenüber einem durchschnittlichen Abschnitt gleicher Soll-Zeit Zeit auf. Ob das an Reserven vor diesen Halten
-  liegt, ist nicht untersucht (A7). Die Vermutung aus dem Review trifft in dieser Form nicht zu: Die positiven Werte am
-  Halt und die negativen danach stehen nebeneinander, gehen aber nicht auseinander hervor.
+  **Im Review ergänzt (Hn1016): Einheit «Ankunft A → Ankunft B».** Haltverspätung an A ungekappt plus Abschnitt A→B
+  = Ankunftsverspätung an B minus Ankunftsverspätung an A; Referenzwert je Klasse der Soll-Zeit Ankunft A bis
+  Ankunft B, Klasse mit `ranking.ranking()`. 7'197'713 Einheiten (Fahrten, die in A beginnen oder deren Ankunft an A
+  nicht `REAL` ist, fallen weg; eine Durchfahrt an A bleibt drin). Die zehn grössten Absorber, Mittel nach
+  Referenzwert (min):
+
+  | Abschnitt | als Abschnitt | als Einheit | Klasse als Einheit |
+  |---|---|---|---|
+  | Zürich Hardbrücke → Zürich HB | −0.68 | −0.32 | Absorber |
+  | Zürich Wiedikon → Zürich Enge | −1.34 | −1.09 | Absorber |
+  | Zürich Wiedikon → Zürich HB | −0.85 | −0.66 | Absorber |
+  | Dietikon Schöneggstrasse → Dietikon | −1.45 | −1.62 | Absorber |
+  | Nänikon-Greifensee → Uster | −1.10 | −1.04 | Absorber |
+  | Zürich Hardbrücke → Zürich Altstetten | −0.68 | −0.43 | Absorber |
+  | Zürich Hardbrücke → Zürich Oerlikon | −0.38 | −0.01 | neutral |
+  | Glanzenberg → Dietikon | −0.90 | −0.75 | Absorber |
+  | Zürich Friesenberg → Zürich Binz | −0.99 | −1.09 | Absorber |
+  | Winterthur Grüze → Winterthur | −0.69 | −0.93 | Absorber |
+
+  Rechenprobe gegen das Review: die fünf Paare an Hardbrücke und Wiedikon auf zwei Stellen gleich. Über alle
+  Abschnitte mit Wert bleiben 93 von 124 Absorbern auch als Einheit Absorber (26 neutral, 1 Verstärker, 4 ohne Wert);
+  das Review nennt 94 von 122. **Abweichung offen:** 124 Absorber stehen in der Ranglisten-Datei (Fenster «ganzer
+  Zeitraum»), wie im Befund #53. Ohne Durchfahrten an A würden es 94 von 124 (Nebenrechnung, nicht im Notebook);
+  woher 122 kommt, ist nicht geklärt. Die Lesart unten hängt an keiner der beiden Zahlen.
+
+  **Lesart (Review Hn1016, von schwagia übernommen):** Die Einheit «Abfahrt A → Abfahrt B» beginnt wie der Abschnitt
+  bei der Abfahrtsverspätung an A und kann die Vermutung für die Absorber nicht prüfen. Mit der Einheit «Ankunft A →
+  Ankunft B» ist an Hardbrücke etwa die Hälfte (Zuwachs der drei Abschnitte −144'801 min, als Einheit −56'627 min), an
+  Wiedikon etwa ein Fünftel (−90'810 und −72'718 min) des Absorber-Werts der Abbau der Haltezeit davor, aber nicht der
+  ganze. Zürich Hardbrücke → Zürich Oerlikon ist danach kein Absorber mehr. Die übrigen Absorber bleiben zum grössten
+  Teil Absorber (93 von 124, siehe oben).
+
+  *Vor dem Review (Lesart des Agenten, von schwagia übernommen, trägt nicht):* «Die Abschnitte nach Hardbrücke und
+  Wiedikon bleiben Absorber, wenn die Haltezeit an Hardbrücke und Wiedikon gar nicht in ihnen steht (Einheit von
+  Abfahrt zu Abfahrt). Ihr negativer Wert kommt also nicht davon, dass sie die Haltezeit davor zurückzahlen. […] Die
+  Vermutung aus dem Review trifft in dieser Form nicht zu.» Grund, warum sie nicht trägt: Auch im Abschnitt steht die
+  Haltezeit an A nicht; sie steckt in der Abfahrtsverspätung an A, bei der Abschnitt und Einheit «Abfahrt A →
+  Abfahrt B» gleich beginnen. Dass der Absorber in dieser Einheit bleibt, sagt darum nichts darüber, ob er die
+  Haltezeit davor abbaut. Das prüft erst eine Einheit, die bei der Ankunft an A beginnt.
 - **Grenzen:**
   - Nur Abschnitte mit beiden Halten im Kanton (Präzisierung 4). Für Halte am Kantonsrand fehlt ein Teil der
     Abschnitte danach.
   - Der Wert der Abschnitte danach summiert alle Richtungen ab dem Halt, der Wert am Halt alle Halteereignisse. Bei
     Knoten mit vielen Abschnitten (Zürich HB, Winterthur: je 12 mit Wert) mischt die Summe sehr verschiedene Strecken.
   - (a) bis (c) prüfen den Zusammenhang über Halte. Dass dieselbe Minute bei einzelnen Fahrten doppelt gezählt wird,
-    schliesst das nicht aus; es zeigt nur, dass es die Ranglisten nicht bestimmt. Die Einheiten nach Hardbrücke und
-    Wiedikon (oben) sind die direkte Prüfung an den beiden Halten des Reviews.
+    schliesst das nicht aus; es zeigt nur, dass es die Ranglisten nicht bestimmt. Die direkte Prüfung pro Abschnitt
+    ist die Einheit «Ankunft A → Ankunft B» (oben, im Review ergänzt), nicht die Einheit «Abfahrt A → Abfahrt B».
+  - **Warum die Paarung pro Fahrt nicht die Hauptprüfung war (Antwort auf die Frage von Hn1016 im Review):** Haltwert
+    an A und Abschnitt A→B derselben Fahrt sind über die Abfahrtsverspätung an A mechanisch mit entgegengesetztem
+    Vorzeichen gekoppelt; eine negative Korrelation wäre fast sicher gewesen, die Prüfung hätte nicht scheitern
+    können. Die Summe pro Halt mischt dafür die Richtungen (an Hardbrücke Richtung Zürich HB, Zürich Oerlikon und
+    Zürich Altstetten). Die Einheit «Ankunft A → Ankunft B» aus dem Review prüft die Frage pro Abschnitt ohne diese
+    Kopplung.
   - Der Wert am Halt in Klasse 0 bleibt «hält länger als ein durchschnittlicher Halt mit Soll-Haltezeit 0» (Grenze
     aus #46); ob das den Betrieb misst, prüft dieses Paket nicht.
   - Kein Intervall, keine Stabilität für die gemeinsame Einheit; die Top 10 der Einheit ist beschreibend.
-- **Vorschlag zur Entscheidung (vom Agenten, vom Team zu bestätigen):** Option (1), eigene Rangliste der Halte nach
+- **Vorschlag zur Entscheidung (vom Agenten, vor dem Review; der Teil zu Hardbrücke und Wiedikon trägt nicht, siehe
+  Lesart oben):** Option (1), eigene Rangliste der Halte nach
   #46, mit den Regeln 1 bis 7 weiter vorläufig. Begründung: Eine systematische Doppelzählung zwischen Halt und
   folgendem Abschnitt ist nicht zu sehen ((a) bis (c) nicht gehalten, auch nicht pro Fahrt), und an Hardbrücke und
   Wiedikon bleibt der Absorber auch ohne die Haltezeit davor. Option (2) würde die Haltezeit in die Einheit davor
   schieben und drei Abschnitte der Top 10 tauschen, ohne dass eine Doppelzählung zu beheben wäre. Für die
   Absorber-Liste der Abschnitte heisst das: Sie wird gelesen, wie sie steht; im Bericht steht bei Hardbrücke und
   Wiedikon, dass Halt und Abschnitt danach nebeneinander auffallen. Für A8 ändert sich nichts.
-- **Entscheidung (schwagia, 2026-11-22; zur Bestätigung durch Hn1016 im Review; Vorschlag des Agenten übernommen):**
-  Option (1), eigene Rangliste der Halte nach #46. Die Regeln 1 bis 7 gelten weiter vorläufig, bis zum
-  Pipeline-Schritt Halte.
+- **Entscheidung (Team: schwagia, Hn1016; bestätigt im Review):** Option (1), eigene Rangliste der Halte nach #46.
+  Die Regeln 1 bis 7 gelten weiter vorläufig, bis zum Pipeline-Schritt Halte.
   - *Begründung:* Die Aufgabenstellung verlangt zwei Differenzen pro Fahrt, getrennt ausgewertet (Streckenverspätung
     und Haltverspätung). Der Befund zeigt keine systematische Doppelzählung ((a) bis (c) nicht gehalten).
-  - Die Absorber-Liste der Abschnitte wird gelesen, wie sie steht.
+  - Die Absorber-Liste der Abschnitte wird gelesen mit dem Hinweis, dass an Zürich Hardbrücke und Zürich Wiedikon ein
+    Teil des Werts der Abbau der Haltezeit davor ist: an Hardbrücke etwa die Hälfte (Hardbrücke → Zürich HB −0.68 →
+    −0.32, → Zürich Altstetten −0.68 → −0.43, → Zürich Oerlikon −0.38 → −0.01, danach kein Absorber mehr), an
+    Wiedikon etwa ein Fünftel (→ Zürich Enge −1.34 → −1.09, → Zürich HB −0.85 → −0.66). *Vor dem Review:* «wird
+    gelesen, wie sie steht» (schwagia, 2026-11-22).
   - A8 bleibt «offen», Evidenz «tief», mit Verweis auf diesen Befund.
   - **Nächstes Paket:** Pipeline-Schritt Halte.
 - **Status in `docs/assumptions.md`:** A8 bleibt «offen», Evidenz «tief», mit Verweis auf diesen Befund.
@@ -3192,3 +3234,27 @@ hat einen Wert am Halt.
 - **Nach dem Befund (schwagia):** die Entscheidung für Option (1) mit der Begründung aus der Aufgabenstellung (zwei
   Differenzen pro Fahrt, getrennt ausgewertet), die Folge für die Absorber-Liste und A8 und der Pipeline-Schritt Halte
   als nächstes Paket. Claude Code hat die Entscheidung eingetragen und die Lesart als übernommen markiert.
+- **Review-Punkte (Mine: Hn1016, Review zum PR zu Issue #55, Changes requested):**
+  1. `cleaned` vor dem Join auf die Zürcher Halte filtern (B ist immer ein Zürcher Halt), Speicher.
+  2. Die Einheit «Ankunft A → Ankunft B» mit Referenzwert je Soll-Zeit Ankunft A bis Ankunft B, Werte für die Top 10
+     Absorber als Abschnitt und als Einheit, mit Rechenprobe.
+  3. Die Lesart zu Hardbrücke und Wiedikon ersetzt: Die Einheit «Abfahrt A → Abfahrt B» beginnt wie der Abschnitt
+     bei der Abfahrtsverspätung an A und kann die Vermutung nicht prüfen.
+  4. Die Frage, warum die Paarung pro Fahrt nicht die Hauptprüfung war.
+  5. Die Bestätigung von Option (1) mit dem Hinweis zur Absorber-Liste; dieselbe Korrektur bei A8.
+- **Delegated (Review):** Claude Code hat die Punkte 1 bis 5 eingetragen: im Notebook 14 die Tabelle `cleaned_zh`
+  und die Zellen «Im Review ergänzt (Hn1016)» (Umsetzung der Einheit über `ranking.class_means()` und
+  `ranking.ranking()`, Durchfahrt an A bleibt drin wie die Durchfahrt an B in Präzisierung 1, die Spalte
+  `anteil_haltezeit_davor`); im Log die Tabelle der Top 10 Absorber, die Zuwächse an Hardbrücke und Wiedikon zu
+  «etwa die Hälfte» und «etwa ein Fünftel», den Grund, warum die alte Lesart nicht trägt, die Antwort in den Grenzen
+  und die Zeile A8.
+- **Prüfung (Review):**
+  - Punkt 1: Nach dem Filter sind alle Zahlen gleich: Spearman +0.194, (b) 4, (c) 5; Einheiten ab Hardbrücke −0.65
+    (→ Zürich HB), −0.47 (→ Zürich Altstetten), −0.69 (→ Zürich Oerlikon); Basis 7'739'652 / 513'169 / 30'563 / 4 /
+    7'195'916. Die Prüfung hätte scheitern können, wenn ein Halt B ausserhalb des Kantons in der Einheit gestanden
+    hätte.
+  - Punkt 2: Die fünf Paare aus dem Review (Hardbrücke → Zürich HB −0.68 → −0.32, → Zürich Altstetten −0.68 → −0.43,
+    → Zürich Oerlikon −0.38 → −0.01; Wiedikon → Zürich Enge −1.34 → −1.09, → Zürich HB −0.85 → −0.66) sind auf zwei
+    Stellen gleich. Abweichend: 93 von 124 statt 94 von 122 Absorbern bleiben Absorber. Nicht angepasst, an
+    schwagia gemeldet; eine Nebenrechnung ohne Durchfahrten an A ergibt 94 von 124, die 122 sind nicht erklärt.
+  - `uv run pytest`, `ruff check`, `ruff format --check` und `marimo check` laufen durch.
