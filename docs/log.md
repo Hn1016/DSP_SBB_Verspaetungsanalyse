@@ -2989,3 +2989,195 @@ zur gemeinsamen Einheit.
     Vorzeichen. Messfehler oder Eigenheiten der Abfahrt an A begünstigen darum eine negative Korrelation; (a) ist
     nicht sicher, aber begünstigt. (b) und (c) prüfen dasselbe an einzelnen Halten und Absorbern und sind darum
     wichtiger.
+
+## 2026-11-22 — Befund: Halt und folgender Abschnitt (Issue #55)
+
+Berechnet in `notebooks/14_halt_und_abschnitt.py` nach Entscheidung und Hypothese (Commit `a7dbbc6`, gepusht vor dem
+Rechnen). Basis: Halte und Abschnitte im Kanton Zürich laut Schnappschuss vom 2026-10-05, 1.8.2025 bis 31.7.2026.
+152 Halte haben einen Wert am Halt (wie in #46), alle 152 auch mindestens einen Abschnitt mit Wert danach.
+
+**Rechenprobe:** Zürich Hardbrücke hat +66'170 min am Halt und −144'801 min auf den Abschnitten danach, roh +209'142
+und −307'549 min, wie im Review zu PR #49. Wert am Halt und Wert der Abschnitte danach sind also so gerechnet wie dort.
+
+**Basis der gemeinsamen Einheit «Abschnitt mit Halt am Ende»**
+
+| Schritt | Fahrten |
+|---|---|
+| Zürcher Abschnittsfahrten aus der Abschnittsdatei | 7'739'652 |
+| davon Fahrt endet in B (keine Soll-Abfahrt an B), weggelassen | 513'169 |
+| davon Abfahrt an B nicht `REAL`, weggelassen (Präzisierung 2) | 30'563 |
+| davon Soll-Abfahrt an B vor Soll-Abfahrt an A, weggelassen | 4 |
+| **Einheiten der Auswertung** | **7'195'916** |
+| darin B eine Durchfahrt (Präzisierung 1) | 4'274 |
+
+Referenzwert je Klasse der Soll-Zeit Abfahrt A bis Abfahrt B (min): 1 min +0.68, 2 min +0.48, 3 min +0.16, 4 min
+−0.17, 5+ min −0.38. Klasse 0 hat nur 16 Einheiten (Mittel +3.38) und fällt im Zuwachs nicht ins Gewicht. Von 477
+Haltepaaren der Einheit haben 374 einen Wert: 126 Verstärker, 124 Absorber, 124 neutral; 103 ohne Wert.
+
+**Erwartungen**
+
+| Prüfung | Ergebnis | Erwartung | gehalten |
+|---|---|---|---|
+| (a) Spearman Wert am Halt / Wert der Abschnitte danach (152 Halte) | +0.19 | ≤ −0.4 | nein |
+| (b) Top 10 Halte mit negativem Wert danach | 4 | ≥ 7 | nein |
+| (c) Top 10 Absorber, deren Halt A einen positiven Wert am Halt hat | 5 | ≥ 6 | nein |
+
+Präzisierung 3 griff nicht: Kein Halt der Top 10 ist ohne Abschnitt mit Wert danach, jeder Halt A der Top 10 Absorber
+hat einen Wert am Halt.
+
+**Top 10 der Halte (Zuwachs mit Referenzwert) und Wert der Abschnitte danach (min)**
+
+| Rang | Halt | Klasse 0 | Fahrten | Mittel am Halt | Zuwachs am Halt | Zuwachs danach | Abschnitte mit / ohne Wert |
+|---|---|---|---|---|---|---|---|
+| 1 | Zürich HB | 0.0 % | 443'394 | 0.15 | 67'501 | +160'914 | 12 / 11 |
+| 2 | Zürich Hardbrücke | 99.5 % | 231'593 | 0.29 | 66'170 | −144'801 | 3 / 1 |
+| 3 | Zürich Stadelhofen | 39.7 % | 255'395 | 0.17 | 42'560 | +12'072 | 7 / 7 |
+| 4 | Zürich Flughafen | 2.3 % | 97'829 | 0.31 | 30'561 | +52'932 | 4 / 1 |
+| 5 | Dietikon | 0.1 % | 76'237 | 0.22 | 17'108 | +10'545 | 3 / 2 |
+| 6 | Dietikon Stoffelbach | 100 % | 47'251 | 0.35 | 16'531 | −24'425 | 2 / 0 |
+| 7 | Horgen Oberdorf | 99.9 % | 27'488 | 0.59 | 16'084 | +5'370 | 2 / 1 |
+| 8 | Winterthur | 0.0 % | 144'092 | 0.09 | 12'320 | +93'367 | 12 / 11 |
+| 9 | Dietlikon | 89.9 % | 73'554 | 0.16 | 11'804 | −14'233 | 3 / 1 |
+| 10 | Zürich Wiedikon | 100 % | 82'607 | 0.14 | 11'192 | −90'810 | 2 / 3 |
+
+**Die zehn grössten Absorber der Abschnitte und ihr Halt A**
+
+| Abschnitt | Fahrten | Mittel ref. | Zuwachs | Zuwachs am Halt A (Rang) |
+|---|---|---|---|---|
+| Zürich Hardbrücke → Zürich HB | 128'975 | −0.68 | −88'031 | +66'170 (2) |
+| Zürich Wiedikon → Zürich Enge | 41'829 | −1.34 | −55'990 | +11'192 (10) |
+| Zürich Wiedikon → Zürich HB | 40'970 | −0.85 | −34'820 | +11'192 (10) |
+| Dietikon Schöneggstrasse → Dietikon | 23'227 | −1.45 | −33'563 | −16'281 (152) |
+| Nänikon-Greifensee → Uster | 28'789 | −1.10 | −31'544 | −161 (59) |
+| Zürich Hardbrücke → Zürich Altstetten | 43'252 | −0.68 | −29'425 | +66'170 (2) |
+| Zürich Hardbrücke → Zürich Oerlikon | 72'296 | −0.38 | −27'345 | +66'170 (2) |
+| Glanzenberg → Dietikon | 28'761 | −0.90 | −25'885 | −1'470 (80) |
+| Zürich Friesenberg → Zürich Binz | 24'986 | −0.99 | −24'771 | −8'880 (137) |
+| Winterthur Grüze → Winterthur | 34'758 | −0.69 | −24'074 | −2'572 (89) |
+
+- **(a) nicht gehalten.** Die Rangkorrelation ist positiv (+0.19), nicht negativ. Über alle Zürcher Halte geht ein
+  hoher Wert am Halt nicht mit einem tiefen Wert danach einher.
+- **(b) nicht gehalten.** 4 der Top 10 Halte haben einen negativen Wert danach (Zürich Hardbrücke, Dietikon
+  Stoffelbach, Dietlikon, Zürich Wiedikon), alle vier überwiegend mit Soll-Haltezeit 0. Die übrigen sechs, darunter
+  die grossen Knoten Zürich HB, Winterthur und Zürich Flughafen, haben einen positiven Wert danach.
+- **(c) nicht gehalten.** 5 der 10 grössten Absorber beginnen an einem Halt mit positivem Wert am Halt. Diese fünf
+  beginnen alle an nur zwei Halten: drei an Zürich Hardbrücke, zwei an Zürich Wiedikon. Die anderen fünf beginnen an
+  Halten mit negativem Wert am Halt.
+- **Vergleich, nach dem ersten Lauf vom Agenten ergänzt (keine Prüfung, keine Erwartung davor):**
+  - Grundanteile: 52.0 % aller 152 Halte haben einen negativen Wert danach (zehn zufällige Halte: etwa 5; die Top 10:
+    4). 38.2 % haben einen positiven Wert am Halt (zehn zufällige Absorber: etwa 4; die Top 10: 5, aber an zwei
+    Halten).
+  - Spearman pro Fahrt (Mittel am Halt gegen Zuwachs danach geteilt durch die Fahrten danach): +0.10. Die positive
+    Korrelation in (a) kommt also nicht nur davon, dass beide Zuwächse mit der Zahl der Fahrten wachsen; Spearman
+    zwischen Zuwachs am Halt und Fahrten danach ist +0.13.
+  - 58 der 152 Halte haben einen positiven Wert am Halt, im Befund #46 stehen 54. Der Unterschied kommt vom Runden:
+    #46 hat das auf zwei Stellen gerundete Mittel gezählt; Rümlang, Andelfingen, Meilen und Dachsen haben ein Mittel
+    zwischen 0 und 0.005 min. Für (c) spielt das keine Rolle.
+- **Beschreibend: Top 10 der gemeinsamen Einheit und Überschneidung mit der Top 10 der Verstärker-Abschnitte.** 7 der
+  10 stehen in beiden.
+
+  | Rang | Einheit (Abfahrt A → Abfahrt B) | Fahrten | Mittel ref. | Zuwachs | auch Top 10 Abschnitte |
+  |---|---|---|---|---|---|
+  | 1 | Zürich Oerlikon → Zürich Hardbrücke | 73'484 | 1.15 | 84'708 | ja (2) |
+  | 2 | Zürich HB → Zürich Oerlikon | 74'415 | 0.80 | 59'408 | ja (1) |
+  | 3 | Zürich HB → Zürich Hardbrücke | 115'613 | 0.51 | 58'464 | nein (Abschnitt neutral) |
+  | 4 | Effretikon → Dietlikon | 36'696 | 1.13 | 41'363 | ja (4) |
+  | 5 | Zürich Altstetten → Zürich Hardbrücke | 42'548 | 0.96 | 40'878 | nein |
+  | 6 | Uster → Zürich Stadelhofen | 27'321 | 1.49 | 40'818 | ja (8) |
+  | 7 | Zürich HB → Zürich Wiedikon | 41'685 | 0.87 | 36'262 | ja (5) |
+  | 8 | Zürich Flughafen → Zürich Oerlikon | 58'580 | 0.56 | 32'881 | ja (3) |
+  | 9 | Stettbach → Zürich Stadelhofen | 56'089 | 0.51 | 28'811 | nein |
+  | 10 | Winterthur → Stettbach | 26'706 | 0.97 | 25'937 | ja (6) |
+
+  Aus der Top 10 der Abschnitte fallen Thalwil → Zürich Enge, Zürich Stadelhofen → Stettbach und Zürich Stadelhofen →
+  Uster heraus. Neu dabei sind drei Einheiten, die an Halten mit hohem Wert am Halt enden (zweimal Zürich Hardbrücke,
+  einmal Zürich Stadelhofen): Ihre Haltezeit steht in der Einheit am Ende.
+- **Zürich Hardbrücke und Zürich Wiedikon mit allen Zahlen (min):**
+
+  | | Zürich Hardbrücke | Zürich Wiedikon |
+  |---|---|---|
+  | Rang am Halt (mit Referenzwert) | 2 | 10 |
+  | Fahrten am Halt, Anteil Klasse 0 | 231'593, 99.5 % | 82'607, 100 % |
+  | Mittel am Halt roh / mit Referenzwert | 0.90 / 0.29 | 0.76 / 0.14 |
+  | Zuwachs am Halt roh / mit Referenzwert | +209'142 / +66'170 | +62'426 / +11'192 |
+  | Zuwachs der Abschnitte danach roh / mit Referenzwert | −307'549 / −144'801 | −146'022 / −90'810 |
+  | Abschnitte ab dem Halt mit / ohne Wert | 3 / 1 | 2 / 3 |
+
+  | Halt | Abschnitt ab dem Halt | Fahrten | Klasse | Mittel roh / ref. | Zuwachs | Einheit gleiches Paar: Klasse, Mittel ref., Zuwachs |
+  |---|---|---|---|---|---|---|
+  | Hardbrücke | → Zürich HB | 128'975 | Absorber | −1.29 / −0.68 | −88'031 | Absorber, −0.65, −80'564 |
+  | Hardbrücke | → Zürich Oerlikon | 72'296 | Absorber | −1.15 / −0.38 | −27'345 | Absorber, −0.69, −49'551 |
+  | Hardbrücke | → Zürich Altstetten | 43'252 | Absorber | −1.32 / −0.68 | −29'425 | Absorber, −0.47, −20'211 |
+  | Wiedikon | → Zürich Enge | 41'829 | Absorber | −1.92 / −1.34 | −55'990 | Absorber, −1.21, −50'783 |
+  | Wiedikon | → Zürich HB | 40'970 | Absorber | −1.60 / −0.85 | −34'820 | Absorber, −0.99, −40'151 |
+
+  Ohne Wert (zu wenige Fahrten): Hardbrücke → Zürich Herdern Abstellgruppe (1 Fahrt); Wiedikon → Zürich
+  Saalsporthalle (10), → Sihlwald (2), → Thalwil (1).
+
+  Einheiten, die an Hardbrücke oder Wiedikon enden (sie enthalten deren Haltezeit), alle Verstärker: Zürich
+  Oerlikon → Hardbrücke +1.15 (Zuwachs 84'708), Zürich HB → Hardbrücke +0.51 (58'464), Zürich Altstetten → Hardbrücke
+  +0.96 (40'878), Zürich HB → Wiedikon +0.87 (36'262), Zürich Enge → Wiedikon +0.39 (16'029).
+
+  **Lesart (vom Agenten):** Die Abschnitte nach Hardbrücke und Wiedikon bleiben Absorber, wenn die Haltezeit an
+  Hardbrücke und Wiedikon gar nicht in ihnen steht (Einheit von Abfahrt zu Abfahrt). Ihr negativer Wert kommt also
+  nicht davon, dass sie die Haltezeit davor zurückzahlen. Die Abschnitte nach Hardbrücke führen nach Zürich HB,
+  Zürich Oerlikon und Zürich Altstetten, die nach Wiedikon nach Zürich HB und Zürich Enge; dort holen die Züge
+  gegenüber einem durchschnittlichen Abschnitt gleicher Soll-Zeit Zeit auf. Ob das an Reserven vor diesen Halten
+  liegt, ist nicht untersucht (A7). Die Vermutung aus dem Review trifft in dieser Form nicht zu: Die positiven Werte am
+  Halt und die negativen danach stehen nebeneinander, gehen aber nicht auseinander hervor.
+- **Grenzen:**
+  - Nur Abschnitte mit beiden Halten im Kanton (Präzisierung 4). Für Halte am Kantonsrand fehlt ein Teil der
+    Abschnitte danach.
+  - Der Wert der Abschnitte danach summiert alle Richtungen ab dem Halt, der Wert am Halt alle Halteereignisse. Bei
+    Knoten mit vielen Abschnitten (Zürich HB, Winterthur: je 12 mit Wert) mischt die Summe sehr verschiedene Strecken.
+  - (a) bis (c) prüfen den Zusammenhang über Halte. Dass dieselbe Minute bei einzelnen Fahrten doppelt gezählt wird,
+    schliesst das nicht aus; es zeigt nur, dass es die Ranglisten nicht bestimmt. Die Einheiten nach Hardbrücke und
+    Wiedikon (oben) sind die direkte Prüfung an den beiden Halten des Reviews.
+  - Der Wert am Halt in Klasse 0 bleibt «hält länger als ein durchschnittlicher Halt mit Soll-Haltezeit 0» (Grenze
+    aus #46); ob das den Betrieb misst, prüft dieses Paket nicht.
+  - Kein Intervall, keine Stabilität für die gemeinsame Einheit; die Top 10 der Einheit ist beschreibend.
+- **Vorschlag zur Entscheidung (vom Agenten, vom Team zu bestätigen):** Option (1), eigene Rangliste der Halte nach
+  #46, mit den Regeln 1 bis 7 weiter vorläufig. Begründung: Eine systematische Doppelzählung zwischen Halt und
+  folgendem Abschnitt ist nicht zu sehen ((a) bis (c) nicht gehalten, auch nicht pro Fahrt), und an Hardbrücke und
+  Wiedikon bleibt der Absorber auch ohne die Haltezeit davor. Option (2) würde die Haltezeit in die Einheit davor
+  schieben und drei Abschnitte der Top 10 tauschen, ohne dass eine Doppelzählung zu beheben wäre. Für die
+  Absorber-Liste der Abschnitte heisst das: Sie wird gelesen, wie sie steht; im Bericht steht bei Hardbrücke und
+  Wiedikon, dass Halt und Abschnitt danach nebeneinander auffallen. Für A8 ändert sich nichts.
+- **Status in `docs/assumptions.md`:** A8 bleibt «offen», Evidenz «tief», mit Verweis auf diesen Befund.
+
+## 2026-11-22 — KI-Einsatz: Issue #55
+
+- **Aufgabe:** prüfen, ob dieselbe Minute am Halt und auf dem Abschnitt danach doppelt gezählt wird: Wert am Halt (nach
+  #46) neben dem Wert der Abschnitte danach (Ranglisten-Datei) und eine gemeinsame Einheit ohne Doppelzählung.
+- **Mine (schwagia):** die vier Entscheide (Wert am Halt, Wert der Abschnitte danach, gemeinsame Einheit «Abschnitt
+  mit Halt am Ende», Spearman); die Erwartungen (a) bis (c) mit ihren Werten, der beschreibende Teil ohne Erwartung
+  und die Folge mit den Optionen (1) bis (3); die Bestätigung der fünf Präzisierungen aus dem Plan; zwei Korrekturen
+  vor dem Push (die Alternative zu Entscheid 1 ergibt «Ankunft zu Ankunft», nicht die gemeinsame Einheit; der Punkt,
+  dass beide Werte die Abfahrtsverspätung an A mit entgegengesetztem Vorzeichen enthalten und (a) darum begünstigt
+  ist); der Ablauf (Plan, Go, Commit, eigener Push vor dem Rechnen). Das Issue mit der Frage stammt aus dem Review zu
+  PR #49 (Hn1016).
+- **Delegated:** Claude Code hat den Plan mit den fünf offenen Punkten vorgeschlagen und die Einträge im Log, das
+  Notebook 14 und die Zeile A8 geschrieben. Vom Agenten stammen: die Alternativen und Begründungen zu den Entscheiden
+  1 bis 4 und der Absatz «Was die Erwartungen prüfen können» (beides vor dem Push von schwagia bestätigt, Entscheid 1
+  korrigiert); die Umsetzung der Einheit über `ranking.class_means()` und `ranking.ranking()` mit umbenannten Spalten;
+  im Befund die Tabelle «Basis», die nachträglichen Vergleiche (Grundanteile, Spearman pro Fahrt, 58 statt 54), die
+  Lesart zu Hardbrücke und Wiedikon, die Grenzen und der Vorschlag zur Entscheidung.
+- **Prüfung:**
+  - Rechenprobe gegen das Review zu PR #49: Hardbrücke +66'170 / −144'801 min, roh +209'142 / −307'549 min, auf die
+    Minute gleich. Sie hätte scheitern können, wenn Notebook 14 den Wert am Halt oder die Summe danach anders rechnet.
+  - Die Schritte der Einheit gehen auf: 7'739'652 − 513'169 − 30'563 − 4 = 7'195'916.
+  - Der Unterschied 58 zu 54 positive Halte ist auf das Runden in #46 zurückgeführt (vier Halte mit Mittel unter
+    0.005 min).
+  - Nicht geprüft: die Einheit gegen eine zweite, unabhängige Rechnung; Intervalle und Stabilität der Einheit.
+  - `uv run pytest`, `ruff check`, `ruff format --check` und `marimo check` laufen durch. Kein Code in `src` geändert,
+    `ranking.py` unverändert.
+- **Reihenfolge und Zeiten (2026-11-22, MEZ):** 16:00:58 Commit `a7dbbc6` mit Entscheidung und Hypothese (nach zwei
+  Korrekturen von schwagia per Amend, nicht gepusht), 16:20:28 von schwagia gepusht (`git reflog show
+  origin/feat/issue-55-halt-und-abschnitt --date=iso`); danach das Notebook geschrieben; 16:22:01 erster Lauf
+  (abgebrochen an einem doppelten Spaltennamen), 16:23:09 erster vollständiger Lauf (lokal, nicht im Repository).
+  Erwartungen und Entscheide sind nach dem Lauf nicht geändert. Danach kamen die als nachträglich bezeichneten
+  Vergleichszeilen dazu.
+- **Übernommen/verworfen:** Übernommen: die fünf Präzisierungen und die ergänzten Alternativen (mit der Korrektur zu
+  Entscheid 1). Verworfen (schwagia): die erste Fassung der Alternative zu Entscheid 1, die «Halt ungekappt plus
+  Abschnitt» fälschlich der gemeinsamen Einheit gleichsetzte. Der Vorschlag zur Entscheidung ist noch nicht vom Team
+  bestätigt.
