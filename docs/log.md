@@ -3118,7 +3118,7 @@ hat einen Wert am Halt.
   Oerlikon → Hardbrücke +1.15 (Zuwachs 84'708), Zürich HB → Hardbrücke +0.51 (58'464), Zürich Altstetten → Hardbrücke
   +0.96 (40'878), Zürich HB → Wiedikon +0.87 (36'262), Zürich Enge → Wiedikon +0.39 (16'029).
 
-  **Lesart (vom Agenten):** Die Abschnitte nach Hardbrücke und Wiedikon bleiben Absorber, wenn die Haltezeit an
+  **Lesart (Lesart des Agenten, von schwagia übernommen):** Die Abschnitte nach Hardbrücke und Wiedikon bleiben Absorber, wenn die Haltezeit an
   Hardbrücke und Wiedikon gar nicht in ihnen steht (Einheit von Abfahrt zu Abfahrt). Ihr negativer Wert kommt also
   nicht davon, dass sie die Haltezeit davor zurückzahlen. Die Abschnitte nach Hardbrücke führen nach Zürich HB,
   Zürich Oerlikon und Zürich Altstetten, die nach Wiedikon nach Zürich HB und Zürich Enge; dort holen die Züge
@@ -3143,6 +3143,14 @@ hat einen Wert am Halt.
   schieben und drei Abschnitte der Top 10 tauschen, ohne dass eine Doppelzählung zu beheben wäre. Für die
   Absorber-Liste der Abschnitte heisst das: Sie wird gelesen, wie sie steht; im Bericht steht bei Hardbrücke und
   Wiedikon, dass Halt und Abschnitt danach nebeneinander auffallen. Für A8 ändert sich nichts.
+- **Entscheidung (schwagia, 2026-11-22; zur Bestätigung durch Hn1016 im Review; Vorschlag des Agenten übernommen):**
+  Option (1), eigene Rangliste der Halte nach #46. Die Regeln 1 bis 7 gelten weiter vorläufig, bis zum
+  Pipeline-Schritt Halte.
+  - *Begründung:* Die Aufgabenstellung verlangt zwei Differenzen pro Fahrt, getrennt ausgewertet (Streckenverspätung
+    und Haltverspätung). Der Befund zeigt keine systematische Doppelzählung ((a) bis (c) nicht gehalten).
+  - Die Absorber-Liste der Abschnitte wird gelesen, wie sie steht.
+  - A8 bleibt «offen», Evidenz «tief», mit Verweis auf diesen Befund.
+  - **Nächstes Paket:** Pipeline-Schritt Halte.
 - **Status in `docs/assumptions.md`:** A8 bleibt «offen», Evidenz «tief», mit Verweis auf diesen Befund.
 
 ## 2026-11-22 — KI-Einsatz: Issue #55
@@ -3179,5 +3187,8 @@ hat einen Wert am Halt.
   Vergleichszeilen dazu.
 - **Übernommen/verworfen:** Übernommen: die fünf Präzisierungen und die ergänzten Alternativen (mit der Korrektur zu
   Entscheid 1). Verworfen (schwagia): die erste Fassung der Alternative zu Entscheid 1, die «Halt ungekappt plus
-  Abschnitt» fälschlich der gemeinsamen Einheit gleichsetzte. Der Vorschlag zur Entscheidung ist noch nicht vom Team
-  bestätigt.
+  Abschnitt» fälschlich der gemeinsamen Einheit gleichsetzte. Übernommen (schwagia, 2026-11-22, zur Bestätigung
+  durch Hn1016 im Review): der Vorschlag zur Entscheidung, Option (1), und die Lesart zu Hardbrücke und Wiedikon.
+- **Nach dem Befund (schwagia):** die Entscheidung für Option (1) mit der Begründung aus der Aufgabenstellung (zwei
+  Differenzen pro Fahrt, getrennt ausgewertet), die Folge für die Absorber-Liste und A8 und der Pipeline-Schritt Halte
+  als nächstes Paket. Claude Code hat die Entscheidung eingetragen und die Lesart als übernommen markiert.
