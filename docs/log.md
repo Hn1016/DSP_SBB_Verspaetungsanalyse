@@ -2745,3 +2745,64 @@ Berechnet in `notebooks/13_stabilitaet.py` nach der Hypothese und der Entscheidu
   Issue #36 einsetzen.
 - **Prüfung:** die Messungen vorher und nachher oben; `uv run ruff check .` und `uv run ruff format --check .`
   laufen durch; `grep -rn ".rename(" src` findet nichts mehr.
+
+## 2026-11-22 — Hypothese: Kennzahlen der Rangliste (Issue #53, vor der Analyse notiert)
+
+Anlass: One-Pager «Was», Kennzahlen aus der Aufgabenstellung (Anteil der Top 10 am positiven Zuwachs, pro Fahrt, pro
+km, Baseline «nach Zugzahl»). Regeln aus Issue #32 und #45, Plan B aus Issue #42; Schwellen und `ranking.py` werden
+nicht geändert. Basis: die Ranglisten-Datei des Pipeline-Schritts `ranking`, Fenster «ganzer Zeitraum», 1.8.2025 bis
+31.7.2026.
+
+- **Erwartungen (Hn1016):**
+  - (1) **Luftlinie.** An den 275 Abschnitten mit eindeutiger Länge aus #42 beträgt die Luftlinie im Median
+    mindestens 85 % der Streckenlänge, und die Spearman-Rangkorrelation der beiden Längen ist mindestens 0.9
+    (Vorschlag schwagia, Review PR #43).
+  - (2) **Anteil der Top 10.** Der Anteil der Top 10 der Verstärker am positiven Zuwachs (relativ zum Klassenmittel)
+    liegt zwischen 15 und 22 %. Die eigentliche Prüfung ist die Nachrechnung: Aus der Abschnittsdatei ohne die
+    Ranglisten-Datei gerechnet, weicht der Anteil um höchstens 0.1 Prozentpunkte ab.
+  - (3) **Baseline.** Höchstens 4 der Top 10 nach Zuwachs stehen auch in der Top 10 nach Zahl der Fahrten.
+  - (4) **Regression.** Die Steigung der Streckenverspätung (nach Referenzwert) auf die Abfahrtsverspätung an A ist
+    negativ.
+  - (4b) **Pünktliche Abfahrt.** Mit nur den Fahrten, die A höchstens 1 Minute verspätet verlassen, bleiben
+    mindestens 7 der Top 10 Verstärker.
+- **Warum diese Prüfungen:**
+  - (1) kann scheitern, und dann trägt «pro Luftlinien-km» im Bericht nicht.
+  - (2) Der Wertebereich allein kann kaum scheitern, weil 21.8 % aus #23 bekannt sind. Darum ist die Nachrechnung
+    die Prüfung: Sie scheitert, wenn die Ranglisten-Datei den Zuwachs falsch summiert.
+  - (3) Bei 7 oder mehr gemeinsamen Abschnitten bildete die Rangliste vor allem das Verkehrsvolumen ab.
+  - (4) kann kaum scheitern: Die Abfahrtsverspätung an A steht in der Streckenverspätung mit negativem Vorzeichen,
+    jeder Messfehler darin zieht die Steigung nach unten, und verspätete Züge nutzen Fahrzeitreserven. Darum (4b).
+  - (4b) kann scheitern. Dann lautet der Satz im Bericht: Die Top 10 zeigen zum Teil nur, dass pünktliche Züge
+    nichts aufzuholen haben.
+- **Was schon bekannt ist:** der Anteil der Top 10 mit Referenzwert aus #23 (21.8 %, damals mit dem neutralen
+  Abschnitt Zürich HB → Zürich Hardbrücke); die Top 10 der Verstärker aus #48 (Zürich Stadelhofen → Uster neu dabei);
+  die Fahrten einzelner Abschnitte (Zürich HB → Zürich Stadelhofen 127'689, neutral; Zürich HB → Zürich
+  Hardbrücke 128'172, neutral; Zürich HB → Zürich Oerlikon 75'748, Rang 1). Nicht angeschaut: die Top 10 nach
+  Fahrten, jede Luftlinie, die Regression, jede Rangliste nur mit pünktlichen Abfahrten.
+- **Beschreibend, ohne Prüfung:** die Top 10 mit Mittel pro Fahrt und pro km; der rohe Anteil derselben zehn
+  Abschnitte am rohen positiven Zuwachs (Begleitzahl nach #45).
+- *Folge bei Widerlegung:* Schwellen und Regeln bleiben. (1): Der Bericht nennt «pro km» nur mit der Abweichung oder
+  lässt es weg; das Team entscheidet. (2): Fehler in `ranking` suchen, bevor eine Zahl in den Bericht kommt. (3) und
+  (4b): Der Bericht sagt, dass die Rangliste zum Teil Volumen beziehungsweise pünktliche Abfahrten abbildet.
+
+## 2026-11-22 — Entscheidung: Durchführung der Kennzahlen (Issue #53, vor der Analyse notiert)
+
+- **Entscheidung (Einzelheiten vom Agenten, im Review zu bestätigen):**
+  1. **Top 10.** Die zehn Verstärker mit dem grössten `zuwachs` im Fenster «ganzer Zeitraum» (Eintrag «Top 10 nur
+     aus Verstärkern»).
+  2. **Luftlinie.** Grosskreisdistanz zwischen A und B aus `wgs84East` und `wgs84North` des Schnappschusses vom
+     2026-10-05 (Erdradius 6371 km). Streckenlänge für (1): `km` der 275 eindeutig zugeordneten Abschnitte, wie in
+     `notebooks/11_zuordnung_data_sbb.py`. Verhältnis = Luftlinie / Streckenlänge.
+  3. **Pro km.** Mittel pro Fahrt nach Referenzwert geteilt durch die Luftlinie, in Minuten pro km.
+  4. **Anteil.** Zuwachs der Top 10 geteilt durch die Summe des Zuwachses aller Abschnitte mit Wert und positivem
+     Mittel (Eintrag «Positiver Zuwachs»). Nachrechnung: dieselbe Summe direkt aus der Abschnittsdatei, mit den
+     Klassenmitteln und Mindestzahlen aus `ranking.py`, ohne die Ranglisten-Datei zu lesen.
+  5. **Baseline.** Die zehn Abschnitte mit Wert mit den meisten Fahrten im ganzen Zeitraum, alle Klassen; gezählt
+     wird die Überschneidung mit der Top 10 aus Punkt 1.
+  6. **Regression.** Kleinste Quadrate über alle Zürcher Abschnittsfahrten der Abschnitte mit Wert:
+     Streckenverspätung nach Referenzwert auf die Abfahrtsverspätung an A. Einmal über alle Fahrten gemeinsam,
+     einmal innerhalb der Abschnitte (beide Grössen je Abschnitt um das Mittel bereinigt), damit Unterschiede
+     zwischen Abschnitten die Steigung nicht tragen. (4) gilt als gehalten, wenn beide Steigungen negativ sind.
+  7. **Pünktliche Abfahrt (4b).** Nur Fahrten mit Abfahrtsverspätung an A von höchstens 1 Minute, frühe Abfahrten
+     eingeschlossen. Klasse mit `ranking.ranking()`, Referenzwert und Mindestzahlen wie im ganzen Zeitraum. Gezählt
+     wird, wie viele der zehn Abschnitte aus Punkt 1 dort Verstärker sind.
