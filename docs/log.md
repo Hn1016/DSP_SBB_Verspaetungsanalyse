@@ -3310,7 +3310,8 @@ den Tagesdateien 1.8.2025 bis 31.7.2026, Schnappschuss wie in `notebooks/07_rang
 
 ## 2026-11-24 — Befund: Halte im Zeitraum, die im Schnappschuss fehlen (Issue #54)
 
-Notebook `notebooks/16_schnappschuss_abdeckung.py`, Hypothese gepusht vor der Zählung (`18bf729`, 17:53).
+Notebook `notebooks/16_schnappschuss_abdeckung.py`, Hypothese gepusht vor der Zählung (`18bf729`, Commit 17:53:10, Push 17:53:14 laut
+`git reflog show origin/feat/issue-54-schnappschuss-abdeckung`; Notebook-Commit 18:06:35).
 
 - **Ergebnis:** Alle 1'771 Schweizer Halte aus `quality.delays()` vom 1.8.2025 bis 31.7.2026 stehen im Schnappschuss
   vom 2026-10-05. Fehlende Halte: 0; betroffene Halteereignisse: 0 von 57'282'218 (0 %). Begleitzahl: 96.8 % der
@@ -3326,6 +3327,10 @@ Notebook `notebooks/16_schnappschuss_abdeckung.py`, Hypothese gepusht vor der Z�
   Namen im Schnappschuss ab, alle ohne anderen Ort: Biel/Bienne Bözingenfeld/Champs-de-Boujean (im Schnappschuss
   gekürzt, 28'302 Ereignisse), Basel Grenze (im Schnappschuss «(FR)», 91), Zürich Herdern (im Schnappschuss
   «Abstellgruppe», 1), Le Prese (incrocio) (im Schnappschuss Spinadascio, GR, 1).
+  *Im Review ergänzt (schwagia):* Beurteilt über die Fahrtfolge und die Koordinaten im Schnappschuss: Zürich Herdern
+  liegt auf der einzigen Fahrt (S21, 18.6.2026) zwischen Hardbrücke und Oerlikon, der Punkt «Abstellgruppe» 1.3 km
+  von Hardbrücke; Le Prese (incrocio) liegt zwischen Li Curt und Le Prese, Spinadascio 0.8 km vor Le Prese auf
+  dieser Strecke.
 - **Einschätzung für #28, Frage 2 (Entscheid beim Team):** Für die Zuordnung des Kantons ist der feste Schnappschuss
   vertretbar: Jeder Halt des Zeitraums hat einen Eintrag. Nicht geprüft ist, ob sich Kanton oder Koordinaten eines Halts
   im Zeitraum geändert haben. Bekannt aus dem Eintrag vom 2026-11-08: 25 Halte in Moutier wechseln BE → JU, keiner in
@@ -3343,5 +3348,7 @@ Notebook `notebooks/16_schnappschuss_abdeckung.py`, Hypothese gepusht vor der Z�
   der Hypothese, das Notebook, die Gegenprobe, den Namensvergleich und diesen Befund geschrieben. Entscheide des
   Agenten: Gegenprobe und Namensvergleich nach der Zählung ergänzen, weil eine 0 sonst nicht von einer fehlerhaften
   Abfrage zu unterscheiden ist; der häufigste Name im Zeitraum als Name aus den Tagesdateien.
+- **Im Review:** Push-Zeit aus dem Reflog und die Beurteilung von Zürich Herdern und Le Prese (incrocio) über
+  Fahrtfolge und Koordinaten hat Claude Code nachgeschlagen und formuliert; hasan8953 hat den Text übernommen.
 - **Prüfung:** Gegenprobe oben; `uv run marimo check`, `uv run ruff check .` und `uv run ruff format --check .` laufen
   durch.
