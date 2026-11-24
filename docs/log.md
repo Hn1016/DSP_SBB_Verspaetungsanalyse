@@ -3139,9 +3139,12 @@ hat einen Wert am Halt.
 
   Rechenprobe gegen das Review: die fünf Paare an Hardbrücke und Wiedikon auf zwei Stellen gleich. Über alle
   Abschnitte mit Wert bleiben 93 von 124 Absorbern auch als Einheit Absorber (26 neutral, 1 Verstärker, 4 ohne Wert);
-  das Review nennt 94 von 122. **Abweichung offen:** 124 Absorber stehen in der Ranglisten-Datei (Fenster «ganzer
-  Zeitraum»), wie im Befund #53. Ohne Durchfahrten an A würden es 94 von 124 (Nebenrechnung, nicht im Notebook);
-  woher 122 kommt, ist nicht geklärt. Die Lesart unten hängt an keiner der beiden Zahlen.
+  das Review nannte 94 von 122. Geklärt im Review (Hn1016): 93 von 124 ist richtig. Die 94 von 122 aus dem Review
+  kamen von einem Inner Join an die Ranglisten-Datei: Zwei Absorber haben keine Fahrt «Ankunft A → Ankunft B», weil
+  die Züge fast immer in A beginnen, Zürich HB → Zürich Enge (alle 439 Fahrten) und Sihlwald → Langnau-Gattikon
+  (4'619 von 4'623); sie fielen dort weg. Die 94 statt 93 kamen vom Ausschluss der Durchfahrten an A. Im Notebook
+  stehen diese zwei Abschnitte unter «ohne Wert», zusammen mit Langnau-Gattikon → Adliswil und Zürich HB → Wädenswil
+  (zu wenige Fahrten).
 
   **Lesart (Review Hn1016, von schwagia übernommen):** Die Einheit «Abfahrt A → Abfahrt B» beginnt wie der Abschnitt
   bei der Abfahrtsverspätung an A und kann die Vermutung für die Absorber nicht prüfen. Mit der Einheit «Ankunft A →
@@ -3257,4 +3260,22 @@ hat einen Wert am Halt.
     → Zürich Oerlikon −0.38 → −0.01; Wiedikon → Zürich Enge −1.34 → −1.09, → Zürich HB −0.85 → −0.66) sind auf zwei
     Stellen gleich. Abweichend: 93 von 124 statt 94 von 122 Absorbern bleiben Absorber. Nicht angepasst, an
     schwagia gemeldet; eine Nebenrechnung ohne Durchfahrten an A ergibt 94 von 124, die 122 sind nicht erklärt.
+    Geklärt im zweiten Review (Hn1016), siehe unten.
+  - `uv run pytest`, `ruff check`, `ruff format --check` und `marimo check` laufen durch.
+- **Review-Punkte, zweite Runde (Mine: Hn1016):**
+  1. Die Abweichung 93 von 124 gegen 94 von 122 geklärt: 93 von 124 ist richtig; die 122 kamen von einem Inner Join
+     an die Ranglisten-Datei (Zürich HB → Zürich Enge und Sihlwald → Langnau-Gattikon haben keine bzw. fast keine
+     Fahrt «Ankunft A → Ankunft B», weil die Züge in A beginnen), die 94 vom Ausschluss der Durchfahrten an A.
+  2. `cleaned_zh` nur mit den Spalten, die das Notebook braucht (Speicher).
+- **Delegated (zweite Runde):** Claude Code hat die Erklärung im Befund eingetragen, «94 von 122» aus der Rechenprobe
+  im Notebook 14 gestrichen und `cleaned_zh` auf sieben Spalten reduziert: `BETRIEBSTAG`, `ZEILE`, `ANKUNFTSZEIT`,
+  `ABFAHRTSZEIT`, `an_delay`, `ab_delay`, `DURCHFAHRT_TF`. Weitere Spalten braucht das Notebook nicht (`BPUIC` nur
+  im Filter auf `cleaned`, nicht in den Joins).
+- **Prüfung (zweite Runde):**
+  - Nach der Reduktion sind die Zahlen gleich: Spearman +0.194; Absorber-Abschnitte mit Wert 124, davon als Einheit
+    «Ankunft A → Ankunft B» 93 Absorber, 26 neutral, 1 Verstärker, 4 ohne Wert. Die vier ohne Wert sind Zürich HB →
+    Zürich Enge (439 Fahrten) und Sihlwald → Langnau-Gattikon (4'623), beide ohne Klasse in der Einheit, sowie
+    Langnau-Gattikon → Adliswil und Zürich HB → Wädenswil (zu wenige Fahrten), wie in der Erklärung von Hn1016.
+    Die Prüfung hätte scheitern können, wenn eine Abfrage eine weggelassene Spalte gebraucht hätte (Fehler) oder
+    die Joins andere Zeilen träfen.
   - `uv run pytest`, `ruff check`, `ruff format --check` und `marimo check` laufen durch.

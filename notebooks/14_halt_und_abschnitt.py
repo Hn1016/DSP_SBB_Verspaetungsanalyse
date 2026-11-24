@@ -159,7 +159,8 @@ def _(build, con, ranking):
     # B is always a Zurich stop: filter before the join (review Hn1016, memory)
     con.execute(
         "create or replace table cleaned_zh as "
-        "select * from cleaned where BPUIC in (select BPUIC from zh)"
+        "select BETRIEBSTAG, ZEILE, ANKUNFTSZEIT, ABFAHRTSZEIT, an_delay, ab_delay, DURCHFAHRT_TF "
+        "from cleaned where BPUIC in (select BPUIC from zh)"
     )
     con.execute(
         """
@@ -426,7 +427,7 @@ def _(mo):
     Ankunft an A nicht `REAL` ist, oder deren Soll-Ankunft an B vor der an A liegt. Eine
     Durchfahrt an A bleibt drin. Rechenprobe aus dem Review: Hardbrücke → HB −0.68 → −0.32,
     Hardbrücke → Altstetten −0.68 → −0.43, Hardbrücke → Oerlikon −0.38 → −0.01, Wiedikon →
-    Enge −1.34 → −1.09, Wiedikon → HB −0.85 → −0.66; 94 von 122 Absorbern bleiben Absorber.
+    Enge −1.34 → −1.09, Wiedikon → HB −0.85 → −0.66.
     """)
     return
 
