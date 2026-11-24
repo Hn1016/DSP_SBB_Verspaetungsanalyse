@@ -3279,3 +3279,76 @@ hat einen Wert am Halt.
     Die Prüfung hätte scheitern können, wenn eine Abfrage eine weggelassene Spalte gebraucht hätte (Fehler) oder
     die Joins andere Zeilen träfen.
   - `uv run pytest`, `ruff check`, `ruff format --check` und `marimo check` laufen durch.
+
+## 2026-11-24 — Hypothese: Halte im Zeitraum, die im Schnappschuss fehlen (Issue #54, vor der Analyse notiert)
+
+Anlass: Issue #28, Frage 2 (ist ein fester Schnappschuss für den Zeitraum vertretbar?) und die offene Prüfung aus dem
+Eintrag «Haltestellenliste als fester Schnappschuss» (2026-11-08, Review PR #27). Der Schnappschuss vom 2026-10-05
+(`period.py`) stammt von nach dem Zeitraum. Ein Halt, der im Zeitraum bedient und vorher aus der Liste gestrichen
+wurde, hat keinen Kanton und fällt ohne Meldung aus den Zürcher Abschnitten (#24, #38). Basis: `quality.delays()` auf
+den Tagesdateien 1.8.2025 bis 31.7.2026, Schnappschuss wie in `notebooks/07_rangliste_referenzwert.py`.
+
+- **Regeln (hasan8953):**
+  - Halteereignis = jede Zeile aus `quality.delays()` im Zeitraum, gemessen oder nicht. Der Anteil mit `REAL`-Zeit
+    wird als Begleitzahl genannt.
+  - Ein Halt fehlt, wenn seine `BPUIC` nicht als `number` im Schnappschuss steht, unabhängig von `hasGeolocation`
+    (so ordnet auch die Pipeline den Kanton zu).
+  - «Raum Zürich» wird nach dem Namen aus den Tagesdateien beurteilt, weil fehlende Halte keinen Kanton haben.
+- **Erwartungen (aus dem Issue von schwagia, von hasan8953 übernommen):**
+  - (a) Höchstens 0.1 % der Schweizer Halteereignisse im Zeitraum betreffen einen Halt, der im Schnappschuss fehlt.
+  - (b) Unter den fehlenden Halten ist keiner im Raum Zürich.
+- **Was schon bekannt ist:** Die einmalige Abfrage der Versionsgeschichte vom 2026-11-08 (nicht im Repository) fand
+  229 Schweizer Halte, die von Juli 2025 bis Juni 2026 gültig waren und im Schnappschuss fehlen, davon ein Bahnhalt
+  (Aigle-Hôpital, VD, gültig bis 13.12.2025) und keiner im Kanton Zürich. Das war der alte Zeitraum und nicht auf den
+  Fahrdaten gezählt. Die Erwartungen sind darum begünstigt. Nicht angeschaut: jede Zählung auf den Tagesdateien des
+  Zeitraums.
+- **Was die Prüfung kann:** (a) und (b) können scheitern, wenn Bahnhalte bedient wurden, die in der Versionsgeschichte
+  nicht als gültig geführt sind, oder wenn sich Nummern geändert haben (dann fehlt die alte Nummer). Scheitert (b),
+  fehlen Zürcher Abschnitte in der Rangliste; scheitert nur (a), betrifft es andere Kantone und die Karte.
+- *Folge bei Widerlegung:* Der Befund nennt die betroffenen Halte und Abschnitte; das Team entscheidet, ob der
+  Schnappschuss ergänzt oder ersetzt wird (#28). Pipeline und Schnappschuss werden in diesem Paket nicht geändert.
+
+## 2026-11-24 — Befund: Halte im Zeitraum, die im Schnappschuss fehlen (Issue #54)
+
+Notebook `notebooks/16_schnappschuss_abdeckung.py`, Hypothese gepusht vor der Zählung (`18bf729`, Commit 17:53:10, Push 17:53:14 laut
+`git reflog show origin/feat/issue-54-schnappschuss-abdeckung`; Notebook-Commit 18:06:35).
+
+- **Ergebnis:** Alle 1'771 Schweizer Halte aus `quality.delays()` vom 1.8.2025 bis 31.7.2026 stehen im Schnappschuss
+  vom 2026-10-05. Fehlende Halte: 0; betroffene Halteereignisse: 0 von 57'282'218 (0 %). Begleitzahl: 96.8 % der
+  Ereignisse haben eine `REAL`-Zeit an Ankunft oder Abfahrt.
+- **(a) gehalten:** 0 % statt höchstens 0.1 %.
+- **(b) gehalten:** Es gibt keinen fehlenden Halt, also auch keinen im Raum Zürich.
+- **Aigle-Hôpital** (aus der Abfrage der Versionsgeschichte vom 2026-11-08 der einzige fehlende Bahnhalt) kommt in den
+  Tagesdateien des Zeitraums nicht vor; er wurde im Zeitraum nicht bedient.
+- **Gegenprobe (nach der Zählung ergänzt, vom Agenten vorgeschlagen):** Ohne die fünf Halte mit den meisten
+  Ereignissen im Schnappschuss meldet dieselbe Abfrage genau diese fünf als fehlend. Die Zählung kann also scheitern;
+  die 0 ist kein Fehler der Abfrage. Die Bedingung steht im Notebook als `assert`.
+- **Namen (nach der Zählung ergänzt, beschreibend):** Bei 4 Halten weicht der häufigste Name in den Tagesdateien vom
+  Namen im Schnappschuss ab, alle ohne anderen Ort: Biel/Bienne Bözingenfeld/Champs-de-Boujean (im Schnappschuss
+  gekürzt, 28'302 Ereignisse), Basel Grenze (im Schnappschuss «(FR)», 91), Zürich Herdern (im Schnappschuss
+  «Abstellgruppe», 1), Le Prese (incrocio) (im Schnappschuss Spinadascio, GR, 1).
+  *Im Review ergänzt (schwagia):* Beurteilt über die Fahrtfolge und die Koordinaten im Schnappschuss: Zürich Herdern
+  liegt auf der einzigen Fahrt (S21, 18.6.2026) zwischen Hardbrücke und Oerlikon, der Punkt «Abstellgruppe» 1.3 km
+  von Hardbrücke; Le Prese (incrocio) liegt zwischen Li Curt und Le Prese, Spinadascio 0.8 km vor Le Prese auf
+  dieser Strecke.
+- **Einschätzung für #28, Frage 2 (Entscheid beim Team):** Für die Zuordnung des Kantons ist der feste Schnappschuss
+  vertretbar: Jeder Halt des Zeitraums hat einen Eintrag. Nicht geprüft ist, ob sich Kanton oder Koordinaten eines Halts
+  im Zeitraum geändert haben. Bekannt aus dem Eintrag vom 2026-11-08: 25 Halte in Moutier wechseln BE → JU, keiner in
+  Zürich; Koordinaten weichen an 2'566 Halt-Tagen ab. Das betrifft die Karte, nicht die Zürcher Rangliste.
+- **Grenze:** Die Prüfung findet nur Halte, deren Nummer ganz fehlt. Ein Halt, dessen Nummer im Schnappschuss für
+  einen anderen Ort steht, fiele nur über den Namensvergleich auf; dort zeigt sich kein solcher Fall.
+
+## 2026-11-24 — KI-Einsatz: Issue #54
+
+- **Aufgabe:** zählen, welche Halte des Zeitraums im Schnappschuss fehlen, für #28 (Frage 2).
+- **Mine:** das Issue und die Erwartung ≤ 0.1 % (schwagia); die Regeln (hasan8953): jede Zeile aus
+  `quality.delays()` zählt als Ereignis, ein Halt fehlt nur, wenn seine Nummer fehlt (unabhängig von Koordinaten),
+  Erwartung aus dem Issue übernommen und um (b) «kein fehlender Halt im Raum Zürich» ausformuliert.
+- **Delegated:** Claude Code hat den Hintergrund aus dem Log zusammengefasst, die drei Regelfragen gestellt, den Text
+  der Hypothese, das Notebook, die Gegenprobe, den Namensvergleich und diesen Befund geschrieben. Entscheide des
+  Agenten: Gegenprobe und Namensvergleich nach der Zählung ergänzen, weil eine 0 sonst nicht von einer fehlerhaften
+  Abfrage zu unterscheiden ist; der häufigste Name im Zeitraum als Name aus den Tagesdateien.
+- **Im Review:** Push-Zeit aus dem Reflog und die Beurteilung von Zürich Herdern und Le Prese (incrocio) über
+  Fahrtfolge und Koordinaten hat Claude Code nachgeschlagen und formuliert; hasan8953 hat den Text übernommen.
+- **Prüfung:** Gegenprobe oben; `uv run marimo check`, `uv run ruff check .` und `uv run ruff format --check .` laufen
+  durch.
