@@ -3352,3 +3352,42 @@ Notebook `notebooks/16_schnappschuss_abdeckung.py`, Hypothese gepusht vor der Z�
   Fahrtfolge und Koordinaten hat Claude Code nachgeschlagen und formuliert; hasan8953 hat den Text übernommen.
 - **Prüfung:** Gegenprobe oben; `uv run marimo check`, `uv run ruff check .` und `uv run ruff format --check .` laufen
   durch.
+
+## 2026-11-24 — Hypothese: Muster der Rangliste über Tageszeit, Wochentag und Jahreszeit (Issue #59, vor der Analyse notiert)
+
+Anlass: Aufgabenstellung, «wie stabil ist dieses Muster über Wochentage, Tageszeiten, Jahreszeiten». Den
+Fahrplanwechsel und die Zufallsfenster hat #48 geprüft; hier nur die Fenster aus der Ranglisten-Datei (#38) nach
+Tageszeit (Morgenspitze, Tag, Abendspitze, Abend/Nacht), Wochentag (Mo–Fr, Sa/So) und Jahreszeit (Winter, Frühling,
+Sommer, Herbst). Zürcher Abschnitte, 1.8.2025 bis 31.7.2026. An `ranking.py` und an den Fenstern ändert sich nichts.
+
+- **Regeln (hasan8953, vor dem Lauf):**
+  - Für die Rangkorrelation wird das Mittel pro Fahrt nach Referenzwert (`mittel_referenz`) verglichen, nicht die
+    Hauptkennzahl: Die Hauptkennzahl ist Mittel × Fahrten und hinge zwischen den Fenstern vor allem von der Zugzahl ab
+    (in der Morgenspitze fahren mehr Züge als in der Nacht).
+  - In den Vergleich zweier Fenster kommen nur Abschnitte, die in beiden einen Wert haben. Wie viele je Paar wegfallen,
+    steht im Befund.
+  - Die Top 10 eines Fensters sind die zehn Abschnitte der Klasse «Verstärker» in diesem Fenster mit der grössten
+    Hauptkennzahl (Regel aus #45). Verglichen wird mit der Top 10 im ganzen Zeitraum.
+  - Spearman wird für jedes Paar von Fenstern einer Gruppe gerechnet (Tageszeit 6 Paare, Jahreszeit 6, Wochentag 1);
+    je Gruppe zählt der Median der Paare.
+- **Urteil je Gruppe (Regel von Hn1016 in #59, Schwellen aus #32):** «stabil», wenn der Median der Spearman-Werte
+  mindestens 0.7 beträgt **und** jedes Fenster mindestens 7 der Top 10 im ganzen Zeitraum hat; «teilweise», wenn genau
+  eines der beiden Kriterien gehalten ist; «nicht stabil», wenn keines. Ein Wert knapp unter einer Schwelle gilt als
+  nicht gehalten. Das schwächste Paar und das schwächste Fenster stehen mit Zahl im Befund, auch bei «stabil».
+- **Erwartung (Hn1016, in #59; die Vergleiche zwischen den Fenstern hat er nicht angeschaut):**
+  - Wochentag: Spearman mindestens 0.9, in jedem Fenster mindestens 7 der Top 10.
+  - Jahreszeit: Spearman mindestens 0.85, in jedem Fenster mindestens 7 der Top 10.
+  - Tageszeit: Spearman mindestens 0.7, in jedem Fenster mindestens 6 der Top 10, also eher «teilweise».
+  - Begründung: Die Jahreszeiten gleichen den Datumsfenstern aus #48 (Fahrpläne 0.979, 9 von 10; Zufallsfenster
+    Median 0.985), nur länger. Am Wochenende und je Tageszeit ändern sich Fahrplan und Verkehr stärker, am meisten
+    zwischen Spitze und Abend/Nacht.
+- **Was schon bekannt ist:** je Fenster die Zahl der Abschnitte mit Wert und der Klassen (Befund #38: 363 bis 392 mit
+  Wert, 121 bis 141 Verstärker) und die Top 10 im ganzen Zeitraum (Befunde #23, #53). Nicht angeschaut: die Ränge und
+  die Top 10 je Fenster, jede Korrelation zwischen den Fenstern.
+- **Was die Prüfung kann:** Jedes der drei Urteile kann «teilweise» oder «nicht stabil» werden: Die Fenster teilen
+  keine Fahrten innerhalb einer Gruppe, und die Top 10 je Fenster wird mit der Klasse dieses Fensters neu bestimmt.
+- **Grenze, schon vor dem Lauf bekannt:** Der Zeitraum beginnt am 1.8.2025. Herbst ist nur Sep–Nov 2025 (Fahrplan
+  2025), Frühling nur Mär–Mai 2026 (Fahrplan 2026), Sommer mischt August 2025 und Juni/Juli 2026. Ein Unterschied
+  zwischen Jahreszeiten kann darum auch vom Fahrplan kommen; #48 zeigt, dass dieser Effekt klein ist.
+- *Folge bei Widerlegung:* Die Schwellen werden nicht angepasst. Der Bericht nennt die Gruppe «teilweise» oder «nicht
+  stabil» und sagt, an welchem Kriterium es liegt; die Abschnitte mit den grössten Unterschieden stehen im Befund.
