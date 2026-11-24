@@ -3279,3 +3279,31 @@ hat einen Wert am Halt.
     Die Prüfung hätte scheitern können, wenn eine Abfrage eine weggelassene Spalte gebraucht hätte (Fehler) oder
     die Joins andere Zeilen träfen.
   - `uv run pytest`, `ruff check`, `ruff format --check` und `marimo check` laufen durch.
+
+## 2026-11-24 — Hypothese: Halte im Zeitraum, die im Schnappschuss fehlen (Issue #54, vor der Analyse notiert)
+
+Anlass: Issue #28, Frage 2 (ist ein fester Schnappschuss für den Zeitraum vertretbar?) und die offene Prüfung aus dem
+Eintrag «Haltestellenliste als fester Schnappschuss» (2026-11-08, Review PR #27). Der Schnappschuss vom 2026-10-05
+(`period.py`) stammt von nach dem Zeitraum. Ein Halt, der im Zeitraum bedient und vorher aus der Liste gestrichen
+wurde, hat keinen Kanton und fällt ohne Meldung aus den Zürcher Abschnitten (#24, #38). Basis: `quality.delays()` auf
+den Tagesdateien 1.8.2025 bis 31.7.2026, Schnappschuss wie in `notebooks/07_rangliste_referenzwert.py`.
+
+- **Regeln (hasan8953):**
+  - Halteereignis = jede Zeile aus `quality.delays()` im Zeitraum, gemessen oder nicht. Der Anteil mit `REAL`-Zeit
+    wird als Begleitzahl genannt.
+  - Ein Halt fehlt, wenn seine `BPUIC` nicht als `number` im Schnappschuss steht, unabhängig von `hasGeolocation`
+    (so ordnet auch die Pipeline den Kanton zu).
+  - «Raum Zürich» wird nach dem Namen aus den Tagesdateien beurteilt, weil fehlende Halte keinen Kanton haben.
+- **Erwartungen (aus dem Issue von schwagia, von hasan8953 übernommen):**
+  - (a) Höchstens 0.1 % der Schweizer Halteereignisse im Zeitraum betreffen einen Halt, der im Schnappschuss fehlt.
+  - (b) Unter den fehlenden Halten ist keiner im Raum Zürich.
+- **Was schon bekannt ist:** Die einmalige Abfrage der Versionsgeschichte vom 2026-11-08 (nicht im Repository) fand
+  229 Schweizer Halte, die von Juli 2025 bis Juni 2026 gültig waren und im Schnappschuss fehlen, davon ein Bahnhalt
+  (Aigle-Hôpital, VD, gültig bis 13.12.2025) und keiner im Kanton Zürich. Das war der alte Zeitraum und nicht auf den
+  Fahrdaten gezählt. Die Erwartungen sind darum begünstigt. Nicht angeschaut: jede Zählung auf den Tagesdateien des
+  Zeitraums.
+- **Was die Prüfung kann:** (a) und (b) können scheitern, wenn Bahnhalte bedient wurden, die in der Versionsgeschichte
+  nicht als gültig geführt sind, oder wenn sich Nummern geändert haben (dann fehlt die alte Nummer). Scheitert (b),
+  fehlen Zürcher Abschnitte in der Rangliste; scheitert nur (a), betrifft es andere Kantone und die Karte.
+- *Folge bei Widerlegung:* Der Befund nennt die betroffenen Halte und Abschnitte; das Team entscheidet, ob der
+  Schnappschuss ergänzt oder ersetzt wird (#28). Pipeline und Schnappschuss werden in diesem Paket nicht geändert.
