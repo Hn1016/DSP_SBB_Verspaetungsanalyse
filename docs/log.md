@@ -3352,3 +3352,122 @@ Notebook `notebooks/16_schnappschuss_abdeckung.py`, Hypothese gepusht vor der Z�
   Fahrtfolge und Koordinaten hat Claude Code nachgeschlagen und formuliert; hasan8953 hat den Text übernommen.
 - **Prüfung:** Gegenprobe oben; `uv run marimo check`, `uv run ruff check .` und `uv run ruff format --check .` laufen
   durch.
+
+## 2026-11-24 — Hypothese: Muster der Rangliste über Tageszeit, Wochentag und Jahreszeit (Issue #59, vor der Analyse notiert)
+
+Anlass: Aufgabenstellung, «wie stabil ist dieses Muster über Wochentage, Tageszeiten, Jahreszeiten». Den
+Fahrplanwechsel und die Zufallsfenster hat #48 geprüft; hier nur die Fenster aus der Ranglisten-Datei (#38) nach
+Tageszeit (Morgenspitze, Tag, Abendspitze, Abend/Nacht), Wochentag (Mo–Fr, Sa/So) und Jahreszeit (Winter, Frühling,
+Sommer, Herbst). Zürcher Abschnitte, 1.8.2025 bis 31.7.2026. An `ranking.py` und an den Fenstern ändert sich nichts.
+
+- **Regeln (hasan8953, vor dem Lauf):**
+  - Für die Rangkorrelation wird das Mittel pro Fahrt nach Referenzwert (`mittel_referenz`) verglichen, nicht die
+    Hauptkennzahl: Die Hauptkennzahl ist Mittel × Fahrten und hinge zwischen den Fenstern vor allem von der Zugzahl ab
+    (in der Morgenspitze fahren mehr Züge als in der Nacht).
+  - In den Vergleich zweier Fenster kommen nur Abschnitte, die in beiden einen Wert haben. Wie viele je Paar wegfallen,
+    steht im Befund.
+  - Die Top 10 eines Fensters sind die zehn Abschnitte der Klasse «Verstärker» in diesem Fenster mit der grössten
+    Hauptkennzahl (Regel aus #45). Verglichen wird mit der Top 10 im ganzen Zeitraum.
+  - Spearman wird für jedes Paar von Fenstern einer Gruppe gerechnet (Tageszeit 6 Paare, Jahreszeit 6, Wochentag 1);
+    je Gruppe zählt der Median der Paare.
+- **Urteil je Gruppe (Regel von Hn1016 in #59, Schwellen aus #32):** «stabil», wenn der Median der Spearman-Werte
+  mindestens 0.7 beträgt **und** jedes Fenster mindestens 7 der Top 10 im ganzen Zeitraum hat; «teilweise», wenn genau
+  eines der beiden Kriterien gehalten ist; «nicht stabil», wenn keines. Ein Wert knapp unter einer Schwelle gilt als
+  nicht gehalten. Das schwächste Paar und das schwächste Fenster stehen mit Zahl im Befund, auch bei «stabil».
+- **Erwartung (Hn1016, in #59; die Vergleiche zwischen den Fenstern hat er nicht angeschaut):**
+  - Wochentag: Spearman mindestens 0.9, in jedem Fenster mindestens 7 der Top 10.
+  - Jahreszeit: Spearman mindestens 0.85, in jedem Fenster mindestens 7 der Top 10.
+  - Tageszeit: Spearman mindestens 0.7, in jedem Fenster mindestens 6 der Top 10, also eher «teilweise».
+  - Begründung: Die Jahreszeiten gleichen den Datumsfenstern aus #48 (Fahrpläne 0.979, 9 von 10; Zufallsfenster
+    Median 0.985), nur länger. Am Wochenende und je Tageszeit ändern sich Fahrplan und Verkehr stärker, am meisten
+    zwischen Spitze und Abend/Nacht.
+- **Was schon bekannt ist:** je Fenster die Zahl der Abschnitte mit Wert und der Klassen (Befund #38: 363 bis 392 mit
+  Wert, 121 bis 141 Verstärker) und die Top 10 im ganzen Zeitraum (Befunde #23, #53). Nicht angeschaut: die Ränge und
+  die Top 10 je Fenster, jede Korrelation zwischen den Fenstern.
+- **Was die Prüfung kann:** Jedes der drei Urteile kann «teilweise» oder «nicht stabil» werden: Die Fenster teilen
+  keine Fahrten innerhalb einer Gruppe, und die Top 10 je Fenster wird mit der Klasse dieses Fensters neu bestimmt.
+- **Grenze, schon vor dem Lauf bekannt:** Der Zeitraum beginnt am 1.8.2025. Herbst ist nur Sep–Nov 2025 (Fahrplan
+  2025), Frühling nur Mär–Mai 2026 (Fahrplan 2026), Sommer mischt August 2025 und Juni/Juli 2026. Ein Unterschied
+  zwischen Jahreszeiten kann darum auch vom Fahrplan kommen; #48 zeigt, dass dieser Effekt klein ist.
+- *Folge bei Widerlegung:* Die Schwellen werden nicht angepasst. Der Bericht nennt die Gruppe «teilweise» oder «nicht
+  stabil» und sagt, an welchem Kriterium es liegt; die Abschnitte mit den grössten Unterschieden stehen im Befund.
+
+## 2026-11-25 — Befund: Muster der Rangliste über Tageszeit, Wochentag und Jahreszeit (Issue #59)
+
+Notebook `notebooks/17_zeitfenster.py`. Hypothese vor dem Notebook gepusht (`0c34262`, Commit 23:42:22, Push 23:42:26
+am 2026-11-24 laut `git reflog show origin/feat/issue-59-zeitfenster --date=iso`).
+
+| Gruppe | Spearman, Median der Paare | schwächstes Paar | Top 10 wie ganzer Zeitraum, schwächstes Fenster | Urteil |
+|---|---|---|---|---|
+| Tageszeit (6 Paare) | 0.993 | Morgenspitze / Abend/Nacht 0.974 | Tag 8 (Abendspitze, Abend/Nacht ebenfalls 8; Morgenspitze 9) | stabil |
+| Wochentag (1 Paar) | 0.985 | Mo–Fr / Sa/So 0.985 | Mo–Fr 8 (Sa/So 9) | stabil |
+| Jahreszeit (6 Paare) | 0.987 | Frühling / Herbst 0.979 | Frühling 9 (Sommer, Herbst 9; Winter 10) | stabil |
+
+- **Urteil:** Alle drei Gruppen «stabil». Beide Kriterien sind in jeder Gruppe gehalten, mit Abstand: kein Paar unter
+  0.974, kein Fenster unter 8 der Top 10.
+- **Gegen die Erwartung (Hn1016):** Wochentag (≥ 0.9, ≥ 7) und Jahreszeit (≥ 0.85, ≥ 7) gehalten. Tageszeit widerlegt,
+  aber stabiler als erwartet: erwartet «eher teilweise» mit mindestens 6 der Top 10, gefunden in jedem Fenster
+  mindestens 8. Das schwächste Paar ist wie vermutet Spitze gegen Abend/Nacht.
+- **Abschnitte je Paar:** 362 bis 392 mit Wert in beiden Fenstern; weggefallen 14 bis 21 bei der Tageszeit, 28 beim
+  Wochentag, 0 bis 2 bei der Jahreszeit.
+- **Rechenprobe:** Die Fenster jeder Gruppe teilen den Zeitraum ohne Lücke und Überschneidung: Für jeden der 524
+  Abschnitte ist die Summe der Fahrten über die Fenster gleich den Fahrten im ganzen Zeitraum (zusammen 7'739'652, im
+  Notebook als `assert`).
+- **Nach dem Lauf ergänzt, beschreibend (vom Agenten):**
+  - Zürich Stadelhofen → Uster ist im ganzen Zeitraum der 10. Verstärker mit Hauptkennzahl 20'631; der 11.
+    (Zürich Oerlikon → Zürich Flughafen) hat 20'624.5, 0.03 % weniger. In 7 der 10 Fenster steht der Abschnitt auf
+    Rang 11 bis 14 und fehlt darum in deren Top 10. Ein Teil der Abweichungen in der Top 10 ist also ein Gleichstand auf
+    Platz 10, kein anderes Muster.
+  - Der grösste Unterschied: Zürich Enge → Zürich HB ist nur am Wochenende Verstärker (+1.11 min pro Fahrt, 195 Fahrten
+    an 99 Tagen), Mo–Fr neutral (979 Fahrten). Mit so wenigen Fahrten hat der Abschnitt auf die Top 10 keinen Einfluss.
+  - Je Gruppe sind 1 bis 9 Abschnitte in genau einem Fenster Verstärker (Mo–Fr 9, Sa/So 3, sonst 1 bis 3 je Fenster);
+    keiner davon steht in der Top 10 eines Fensters seiner Gruppe.
+  - Spearman über die Hauptkennzahl (Grösse aus #48, nicht Teil des Urteils) liegt je Paar zwischen 0.971 und 0.993.
+- **Grenze:** Die Spearman-Werte liegen hier wie in #48 alle über 0.97. Über rund 370 Abschnitte bestimmen die festen
+  Unterschiede zwischen den Abschnitten die Reihenfolge; die Schwelle 0.7 ist darum leicht zu halten. Das schärfere
+  Kriterium ist die Überschneidung der Top 10. Wie in der Hypothese genannt, kann ein Unterschied zwischen Herbst
+  (nur Fahrplan 2025) und Frühling (nur Fahrplan 2026) auch vom Fahrplan kommen; gerade dieses Paar ist mit 0.979 das
+  schwächste der Jahreszeiten, liegt aber über der Schwelle.
+- **Im Review ergänzt, beschreibend (Hn1016, nicht Teil des Urteils):**
+  - *Zufallsfenster als Massstab:* Zufällige 4-Wochen-Fenster ergaben in #48 einen Spearman-Median von 0.985 (0.964
+    bis 0.998). Tageszeit (0.974 bis 0.996), Wochentag (0.985) und Jahreszeit (0.979 bis 0.991) liegen im selben
+    Bereich: Die Fenster unterscheiden sich nicht stärker als zufällige Zeitabschnitte.
+  - *Top 10 zwischen den Fenstern:* Jedes Fenster ist Teil des ganzen Zeitraums, darum ist der Vergleich mit dessen
+    Top 10 der leichtere. Paarweise teilen die Fenster weniger: Tageszeit 6 bis 9 (Abendspitze / Abend/Nacht 6,
+    Tag / Abendspitze 7, Morgenspitze / Abend/Nacht 7), Mo–Fr / Sa/So 7, Jahreszeit jedes Paar 9.
+  - *Nur in einem Fenster der Gruppe in der Top 10:* 14 Abschnitte, 12 davon auf Platz 8 bis 10. Nur am Abend:
+    Effretikon → Illnau in der Abendspitze (Platz 9, 1.22 min pro Fahrt, 3'401 Fahrten), Zürich Altstetten → Zürich
+    Hardbrücke (Platz 9) und Zürich Stadelhofen → Uster (Platz 10) am Abend/Nacht. Weiter oben stehen nur Uster →
+    Zürich Stadelhofen Mo–Fr (Platz 7) und Zürich Stadelhofen → Stettbach Sa/So (Platz 5). Die Unterschiede liegen
+    also fast nur am Rand der Top 10.
+- **Folge:** Für den Bericht gilt die Rangliste der Abschnitte über Tageszeit, Wochentag und Jahreszeit als stabil,
+  zusammen mit #48 auch über den Fahrplanwechsel. Nicht geprüft: Halte und die Absorber-Top-10.
+
+## 2026-11-25 — KI-Einsatz: Issue #59
+
+- **Aufgabe:** die Rangliste der Abschnitte zwischen den Fenstern nach Tageszeit, Wochentag und Jahreszeit
+  vergleichen und je Gruppe nach den Schwellen aus #32 beurteilen.
+- **Mine:** das Issue (schwagia); die Erwartungen je Gruppe und die Regel für «teilweise» (Hn1016, in #59); die
+  Rückfrage in #59, die «teilweise» vor dem Lauf festlegen liess, die zwei Entscheide für die Durchführung (Mittel pro
+  Fahrt statt Hauptkennzahl, nur Abschnitte mit Wert in beiden Fenstern) und die Freigabe der Hypothese vor dem Push
+  (hasan8953).
+- **Delegated:** Claude Code hat die Optionen zu den zwei Entscheiden mit Begründung ausformuliert (von hasan8953
+  schon vorher erwogen), den Text der Rückfrage formuliert und den Eintrag zur Hypothese, das Notebook 17 und diesen
+  Befund geschrieben. Die Grenze zu Herbst und Frühling in der Hypothese hat hasan8953 ebenfalls schon erwogen; der
+  Text stammt vom Agenten. Vom Agenten stammen: die Rechenprobe über die Fahrten, nach dem Lauf die Ergänzungen
+  (Gleichstand auf Platz 10, Zürich Enge → Zürich HB, Spearman über die Hauptkennzahl) und die Grenze zum
+  Spearman-Kriterium.
+- **Prüfung:**
+  - Rechenprobe über die Fahrten (oben); die Zahl der Paare je Gruppe (6, 6, 1) und die Top 10 im ganzen Zeitraum mit
+    zehn Abschnitten sind im Notebook als `assert` geprüft.
+  - Die Top 10 im ganzen Zeitraum enthält Zürich Stadelhofen → Uster wie in #48 und #53.
+  - Nicht geprüft: Spearman gegen eine zweite Rechnung (`scipy.stats.spearmanr` wie in #48).
+- **Reihenfolge und Zeiten (MEZ):** 2026-11-24 23:42:22 Commit `0c34262` mit der Hypothese, 23:42:26 gepusht; danach
+  das Notebook geschrieben und zum ersten Mal gerechnet; 2026-11-25 00:01:09 Commit `f638e2e` mit dem Notebook, 00:01:13
+  gepusht. Erwartungen und Regeln sind nach dem Lauf nicht geändert.
+- **Übernommen/verworfen:** Übernommen: Hypothese, Notebook und Befund. Verworfen: die Hauptkennzahl für Spearman
+  (hinge von der Zugzahl je Fenster ab).
+- **Im Review:** Hn1016 schlug den Vergleich mit den Zufallsfenstern aus #48 und die Top-10-Überschneidung zwischen
+  den Fenstern vor; hasan8953 hat beides übernommen. Claude Code hat Hn1016s Überschneidungen unabhängig
+  nachgerechnet (gleiche Werte), die Tabelle im Notebook und den Text oben geschrieben. Im Notebook zeigt `platz`
+  den Platz in der Top 10 des Fensters statt `rang`, weil `rang` auch Nicht-Verstärker zählt.
