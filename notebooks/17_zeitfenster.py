@@ -182,6 +182,51 @@ def _(GROUPS, KEY, mo, pl, table, top10, whole, windows):
 @app.cell
 def _(mo):
     mo.md("""
+    ## Top 10 zwischen den Fenstern (im Review ergänzt, beschreibend)
+
+    Nicht Teil des Urteils. Jedes Fenster ist Teil des ganzen Zeitraums, darum ist der Vergleich
+    mit dessen Top 10 der leichtere. `top10_gemeinsam`: wie viele Abschnitte die Top 10 der beiden
+    Fenster teilen. Darunter die Abschnitte, die in der Top 10 von genau einem Fenster ihrer
+    Gruppe stehen; `platz`: Platz 1 bis 10 in der Top 10 dieses Fensters.
+    """)
+    return
+
+
+@app.cell
+def _(GROUPS, KEY, combinations, mo, pl, table, top10, windows, with_names):
+    _tops = pl.concat(
+        [
+            top10(table.filter(pl.col("fenster") == _w))
+            .select(*KEY, "fahrten", "mittel_referenz")
+            .with_columns(gruppe=pl.lit(_g), fenster=pl.lit(_w), platz=pl.int_range(1, 11))
+            for _g in GROUPS
+            for _w in windows[_g]
+        ]
+    )
+    top_pairs = pl.DataFrame(
+        [
+            {
+                "gruppe": _g,
+                "fenster_1": _w1,
+                "fenster_2": _w2,
+                "top10_gemeinsam": _tops.filter(pl.col("fenster") == _w1)
+                .join(_tops.filter(pl.col("fenster") == _w2), on=KEY)
+                .height,
+            }
+            for _g in GROUPS
+            for _w1, _w2 in combinations(windows[_g], 2)
+        ]
+    )
+    only_top = with_names(_tops.filter(pl.len().over(*KEY, "gruppe") == 1)).select(
+        "gruppe", "fenster", "abschnitt", "platz", "fahrten", pl.col("mittel_referenz").round(2)
+    )
+    mo.vstack([mo.ui.table(top_pairs), mo.ui.table(only_top)])
+    return only_top, top_pairs
+
+
+@app.cell
+def _(mo):
+    mo.md("""
     ## Urteil je Gruppe
     """)
     return

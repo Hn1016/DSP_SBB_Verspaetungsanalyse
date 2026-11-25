@@ -3405,8 +3405,8 @@ am 2026-11-24 laut `git reflog show origin/feat/issue-59-zeitfenster --date=iso`
 
 - **Urteil:** Alle drei Gruppen «stabil». Beide Kriterien sind in jeder Gruppe gehalten, mit Abstand: kein Paar unter
   0.974, kein Fenster unter 8 der Top 10.
-- **Gegen die Erwartung (Hn1016):** Wochentag (≥ 0.9, ≥ 7) und Jahreszeit (≥ 0.85, ≥ 7) gehalten. Tageszeit widerlegt
-  in der erwarteten Richtung: erwartet «eher teilweise» mit mindestens 6 der Top 10, gefunden in jedem Fenster
+- **Gegen die Erwartung (Hn1016):** Wochentag (≥ 0.9, ≥ 7) und Jahreszeit (≥ 0.85, ≥ 7) gehalten. Tageszeit widerlegt,
+  aber stabiler als erwartet: erwartet «eher teilweise» mit mindestens 6 der Top 10, gefunden in jedem Fenster
   mindestens 8. Das schwächste Paar ist wie vermutet Spitze gegen Abend/Nacht.
 - **Abschnitte je Paar:** 362 bis 392 mit Wert in beiden Fenstern; weggefallen 14 bis 21 bei der Tageszeit, 28 beim
   Wochentag, 0 bis 2 bei der Jahreszeit.
@@ -3428,6 +3428,18 @@ am 2026-11-24 laut `git reflog show origin/feat/issue-59-zeitfenster --date=iso`
   Kriterium ist die Überschneidung der Top 10. Wie in der Hypothese genannt, kann ein Unterschied zwischen Herbst
   (nur Fahrplan 2025) und Frühling (nur Fahrplan 2026) auch vom Fahrplan kommen; gerade dieses Paar ist mit 0.979 das
   schwächste der Jahreszeiten, liegt aber über der Schwelle.
+- **Im Review ergänzt, beschreibend (Hn1016, nicht Teil des Urteils):**
+  - *Zufallsfenster als Massstab:* Zufällige 4-Wochen-Fenster ergaben in #48 einen Spearman-Median von 0.985 (0.964
+    bis 0.998). Tageszeit (0.974 bis 0.996), Wochentag (0.985) und Jahreszeit (0.979 bis 0.991) liegen im selben
+    Bereich: Die Fenster unterscheiden sich nicht stärker als zufällige Zeitabschnitte.
+  - *Top 10 zwischen den Fenstern:* Jedes Fenster ist Teil des ganzen Zeitraums, darum ist der Vergleich mit dessen
+    Top 10 der leichtere. Paarweise teilen die Fenster weniger: Tageszeit 6 bis 9 (Abendspitze / Abend/Nacht 6,
+    Tag / Abendspitze 7, Morgenspitze / Abend/Nacht 7), Mo–Fr / Sa/So 7, Jahreszeit jedes Paar 9.
+  - *Nur in einem Fenster der Gruppe in der Top 10:* 14 Abschnitte, 12 davon auf Platz 8 bis 10. Nur am Abend:
+    Effretikon → Illnau in der Abendspitze (Platz 9, 1.22 min pro Fahrt, 3'401 Fahrten), Zürich Altstetten → Zürich
+    Hardbrücke (Platz 9) und Zürich Stadelhofen → Uster (Platz 10) am Abend/Nacht. Weiter oben stehen nur Uster →
+    Zürich Stadelhofen Mo–Fr (Platz 7) und Zürich Stadelhofen → Stettbach Sa/So (Platz 5). Die Unterschiede liegen
+    also fast nur am Rand der Top 10.
 - **Folge:** Für den Bericht gilt die Rangliste der Abschnitte über Tageszeit, Wochentag und Jahreszeit als stabil,
   zusammen mit #48 auch über den Fahrplanwechsel. Nicht geprüft: Halte und die Absorber-Top-10.
 
@@ -3455,3 +3467,7 @@ am 2026-11-24 laut `git reflog show origin/feat/issue-59-zeitfenster --date=iso`
   gepusht. Erwartungen und Regeln sind nach dem Lauf nicht geändert.
 - **Übernommen/verworfen:** Übernommen: Hypothese, Notebook und Befund. Verworfen: die Hauptkennzahl für Spearman
   (hinge von der Zugzahl je Fenster ab).
+- **Im Review:** Hn1016 schlug den Vergleich mit den Zufallsfenstern aus #48 und die Top-10-Überschneidung zwischen
+  den Fenstern vor; hasan8953 hat beides übernommen. Claude Code hat Hn1016s Überschneidungen unabhängig
+  nachgerechnet (gleiche Werte), die Tabelle im Notebook und den Text oben geschrieben. Im Notebook zeigt `platz`
+  den Platz in der Top 10 des Fensters statt `rang`, weil `rang` auch Nicht-Verstärker zählt.
