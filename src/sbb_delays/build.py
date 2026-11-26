@@ -3,13 +3,16 @@
 Runs the existing steps in order: download (monthly archives and stops into data/raw), then
 load (rail Parquet per operating day into data/processed), then sections (section passages of
 the period, one Parquet file named after the period, issue #24), then ranking (one row per
-Zurich section and time window, issue #38). Before each step the target files
+Zurich section and time window, issue #38), then stop_ranking (one row per Zurich stop and time
+window, issue #61). Before each step the target files
 of the period are checked: if all exist, the step is skipped. Otherwise the step runs, and the
 existing functions skip single files that already exist, so an interrupted build continues.
 The targets of load are the daily files in the archives; calendar days of the period that an
 archive lacks are reported as a warning. sections is also rebuilt when load built something,
 and when its rules change: a short checksum of sections.py and quality.py is in the file name.
 ranking is also rebuilt when sections built something; its checksum covers ranking.py as well.
+stop_ranking reads the stop events from quality.delays(), not the sections: it is rebuilt when
+load built something, and its checksum covers quality.py, ranking.py and stop_ranking.py.
 
 Each step prints one line on stdout; progress bars and warnings go to stderr.
 
@@ -29,7 +32,7 @@ from pathlib import Path
 
 import duckdb
 
-from sbb_delays import download, load, quality, ranking, sections
+from sbb_delays import download, load, quality, ranking, sections, stop_ranking
 from sbb_delays.paths import ISTDATEN_RAIL, ISTDATEN_RAW, PROCESSED, SERVICE_POINTS_RAW
 from sbb_delays.period import END, START
 
@@ -164,6 +167,42 @@ def build_ranking(force: bool = False) -> str:
     return "gebaut"
 
 
+# The stop ranking rules (log 2026-11-26, issue #61, decision 2): not sections.py, because the
+# stop events come from quality.delays(); the thresholds and windows come from ranking.py.
+STOP_RANKING_FILE = Path(stop_ranking.__file__)
+
+
+def stop_ranking_prefix() -> str:
+    return sections_prefix().replace("sections", "stop_ranking", 1)
+
+
+def stop_ranking_parquet() -> Path:
+    """Target of stop_ranking; the checksum covers quality.py, ranking.py and stop_ranking.py."""
+    files = [Path(quality.__file__), RANKING_FILE, STOP_RANKING_FILE]
+    return PROCESSED / f"{stop_ranking_prefix()}_{rules_hash(files)}.parquet"
+
+
+def build_stop_ranking(force: bool = False) -> str:
+    target = stop_ranking_parquet()
+    if target.exists() and not force:
+        return "übersprungen"
+    first, last = sections.period_days(START, END)
+    events = stop_ranking.stop_events(
+        quality.delays(quality.connect(ISTDATEN_RAIL)),
+        first,
+        last,
+        download.service_points_snapshot(SERVICE_POINTS_RAW),
+    )
+    table = stop_ranking.stop_ranking(events, stop_ranking.class_means(events))
+    tmp = target.with_suffix(".parquet.part")
+    table.write_parquet(tmp, compression="zstd")
+    tmp.replace(target)
+    for old in PROCESSED.glob(f"{stop_ranking_prefix()}*.parquet"):  # older rules, as for ranking
+        if old != target:
+            old.unlink()
+    return "gebaut"
+
+
 def build(force: bool = False) -> None:
     print(f"download: {build_download()}", flush=True)
     loaded = build_load(force)
@@ -171,6 +210,7 @@ def build(force: bool = False) -> None:
     sectioned = build_sections(force or loaded == "gebaut")
     print(f"sections: {sectioned}", flush=True)
     print(f"ranking: {build_ranking(force or sectioned == 'gebaut')}", flush=True)
+    print(f"stop_ranking: {build_stop_ranking(force or loaded == 'gebaut')}", flush=True)
 
 
 def main() -> None:

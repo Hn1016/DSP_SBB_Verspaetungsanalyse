@@ -1,8 +1,8 @@
 """Order and skipping of `uv run build`, without network and without real data.
 
 Only the network (requests.get) and the paths are replaced. download.fetch,
-download.fetch_service_points, load.zip_to_rail_parquet, sections.sections and ranking.ranking
-run unchanged.
+download.fetch_service_points, load.zip_to_rail_parquet, sections.sections, ranking.ranking
+and stop_ranking.stop_ranking run unchanged.
 """
 
 import functools
@@ -121,6 +121,7 @@ def test_first_run_downloads_then_loads(env, capsys):
         "load: gebaut",
         "sections: gebaut",
         "ranking: gebaut",
+        "stop_ranking: gebaut",
     ]
     assert warnings(err) == []
     assert all(path.exists() for path in build.rail_parquets())
@@ -159,6 +160,7 @@ def test_second_run_skips_every_step(env, capsys):
         "load: übersprungen",
         "sections: übersprungen",
         "ranking: übersprungen",
+        "stop_ranking: übersprungen",
     ]
     assert env["calls"] == []
     assert len(env["requests"]) == 2  # only the first run
@@ -182,6 +184,7 @@ def test_force_rebuilds_processed_but_not_raw(env, capsys):
         "load: gebaut",
         "sections: gebaut",
         "ranking: gebaut",
+        "stop_ranking: gebaut",
     ]
     assert env["calls"] == ["zip_to_rail_parquet"]
     assert len(env["requests"]) == 2
@@ -198,6 +201,7 @@ def test_missing_day_in_archive_warns_and_still_skips(env, capsys):
         "load: gebaut",
         "sections: gebaut",
         "ranking: gebaut",
+        "stop_ranking: gebaut",
     ]
     assert warnings(err) == ["Warnung: im Archiv fehlen Tage des Zeitraums: 2026-09-15"]
     assert len(build.rail_parquets()) == 29
@@ -211,6 +215,7 @@ def test_missing_day_in_archive_warns_and_still_skips(env, capsys):
         "load: übersprungen",
         "sections: übersprungen",
         "ranking: übersprungen",
+        "stop_ranking: übersprungen",
     ]
     assert warnings(err) == ["Warnung: im Archiv fehlen Tage des Zeitraums: 2026-09-15"]
     assert env["calls"] == []
@@ -267,7 +272,12 @@ def test_ranking_follows_sections_and_its_own_rules(env, tmp_path, monkeypatch, 
 
     assert build.ranking_parquet() != old
     build.build()
-    assert stdout_lines(capsys)[-2:] == ["sections: übersprungen", "ranking: gebaut"]
+    # stop_ranking also follows ranking.py (log 2026-11-26, decision 2)
+    assert stdout_lines(capsys)[-3:] == [
+        "sections: übersprungen",
+        "ranking: gebaut",
+        "stop_ranking: gebaut",
+    ]
     assert build.ranking_parquet().exists()
     assert not old.exists()
     assert build.build_ranking() == "übersprungen"
