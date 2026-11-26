@@ -11,12 +11,13 @@ import io
 import re
 import shutil
 import zipfile
+from pathlib import Path
 
 import duckdb
 import pytest
 from test_load import HEADER, TRAIN, TRAIN_ORIGIN
 
-from sbb_delays import build, download, load
+from sbb_delays import build, download, load, quality
 
 
 def month_archive(missing: frozenset[int] = frozenset()) -> bytes:
@@ -270,3 +271,48 @@ def test_ranking_follows_sections_and_its_own_rules(env, tmp_path, monkeypatch, 
     assert build.ranking_parquet().exists()
     assert not old.exists()
     assert build.build_ranking() == "übersprungen"
+
+
+def stop_ranking_hash() -> str:
+    """Checksum of the stop ranking rules as decided in the log (2026-11-26, decision 2)."""
+    return build.rules_hash([Path(quality.__file__), build.RANKING_FILE, build.STOP_RANKING_FILE])
+
+
+def test_stop_ranking_named_after_period_and_rules_and_skipped_on_second_run(env, capsys):
+    build.build()
+    capsys.readouterr()
+    target = build.stop_ranking_parquet()
+
+    assert target.name == f"stop_ranking_2026-09_2026-09_{stop_ranking_hash()}.parquet"
+    assert stop_ranking_hash() not in (build.rules_hash(), build.ranking_parquet().stem[-8:])
+    # Bern has arrival and departure REAL on 30 days, below MIN_TRIPS: a reason in all 13
+    # windows. Zürich HB is the origin without an arrival, so it has no stop event and no row.
+    reasons = duckdb.sql(
+        f"select BPUIC, grund, count(*) from read_parquet('{target}') group by all"
+    ).fetchall()
+    assert reasons == [(8507000, "zu wenige Fahrten", 13)]
+    mtime = target.stat().st_mtime_ns
+
+    build.build()
+
+    assert stdout_lines(capsys)[-1] == "stop_ranking: übersprungen"
+    assert target.stat().st_mtime_ns == mtime
+    assert build.build_stop_ranking() == "übersprungen"
+    assert build.build_stop_ranking(force=True) == "gebaut"  # as build() does when load built
+
+
+def test_stop_ranking_follows_its_own_rules_and_drops_the_old_file(env, tmp_path, monkeypatch):
+    rules = tmp_path / "rules" / "stop_ranking.py"  # a copy, so the test can change the rules
+    rules.parent.mkdir()
+    shutil.copy(build.STOP_RANKING_FILE, rules)
+    monkeypatch.setattr(build, "STOP_RANKING_FILE", rules)
+    build.build()
+    old = build.stop_ranking_parquet()
+
+    rules.write_text(rules.read_text(encoding="utf-8") + "\n# changed rule\n", encoding="utf-8")
+
+    assert build.stop_ranking_parquet() != old
+    assert build.build_stop_ranking() == "gebaut"
+    assert build.stop_ranking_parquet().exists()
+    assert not old.exists()
+    assert build.build_stop_ranking() == "übersprungen"
