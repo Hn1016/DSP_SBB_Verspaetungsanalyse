@@ -1,0 +1,120 @@
+# Hand-written stop events for tests/test_stop_ranking.py (issue #61). Columns as returned by
+# quality.delays(), only those stop_ranking needs: one row per stop event.
+# Cases and expected values set and computed by hand by Claude Code for hasan8953 (issue #61).
+# Rules 1 to 7 of issue #46 (log 2026-11-15): halt = ab_delay - max(an_delay, 0); no pass-throughs;
+# arrival and departure REAL (not null); scheduled dwell >= 0; classes 0, 1, 2, 3+ (minutes).
+# Period in the test: 2025-08-01 to 2026-07-31. Zurich stops: all below except 8500010.
+# Thresholds in the test: min_trips=4, min_days=3, min_days_window=3, min_effect=0.25.
+# Given class means for stop_ranking(): 0 = 0.0, 1 = 0.0, 2 = 0.5, 3+ = 0.25.
+# Base cases: Mon-Thu 2026-03-02 to 2026-03-05, arrival and departure 07:00 (class 0) unless
+# stated. They lie in Morgenspitze, Mo-Fr, Fruehling, Fahrplan 2026 and the whole period (same
+# values in all five) and give «keine Fahrt im Fenster» in the other 8 windows.
+#   8500001 amplifier: halt 1.0 each day; day mean 1.0, CI [1.0, 1.0], Zuwachs 4 x 1.0 = 4.0
+#   8500002 absorber, class 1 (07:00 -> 07:01): an +2.0, ab +1.0; halt 1.0 - 2.0 = -1.0 (a late
+#           arrival is not capped); minus class mean 0.0; Zuwachs -4.0
+#   8500003 neutral below 0.25: halt 0.1; CI [0.1, 0.1], Zuwachs 0.4
+#   8500004 neutral, interval: halt +2, -1, +2, -1; day mean 0.5; sd = sqrt(4 x 1.5^2 / 3) =
+#           sqrt(3) = 1.7321; t(0.975, 3) = 3.1824; half width 3.1824 x 1.7321 / 2 = 2.7561;
+#           CI [-2.256, 3.256]; Zuwachs 2.0
+#   8500005 early arrival capped: an -2.0, ab +0.5; halt 0.5 - max(-2.0, 0) = 0.5 (uncapped 2.5);
+#           amplifier, CI [0.5, 0.5], Zuwachs 2.0 (uncapped 10.0)
+#   8500006 reference, class 2 (07:00 -> 07:02): halt 1.0; raw 1.0, after reference 1.0 - 0.5 =
+#           0.5; amplifier, Zuwachs 2.0
+#   8500007 class 3+: dwell 4 min (Mon, Tue) and 5 min (Wed, Thu); halt 1.0; after reference
+#           1.0 - 0.25 = 0.75; amplifier, Zuwachs 3.0 (a class '4' or '5' has no mean: error)
+#   8500008 pass-through dropped: 4 stops with dwell 0 and halt 0.0 stay (class 0); 4 rows with
+#           DURCHFAHRT_TF and ab +5.0 are dropped. 4 trips, mean 0.0, CI [0, 0], neutral,
+#           Zuwachs 0.0 (with them: 8 trips, mean 2.5)
+#   8500009 dropped rows: 4 stops with halt 1.0 stay; dropped are Fri 2026-03-06 with an null,
+#           with ab null and with departure 07:19 before arrival 07:20, and Thu 2025-07-31
+#           (before the period), each with ab +9.0. 4 trips, 4 days, amplifier, Zuwachs 4.0
+#   8500010 not in Zurich: halt 1.0 on 4 days; no event, no row
+#   8500011 3 days x 1 trip: «zu wenige Fahrten» in all 13 windows (3 trips, 3 days in the base)
+#   8500012 2 days x 2 trips (07:00, 07:30): «zu wenige Betriebstage» in all 13 windows (4, 2)
+#   8500013 window minimum: Mon-Wed 2026-03-02 to 03-04 and Sat 2026-03-07, 07:00, halt 1.0.
+#           Whole period 4 trips, 4 days, Zuwachs 4.0; Mo-Fr 3 trips, 3 days, Zuwachs 3.0;
+#           Sa/So 1 trip, 1 day: «zu wenige Betriebstage» (window); Morgenspitze 4 trips
+# Window borders by the scheduled departure at the stop (decision 1, log 2026-11-26):
+#   8500014, five trips with halt 0.0:
+#   T1 Sat 2025-12-13 05:58 -> 05:59 Abend/Nacht, Sa/So, Winter, Fahrplan 2025
+#   T2 Sun 2025-12-14 08:59 -> 08:59 Morgenspitze, Sa/So, Winter, Fahrplan 2026
+#   T3 Fri 2026-02-27 08:59 -> 09:00 Tag (by arrival it would be Morgenspitze), Mo-Fr, Winter
+#   T4 Sun 2026-03-01 15:59 -> 16:00 Abendspitze (arrival: Tag), Sa/So, Fruehling
+#   T5 Mon 2026-03-02 18:59 -> 19:00 Abend/Nacht (arrival: Abendspitze), Mo-Fr, Fruehling
+#   Trips: Morgenspitze 1, Tag 1, Abendspitze 1, Abend/Nacht 2 (by arrival 2, 1, 1, 1);
+#   Mo-Fr 2, Sa/So 3; Winter 3, Fruehling 2, Sommer 0, Herbst 0; Fahrplan 2025 1, 2026 4; whole 5.
+# Rank by Zuwachs ("min", descending) in the whole period, among the stops with a value:
+#   4.0 (8500001, 8500009, 8500013) rank 1; 3.0 (8500007) 4; 2.0 (8500004, 8500005, 8500006) 5;
+#   0.4 (8500003) 8; 0.0 (8500008, 8500014) 9; -4.0 (8500002) 11.
+#   Morgenspitze: as above without 8500014 (1 trip): ... 0.0 (8500008) 9; -4.0 (8500002) 10.
+#   Sa/So: only 8500014 has a value (3 trips, 3 days): rank 1.
+# Class means of the events of this file (stop_ranking.class_means), by hand:
+#   class 0: sum 4 + 0.4 + 2 + 2 + 0 + 4 + 3 + 4 + 4 + 0 = 23.4 over 4+4+4+4+4+4+3+4+4+1 = 36
+#            events (8500001, 03, 04, 05, 08, 09, 11, 12, 13, 14/T2) = 0.65
+#   class 1: 8500002 4 x -1.0, 8500014 T1, T3, T4, T5 4 x 0.0: -4 / 8 = -0.5
+#   class 2: 8500006 = 1.0; class 3+: 8500007 = 1.0
+BETRIEBSTAG,BPUIC,ANKUNFTSZEIT,ABFAHRTSZEIT,DURCHFAHRT_TF,an_delay,ab_delay
+2026-03-02,8500001,2026-03-02 07:00:00,2026-03-02 07:00:00,false,0.0,1.0
+2026-03-03,8500001,2026-03-03 07:00:00,2026-03-03 07:00:00,false,0.0,1.0
+2026-03-04,8500001,2026-03-04 07:00:00,2026-03-04 07:00:00,false,0.0,1.0
+2026-03-05,8500001,2026-03-05 07:00:00,2026-03-05 07:00:00,false,0.0,1.0
+2026-03-02,8500002,2026-03-02 07:00:00,2026-03-02 07:01:00,false,2.0,1.0
+2026-03-03,8500002,2026-03-03 07:00:00,2026-03-03 07:01:00,false,2.0,1.0
+2026-03-04,8500002,2026-03-04 07:00:00,2026-03-04 07:01:00,false,2.0,1.0
+2026-03-05,8500002,2026-03-05 07:00:00,2026-03-05 07:01:00,false,2.0,1.0
+2026-03-02,8500003,2026-03-02 07:00:00,2026-03-02 07:00:00,false,0.0,0.1
+2026-03-03,8500003,2026-03-03 07:00:00,2026-03-03 07:00:00,false,0.0,0.1
+2026-03-04,8500003,2026-03-04 07:00:00,2026-03-04 07:00:00,false,0.0,0.1
+2026-03-05,8500003,2026-03-05 07:00:00,2026-03-05 07:00:00,false,0.0,0.1
+2026-03-02,8500004,2026-03-02 07:00:00,2026-03-02 07:00:00,false,0.0,2.0
+2026-03-03,8500004,2026-03-03 07:00:00,2026-03-03 07:00:00,false,0.0,-1.0
+2026-03-04,8500004,2026-03-04 07:00:00,2026-03-04 07:00:00,false,0.0,2.0
+2026-03-05,8500004,2026-03-05 07:00:00,2026-03-05 07:00:00,false,0.0,-1.0
+2026-03-02,8500005,2026-03-02 07:00:00,2026-03-02 07:00:00,false,-2.0,0.5
+2026-03-03,8500005,2026-03-03 07:00:00,2026-03-03 07:00:00,false,-2.0,0.5
+2026-03-04,8500005,2026-03-04 07:00:00,2026-03-04 07:00:00,false,-2.0,0.5
+2026-03-05,8500005,2026-03-05 07:00:00,2026-03-05 07:00:00,false,-2.0,0.5
+2026-03-02,8500006,2026-03-02 07:00:00,2026-03-02 07:02:00,false,0.0,1.0
+2026-03-03,8500006,2026-03-03 07:00:00,2026-03-03 07:02:00,false,0.0,1.0
+2026-03-04,8500006,2026-03-04 07:00:00,2026-03-04 07:02:00,false,0.0,1.0
+2026-03-05,8500006,2026-03-05 07:00:00,2026-03-05 07:02:00,false,0.0,1.0
+2026-03-02,8500007,2026-03-02 07:00:00,2026-03-02 07:04:00,false,0.0,1.0
+2026-03-03,8500007,2026-03-03 07:00:00,2026-03-03 07:04:00,false,0.0,1.0
+2026-03-04,8500007,2026-03-04 07:00:00,2026-03-04 07:05:00,false,0.0,1.0
+2026-03-05,8500007,2026-03-05 07:00:00,2026-03-05 07:05:00,false,0.0,1.0
+2026-03-02,8500008,2026-03-02 07:00:00,2026-03-02 07:00:00,false,0.0,0.0
+2026-03-03,8500008,2026-03-03 07:00:00,2026-03-03 07:00:00,false,0.0,0.0
+2026-03-04,8500008,2026-03-04 07:00:00,2026-03-04 07:00:00,false,0.0,0.0
+2026-03-05,8500008,2026-03-05 07:00:00,2026-03-05 07:00:00,false,0.0,0.0
+2026-03-02,8500008,2026-03-02 07:10:00,2026-03-02 07:10:00,true,0.0,5.0
+2026-03-03,8500008,2026-03-03 07:10:00,2026-03-03 07:10:00,true,0.0,5.0
+2026-03-04,8500008,2026-03-04 07:10:00,2026-03-04 07:10:00,true,0.0,5.0
+2026-03-05,8500008,2026-03-05 07:10:00,2026-03-05 07:10:00,true,0.0,5.0
+2026-03-02,8500009,2026-03-02 07:00:00,2026-03-02 07:00:00,false,0.0,1.0
+2026-03-03,8500009,2026-03-03 07:00:00,2026-03-03 07:00:00,false,0.0,1.0
+2026-03-04,8500009,2026-03-04 07:00:00,2026-03-04 07:00:00,false,0.0,1.0
+2026-03-05,8500009,2026-03-05 07:00:00,2026-03-05 07:00:00,false,0.0,1.0
+2026-03-06,8500009,2026-03-06 07:00:00,2026-03-06 07:00:00,false,,9.0
+2026-03-06,8500009,2026-03-06 07:10:00,2026-03-06 07:10:00,false,0.0,
+2026-03-06,8500009,2026-03-06 07:20:00,2026-03-06 07:19:00,false,0.0,9.0
+2025-07-31,8500009,2025-07-31 07:00:00,2025-07-31 07:00:00,false,0.0,9.0
+2026-03-02,8500010,2026-03-02 07:00:00,2026-03-02 07:00:00,false,0.0,1.0
+2026-03-03,8500010,2026-03-03 07:00:00,2026-03-03 07:00:00,false,0.0,1.0
+2026-03-04,8500010,2026-03-04 07:00:00,2026-03-04 07:00:00,false,0.0,1.0
+2026-03-05,8500010,2026-03-05 07:00:00,2026-03-05 07:00:00,false,0.0,1.0
+2026-03-02,8500011,2026-03-02 07:00:00,2026-03-02 07:00:00,false,0.0,1.0
+2026-03-03,8500011,2026-03-03 07:00:00,2026-03-03 07:00:00,false,0.0,1.0
+2026-03-04,8500011,2026-03-04 07:00:00,2026-03-04 07:00:00,false,0.0,1.0
+2026-03-02,8500012,2026-03-02 07:00:00,2026-03-02 07:00:00,false,0.0,1.0
+2026-03-02,8500012,2026-03-02 07:30:00,2026-03-02 07:30:00,false,0.0,1.0
+2026-03-03,8500012,2026-03-03 07:00:00,2026-03-03 07:00:00,false,0.0,1.0
+2026-03-03,8500012,2026-03-03 07:30:00,2026-03-03 07:30:00,false,0.0,1.0
+2026-03-02,8500013,2026-03-02 07:00:00,2026-03-02 07:00:00,false,0.0,1.0
+2026-03-03,8500013,2026-03-03 07:00:00,2026-03-03 07:00:00,false,0.0,1.0
+2026-03-04,8500013,2026-03-04 07:00:00,2026-03-04 07:00:00,false,0.0,1.0
+2026-03-07,8500013,2026-03-07 07:00:00,2026-03-07 07:00:00,false,0.0,1.0
+2025-12-13,8500014,2025-12-13 05:58:00,2025-12-13 05:59:00,false,0.0,0.0
+2025-12-14,8500014,2025-12-14 08:59:00,2025-12-14 08:59:00,false,0.0,0.0
+2026-02-27,8500014,2026-02-27 08:59:00,2026-02-27 09:00:00,false,0.0,0.0
+2026-03-01,8500014,2026-03-01 15:59:00,2026-03-01 16:00:00,false,0.0,0.0
+2026-03-02,8500014,2026-03-02 18:59:00,2026-03-02 19:00:00,false,0.0,0.0

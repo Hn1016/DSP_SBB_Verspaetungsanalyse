@@ -3471,3 +3471,221 @@ am 2026-11-24 laut `git reflog show origin/feat/issue-59-zeitfenster --date=iso`
   den Fenstern vor; hasan8953 hat beides übernommen. Claude Code hat Hn1016s Überschneidungen unabhängig
   nachgerechnet (gleiche Werte), die Tabelle im Notebook und den Text oben geschrieben. Im Notebook zeigt `platz`
   den Platz in der Top 10 des Fensters statt `rang`, weil `rang` auch Nicht-Verstärker zählt.
+
+## 2026-11-26 — Entscheidung: Pipeline-Schritt Rangliste der Halte, Durchführung (Issue #61)
+
+Anlass: Issue #61 (schwagia), Übernahme der Halte-Rangliste aus `notebooks/12_referenzwert_halte.py` (Issue #46) als
+Schritt in `uv run build`, nach Option (1) aus #55. Die Regeln 1 bis 7 aus #46 und die Regeln der Rangliste aus
+`ranking.py` (Issue #38) gelten unverändert. Offen waren drei Punkte der Durchführung. Vorschlag hasan8953 im Kommentar
+zu #61 (mit Claude Code entworfen), Zustimmung schwagia am 2026-11-26.
+
+1. **Tageszeit der Halte (hasan8953, bestätigt schwagia):** nach der Soll-Abfahrt am Halt (`ABFAHRTSZEIT`), Beginn
+   eingeschlossen, Ende ausgeschlossen, wie bei den Abschnitten die Soll-Abfahrt an A. Wochentag, Jahreszeit und
+   Fahrplan nach `BETRIEBSTAG` wie in `ranking.py`.
+   - *Alternative (vom Agenten ergänzt):* Soll-Ankunft am Halt. Verworfen: Die Haltverspätung entsteht bis zur
+     Abfahrt, und die Abschnitte verwenden ebenfalls die Abfahrt.
+2. **Übernahme aus `ranking.py` (hasan8953, bestätigt schwagia):** `ranking.py` bleibt unverändert. Die Schwellen
+   (`MIN_TRIPS`, `MIN_DAYS`, `MIN_DAYS_WINDOW`, `MIN_EFFECT`, `CONFIDENCE`) und die Zeitfenster werden aus `ranking.py`
+   importiert. Die Berechnung (Referenzwert, Tagesmittel, Intervall, Klasse, Gründe, Rang) wird in `stop_ranking.py`
+   für Halte nachgeschrieben, weil die Funktion in `ranking.py` an `a_id`/`b_id` und die Soll-Fahrzeit gebunden ist.
+   - *Begründung:* eine Quelle für die Schwellen und Fenster. Eine Änderung an einer Schwelle gilt für Abschnitte und
+     Halte zugleich.
+   - *Alternative (vom Agenten ergänzt):* `ranking.ranking()` verallgemeinern. Verworfen: Das Issue schliesst
+     Änderungen an `ranking.py` aus («Nicht Teil davon»).
+   - *Folge:* Die Prüfsumme im Dateinamen deckt `quality.py`, `ranking.py` und `stop_ranking.py` ab, nicht
+     `sections.py`, weil die Halteereignisse direkt aus `quality.delays()` kommen. Der Schritt wird auch neu gebaut,
+     wenn `load` etwas gebaut hat.
+3. **Abgleich mit Notebook 12 (hasan8953, bestätigt schwagia):** Notebook 12 kennt keine Klasse und keine Fenster.
+   Verglichen wird darum nur der ganze Zeitraum. Die Top 10 der Halte sind nach #45 die zehn Verstärker mit der
+   grössten Hauptkennzahl. Halte aus der Top 10 nach Zuwachs in Notebook 12, die nicht Verstärker sind, stehen im
+   Befund mit Wert und Klasse.
+
+## 2026-11-26 — Hypothese: Pipeline-Schritt Rangliste der Halte (Issue #61, vor der Analyse notiert)
+
+Basis wie Befund #46: Zürcher Halte laut Schnappschuss, 1.8.2025 bis 31.7.2026, Regeln 1 bis 7 aus #46.
+
+- **Erwartung (hasan8953):**
+  - **(a) Übernahme:** Im ganzen Zeitraum hat der Schritt dieselben 152 Halte mit Wert wie Notebook 12, mit gleichen
+    Fahrten und Betriebstagen und gleichem Mittel roh, Mittel mit Referenzwert und Zuwachs (auf zwei Stellen gerundet
+    wie in Notebook 12). Die fünf Halte ohne Ankunft und Abfahrt `REAL` (Befund #46) haben keine Zeile oder einen
+    Grund statt eines Werts.
+  - **(b) Klasse:** Von der Top 10 nach Zuwachs mit Referenzwert aus Notebook 12 sind genau die vier Halte mit einem
+    Mittel ab 0.25 min Verstärker: Zürich Hardbrücke, Zürich Flughafen, Dietikon Stoffelbach, Horgen Oberdorf. Die
+    übrigen sechs (Zürich HB, Zürich Stadelhofen, Dietikon, Winterthur, Dietlikon, Zürich Wiedikon) sind neutral.
+- **Was schon bekannt ist:** die Mittel und der Zuwachs der Top 10 aus Notebook 12 (Befund #46). Die Klasse hängt am
+  Tagesmittel und am Intervall, nicht am Mittel pro Fahrt; beide sind nicht angeschaut. Nicht angeschaut: jede Zahl
+  je Zeitfenster.
+- **Was die Prüfung kann:** (a) scheitert bei jedem Unterschied in Basis, Kappen, Klassen oder Referenzwert. (b)
+  scheitert, wenn Tagesmittel und Mittel pro Fahrt an einem Halt auseinanderliegen oder ein Intervall 0 einschliesst.
+- **Ohne Erwartung, beschreibend:** die Klassenzahlen je Fenster und der Anteil der Top 10 am positiven Zuwachs
+  (Bezugsgrösse nach #45).
+- *Folge bei Widerlegung:* (a) Der PR wird nicht gemergt, bevor der Unterschied erklärt ist; die Regeln werden nicht
+  an das Ergebnis angepasst. (b) Keine Änderung an den Regeln; der Befund nennt jeden Halt, dessen Klasse von der
+  Erwartung abweicht, mit Tagesmittel und Intervall.
+
+## 2026-11-26 — Befund: Pipeline-Schritt Rangliste der Halte (Issue #61)
+
+Gebaut mit `uv run build` (Schritt `stop_ranking`, `src/sbb_delays/stop_ranking.py`), geprüft in
+`notebooks/18_halte_rangliste_pruefung.py` nach der Entscheidung und der Hypothese oben (Commit `70e40b1`, gepusht
+um 19:44:44 MEZ, vor Test, Code und Bau; die ganze Reihenfolge steht im Eintrag «KI-Einsatz» unten). Basis wie
+Befund #46: Halte im Kanton Zürich laut Schnappschuss, 1.8.2025 bis 31.7.2026, Regeln 1 bis 7 aus #46. Datei
+`stop_ranking_2025-08_2026-07_157bd6b0.parquet`: 1'976 Zeilen = 152 Halte × 13 Fenster, jede mit Wert oder Grund;
+im ganzen Zeitraum 7'616'139 Halteereignisse, wie im Befund #46. Die Werte von Notebook 12 kommen aus Notebook 12
+selbst (`app.run()`, Tabelle `ranking`), nicht aus `stop_ranking.py`.
+
+**Je Fenster: Halte mit Wert, Klassen, Gründe und halbe Breite des 95-%-Intervalls**
+
+| Fenster | mit Wert | Verstärker | Absorber | neutral | davon nur wegen `MIN_EFFECT` | Gründe | halbe Breite < 0.25 min | Median | Maximum |
+|---|---|---|---|---|---|---|---|---|---|
+| ganzer Zeitraum | 152 | 4 | 15 | 133 | 122 | 0 | 100 % | 0.007 | 0.032 |
+| Morgenspitze | 152 | 7 | 11 | 134 | 119 | 0 | 100 % | 0.013 | 0.034 |
+| Tag | 152 | 4 | 15 | 133 | 123 | 0 | 100 % | 0.008 | 0.032 |
+| Abendspitze | 152 | 9 | 10 | 133 | 122 | 0 | 100 % | 0.013 | 0.077 |
+| Abend/Nacht | 152 | 2 | 20 | 130 | 122 | 0 | 100 % | 0.009 | 0.036 |
+| Mo–Fr | 152 | 5 | 11 | 136 | 122 | 0 | 100 % | 0.008 | 0.043 |
+| Sa/So | 152 | 2 | 22 | 128 | 118 | 0 | 100 % | 0.011 | 0.092 |
+| Winter | 152 | 3 | 13 | 136 | 122 | 0 | 100 % | 0.011 | 0.041 |
+| Frühling | 152 | 5 | 15 | 132 | 123 | 0 | 100 % | 0.011 | 0.103 |
+| Sommer | 152 | 3 | 20 | 129 | 119 | 0 | 100 % | 0.013 | 0.074 |
+| Herbst | 152 | 6 | 11 | 135 | 117 | 0 | 100 % | 0.015 | 0.121 |
+| Fahrplan 2025 | 152 | 6 | 12 | 134 | 119 | 0 | 100 % | 0.012 | 0.082 |
+| Fahrplan 2026 | 152 | 4 | 16 | 132 | 124 | 0 | 100 % | 0.008 | 0.041 |
+
+«Gründe»: Keine Zeile hat «zu wenige Fahrten», «zu wenige Betriebstage» oder «keine Fahrt im Fenster». «nur wegen
+`MIN_EFFECT`»: neutral, obwohl das Intervall die 0 nicht enthält. Halbe Breite in Minuten.
+
+- **(a) gehalten.** Im ganzen Zeitraum haben 152 Halte einen Wert (Erwartung 152). Für alle 152 sind Fahrten,
+  Betriebstage, Mittel roh, Mittel mit Referenzwert (beide auf zwei Stellen) und Zuwachs (auf ganze Minuten) gleich
+  wie in Notebook 12: 0 Abweichungen. Die fünf Halte ohne Ankunft und Abfahrt `REAL` (Neuthal, Bäretswil,
+  Ettenhausen-Emmetschloo, Sihlwald, Zürich Langstrasse) haben keine Zeile. Die Verbindung läuft über den Namen des
+  Halts; die volle Verbindung ergibt genau 152 Zeilen, die Namen sind also eindeutig.
+- **(b) gehalten.** Von der Top 10 nach Zuwachs mit Referenzwert aus Notebook 12 sind genau die vier erwarteten Halte
+  Verstärker, die übrigen sechs neutral (10 von 10 wie erwartet). Kein Halt weicht von der Erwartung ab:
+
+  | Rang NB 12 | Halt | Fahrten | Tage | Mittel ref. | Tagesmittel | Intervall | Klasse | Zuwachs |
+  |---|---|---|---|---|---|---|---|---|
+  | 1 | Zürich HB | 443'394 | 365 | 0.15 | 0.154 | [0.144, 0.164] | neutral | 67'501 |
+  | 2 | Zürich Hardbrücke | 231'593 | 365 | 0.29 | 0.285 | [0.278, 0.293] | Verstärker | 66'170 |
+  | 3 | Zürich Stadelhofen | 255'395 | 365 | 0.17 | 0.167 | [0.159, 0.176] | neutral | 42'560 |
+  | 4 | Zürich Flughafen | 97'829 | 365 | 0.31 | 0.306 | [0.295, 0.317] | Verstärker | 30'561 |
+  | 5 | Dietikon | 76'237 | 365 | 0.22 | 0.225 | [0.216, 0.233] | neutral | 17'108 |
+  | 6 | Dietikon Stoffelbach | 47'251 | 344 | 0.35 | 0.339 | [0.321, 0.357] | Verstärker | 16'531 |
+  | 7 | Horgen Oberdorf | 27'488 | 359 | 0.59 | 0.585 | [0.569, 0.600] | Verstärker | 16'084 |
+  | 8 | Winterthur | 144'092 | 365 | 0.09 | 0.087 | [0.079, 0.095] | neutral | 12'320 |
+  | 9 | Dietlikon | 73'554 | 365 | 0.16 | 0.159 | [0.153, 0.165] | neutral | 11'804 |
+  | 10 | Zürich Wiedikon | 82'607 | 365 | 0.14 | 0.136 | [0.132, 0.140] | neutral | 11'192 |
+
+  Die sechs neutralen Halte sind neutral wegen `MIN_EFFECT`, nicht wegen des Intervalls: Bei allen sechs liegt das
+  Intervall über 0. Tagesmittel und Mittel pro Fahrt liegen höchstens 0.011 min auseinander (Dietikon Stoffelbach).
+- **Top 10 der Verstärker im ganzen Zeitraum (Entscheidung #45): nur vier Halte.** Im ganzen Zeitraum gibt es unter
+  den 152 Halten 4 Verstärker: Zürich Hardbrücke (Rang 2, Zuwachs 66'170 min), Zürich Flughafen (Rang 4, 30'561),
+  Dietikon Stoffelbach (Rang 6, 16'531), Horgen Oberdorf (Rang 7, 16'084). Die Top 10 der Verstärker hat damit vier
+  Einträge. In keinem Fenster gibt es zehn Verstärker (2 bis 9), und in jedem Fenster sind es weniger als Absorber
+  (10 bis 22).
+- **Anteil der Top 10 am positiven Zuwachs (Bezugsgrösse #45):** 129'345 von 450'164 min = 28.7 %; das Total ist die
+  Summe des Zuwachses der 58 Halte mit positivem Mittel. Mit Referenzwert heisst die Zahl «Anteil an der Verspätung
+  über dem Durchschnitt der Halte gleicher Soll-Haltezeit», nicht «Anteil an den gemessenen Minuten». Begleitzahl
+  roh: Dieselben vier Halte haben 325'601 min rohen Zuwachs (Mittel roh × Fahrten), von 3'174'996 min auf den 142
+  Halten mit positivem rohem Mittel = 10.3 %. Beide Zahlen gelten für vier Halte, nicht für zehn.
+- **Absorber (beschreibend, ohne Erwartung):** Im ganzen Zeitraum sind es 15. Die fünf mit dem negativsten Zuwachs
+  sind Dietikon Schöneggstrasse (−16'281 min), Bergfrieden (−15'845), Sihlau (−12'698), Grüenfeld (−11'992) und
+  Uitikon Waldegg (−11'936), alle mit einem Tagesmittel zwischen −0.27 und −0.42 min.
+- **Grenzen:**
+  - (a) ist eine Rechenprobe gegen Notebook 12. Sie zeigt, dass `stop_ranking.py` gleich filtert, kappt, Klassen
+    bildet und den Referenzwert abzieht, nicht, dass die Regeln selbst richtig sind. Tagesmittel, Intervall, Klasse,
+    Gründe und Rang haben auf den echten Daten keine zweite Rechnung; sie sind nur durch die Fixture geprüft (Fälle
+    und Handrechnung von Claude Code).
+  - Wer Verstärker ist, entscheidet fast immer `MIN_EFFECT`: 122 der 133 neutralen Halte haben ein Intervall ohne 0.
+    Die Grenze bei 0.25 min ist hart; Dietikon (Tagesmittel 0.225 min) fehlt im ganzen Zeitraum knapp. Das ist
+    dieselbe Lage wie bei den Abschnitten (Befund #38), aber mit weit weniger Verstärkern (4 von 152 statt 142 von
+    394).
+  - Der Wert ist relativ zum Klassenmittel der Soll-Haltezeit über den ganzen Zeitraum, für alle Fenster gleich. In
+    Klasse 0 ist er die mittlere Haltezeit des Halts minus 0.62 min; ob ein Halt länger hält als geplant, lässt sich
+    so nicht sagen (Befund #46, A8).
+  - Das Intervall behandelt die Betriebstage als unabhängig (wie Befund #38); das ist nicht geprüft.
+  - An Zürich Hardbrücke steht dem Wert am Halt ein Abbau auf den Abschnitten danach gegenüber (Befund #55). Halte
+    und Abschnitte sind zwei Ranglisten; ihre Werte addieren sich nicht.
+  - Keine Änderung an `ranking.py` und an den Abschnitten, keine Karte, kein Vergleich der Zeitfenster für die Halte
+    (laut Issue nicht Teil davon).
+- **Offen:** A10 für Halte. Beschreibend, ohne Erwartung und ohne Änderung des Status von A10: In jedem Fenster haben
+  alle 152 Halte einen Wert und eine halbe Intervallbreite unter 0.25 min. Der Median der halben Breite liegt je
+  Fenster zwischen 0.007 und 0.015 min, das Maximum ist 0.121 min (Steg im Herbst, 5'454 Fahrten an 91 Tagen). Die
+  kleinste Zahl Betriebstage einer Zeile mit Wert ist 31 (Sommer).
+- **A8:** bleibt «offen», Evidenz «tief». Der Befund zeigt, dass der Schritt die Werte von #46 genau übernimmt; über
+  «misst den Betrieb» sagt er nichts Neues. Die Regeln 1 bis 7 aus #46 gelten jetzt im Pipeline-Schritt und sind
+  nicht mehr «vorläufig».
+
+## 2026-11-26 — KI-Einsatz: Issue #61
+
+- **Aufgabe:** die Rangliste der Zürcher Halte aus Notebook 12 (Issue #46) als Schritt `stop_ranking` in
+  `uv run build`, mit Fixture, Test, Rechenprobe gegen Notebook 12 und Befund.
+- **Mine:**
+  - das Issue (schwagia).
+  - die drei Entscheide zur Durchführung und die Hypothese mit (a) und (b) (hasan8953; Entwurf von Claude Code,
+    von hasan8953 übernommen und gepusht; Zustimmung schwagia im Kommentar zu #61).
+  - der Ablauf in drei Schritten mit Halt nach jedem Schritt: erst Log, dann Test und Code, dann Lauf und Befund
+    (hasan8953).
+  - die Liste der Fälle, die die Fixture abdecken muss: frühe Ankunft mit einem Fall, in dem gekappt und ungekappt
+    verschieden sind; Durchfahrt weg, Soll-Haltezeit 0 bleibt; Ankunft oder Abfahrt nicht `REAL` und Soll-Abfahrt
+    vor Soll-Ankunft weg; Klassen 0 bis 3+ mit einem Halt von 4 oder 5 Minuten; Referenzwert; Verstärker,
+    Absorber, neutral unter `MIN_EFFECT` und neutral wegen Intervall; jeder Grund einmal; Fensterkante bei 08:59 /
+    09:00; Rang innerhalb eines Fensters (hasan8953).
+  - die Regeln für den Test: Erwartungswerte von Hand, ohne den neuen Code auszuführen; Rechnung als Kommentar in
+    der Fixture; Test zuerst rot; bei einem Unterschied zuerst die Handrechnung prüfen, nie den Erwartungswert
+    anpassen, und jede Korrektur melden (hasan8953).
+  - die Grenzen der Umsetzung: `ranking.py`, `sections.py` und die bestehenden Tests unverändert; kein Lauf auf
+    echten Daten vor dem Test (hasan8953). Als der Agent meldete, dass der neue Schritt fünf bestehende Tests in
+    `tests/test_build.py` bricht, der Entscheid, dort nur die neue Zeile zu ergänzen (hasan8953, Vorschlag des
+    Agenten).
+  - die Erwartung an den Build vor dem Lauf (vier Schritte «übersprungen», `stop_ranking` «gebaut», zweiter Lauf
+    «übersprungen») (hasan8953).
+  - die Unabhängigkeit der Rechenprobe: Die Werte von Notebook 12 kommen aus Notebook 12 selbst (`app.run()`),
+    nicht aus `stop_ranking.py`, und zusätzlich aus dem Befund #46 im Log (hasan8953).
+  - der Inhalt von Notebook 18 und des Befunds: Form, (a), (b), Top 10 der Verstärker, Anteil mit roher
+    Begleitzahl nach #45, Tabelle je Fenster mit halber Intervallbreite (hasan8953).
+  - die Regeln für den Befund: Hypothese unverändert, je Erwartung «gehalten» oder «nicht gehalten» mit Zahlen;
+    scheitert (a) am Code, nichts reparieren und anhalten; A8 bleibt «offen», wenn der Befund zu «misst den
+    Betrieb» nichts Neues zeigt; A10 nicht ändern (hasan8953).
+- **Delegated:** Claude Code hat die Werte der Fixture gewählt und von Hand gerechnet
+  (`tests/fixtures/stop_ranking_cases.csv`, 14 Halte, Rechnungen im Kopf der Datei). Das Issue verlangt die
+  Handrechnung von hasan8953; sie stammt von Claude Code und ist von hasan8953 nicht nachgerechnet. Claude Code hat
+  ausserdem `tests/test_stop_ranking.py`, die neuen Tests in `tests/test_build.py`, `src/sbb_delays/stop_ranking.py`,
+  den Schritt in `build.py`, `notebooks/18_halte_rangliste_pruefung.py` und diesen Befund geschrieben. Entscheide des
+  Agenten:
+  - Die Fensterbedingungen werden als `_WINDOWS` aus `ranking.py` importiert (sie stehen nur dort und nennen die
+    Abfahrt `abfahrt_a`); die Soll-Abfahrt am Halt heisst dafür in der Berechnung `abfahrt_a`.
+  - `build.py` holt die Grenzen des Zeitraums aus `sections.period_days`; `sections.py` steht trotzdem nicht in der
+    Prüfsumme (Entscheid 2), der Zeitraum steht im Dateinamen.
+  - die Anpassung der fünf bestehenden Tests in `tests/test_build.py` als Vorschlag (erwartete Ausgabe um die Zeile
+    «stop_ranking: …» ergänzt, `[-2:]` zu `[-3:]`), entschieden von hasan8953.
+  - Die Klasse der Soll-Haltezeit heisst `halt_klasse`, damit sie nicht mit `klasse` (Verstärker/Absorber/neutral)
+    verwechselt wird; die Datei hat `BPUIC` und keine Namen, wie `ranking`.
+  - Die Fensterkante wird mit Halten geprüft, deren Ankunft und Abfahrt in verschiedenen Fenstern liegen (08:59 →
+    09:00), sodass eine Zuordnung nach der Ankunft andere Fahrtenzahlen ergäbe.
+  - Zusätzliche Tests ohne Auftrag: Halt ausserhalb Zürich, Tag ausserhalb des Zeitraums, Klassenmittel über alle
+    Halteereignisse der Fixture, Schwellen und Fenster identisch mit `ranking.py`, Abbruch bei fehlendem
+    Klassenmittel, Neubau bei geänderten Regeln mit Löschen der alten Datei.
+  - Im Notebook: Verbindung mit Notebook 12 über den Namen des Halts, weil Notebook 12 keine `BPUIC` ausgibt; Rundung
+    in DuckDB wie in Notebook 12. Im Befund ohne Auftrag: die Absorber und der knapp neutrale Halt Dietikon.
+- **Prüfung:**
+  - Der Test war zuerst rot (`72e5628`): «ImportError: cannot import name 'stop_ranking' from 'sbb_delays'». Rot
+    heisst hier nur, dass das Modul fehlte; kein Testfall lief.
+  - Im ersten Lauf mit `stop_ranking.py` waren alle 32 Tests in `tests/test_stop_ranking.py` grün. Keine
+    Handrechnung und kein Erwartungswert wurde korrigiert.
+  - Nach dem Code und nach dem Notebook: `uv run pytest` 119 passed, 2 xfailed; `ruff check`, `ruff format --check`
+    und `marimo check` grün.
+  - Der erste Lauf von Notebook 18 brach ab: DuckDB fand eine Tabelle nicht, weil marimo Namen mit `_` umbenennt.
+    Korrigiert im Notebook, `src/` unverändert.
+  - Nach dem Bau: (a) und (b) im Befund oben; 1'976 Zeilen = 152 × 13; ein zweiter Lauf von `uv run build` meldet
+    für alle fünf Schritte «übersprungen» (4 s).
+- **Reihenfolge:** Entscheide und Hypothese waren gepusht, bevor Fixture, Test und Code entstanden und bevor gebaut
+  wurde. Die Erwartungen sind nicht geändert. Uhrzeiten vom 2026-11-26 in MEZ (Push aus dem Reflog von
+  `origin/feat/issue-61-stop-ranking`, Schreibzeit der Datei in `data/processed/`):
+  - Hypothese `70e40b1` gepusht 19:44:44.
+  - Test und Fixture `72e5628` gepusht 20:07:06 (rot).
+  - Code und Build-Schritt `e43c62e` gepusht 20:17:20.
+  - Build gestartet 21:37:10, `stop_ranking_2025-08_2026-07_157bd6b0.parquet` geschrieben 21:43:02 (5 min 52 s).
+  - Danach Notebook 18 und dieser Befund.
+- **Grösse:** Das Issue schätzt 150–250 Zeilen in `src`. Es sind 250 (`stop_ranking.py` 206, `build.py` 44). Dazu
+  kommen der Test (260), die Fixture (120, etwa die Hälfte Kommentare mit den Rechnungen), die Tests in
+  `test_build.py` (+64, davon 16 in bestehenden Tests), Notebook 18 und das Log.
