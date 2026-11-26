@@ -3471,3 +3471,54 @@ am 2026-11-24 laut `git reflog show origin/feat/issue-59-zeitfenster --date=iso`
   den Fenstern vor; hasan8953 hat beides übernommen. Claude Code hat Hn1016s Überschneidungen unabhängig
   nachgerechnet (gleiche Werte), die Tabelle im Notebook und den Text oben geschrieben. Im Notebook zeigt `platz`
   den Platz in der Top 10 des Fensters statt `rang`, weil `rang` auch Nicht-Verstärker zählt.
+
+## 2026-11-26 — Entscheidung: Pipeline-Schritt Rangliste der Halte, Durchführung (Issue #61)
+
+Anlass: Issue #61 (schwagia), Übernahme der Halte-Rangliste aus `notebooks/12_referenzwert_halte.py` (Issue #46) als
+Schritt in `uv run build`, nach Option (1) aus #55. Die Regeln 1 bis 7 aus #46 und die Regeln der Rangliste aus
+`ranking.py` (Issue #38) gelten unverändert. Offen waren drei Punkte der Durchführung. Vorschlag hasan8953 im Kommentar
+zu #61 (mit Claude Code entworfen), Zustimmung schwagia am 2026-11-26.
+
+1. **Tageszeit der Halte (hasan8953, bestätigt schwagia):** nach der Soll-Abfahrt am Halt (`ABFAHRTSZEIT`), Beginn
+   eingeschlossen, Ende ausgeschlossen, wie bei den Abschnitten die Soll-Abfahrt an A. Wochentag, Jahreszeit und
+   Fahrplan nach `BETRIEBSTAG` wie in `ranking.py`.
+   - *Alternative (vom Agenten ergänzt):* Soll-Ankunft am Halt. Verworfen: Die Haltverspätung entsteht bis zur
+     Abfahrt, und die Abschnitte verwenden ebenfalls die Abfahrt.
+2. **Übernahme aus `ranking.py` (hasan8953, bestätigt schwagia):** `ranking.py` bleibt unverändert. Die Schwellen
+   (`MIN_TRIPS`, `MIN_DAYS`, `MIN_DAYS_WINDOW`, `MIN_EFFECT`, `CONFIDENCE`) und die Zeitfenster werden aus `ranking.py`
+   importiert. Die Berechnung (Referenzwert, Tagesmittel, Intervall, Klasse, Gründe, Rang) wird in `stop_ranking.py`
+   für Halte nachgeschrieben, weil die Funktion in `ranking.py` an `a_id`/`b_id` und die Soll-Fahrzeit gebunden ist.
+   - *Begründung:* eine Quelle für die Schwellen und Fenster. Eine Änderung an einer Schwelle gilt für Abschnitte und
+     Halte zugleich.
+   - *Alternative (vom Agenten ergänzt):* `ranking.ranking()` verallgemeinern. Verworfen: Das Issue schliesst
+     Änderungen an `ranking.py` aus («Nicht Teil davon»).
+   - *Folge:* Die Prüfsumme im Dateinamen deckt `quality.py`, `ranking.py` und `stop_ranking.py` ab, nicht
+     `sections.py`, weil die Halteereignisse direkt aus `quality.delays()` kommen. Der Schritt wird auch neu gebaut,
+     wenn `load` etwas gebaut hat.
+3. **Abgleich mit Notebook 12 (hasan8953, bestätigt schwagia):** Notebook 12 kennt keine Klasse und keine Fenster.
+   Verglichen wird darum nur der ganze Zeitraum. Die Top 10 der Halte sind nach #45 die zehn Verstärker mit der
+   grössten Hauptkennzahl. Halte aus der Top 10 nach Zuwachs in Notebook 12, die nicht Verstärker sind, stehen im
+   Befund mit Wert und Klasse.
+
+## 2026-11-26 — Hypothese: Pipeline-Schritt Rangliste der Halte (Issue #61, vor der Analyse notiert)
+
+Basis wie Befund #46: Zürcher Halte laut Schnappschuss, 1.8.2025 bis 31.7.2026, Regeln 1 bis 7 aus #46.
+
+- **Erwartung (hasan8953):**
+  - **(a) Übernahme:** Im ganzen Zeitraum hat der Schritt dieselben 152 Halte mit Wert wie Notebook 12, mit gleichen
+    Fahrten und Betriebstagen und gleichem Mittel roh, Mittel mit Referenzwert und Zuwachs (auf zwei Stellen gerundet
+    wie in Notebook 12). Die fünf Halte ohne Ankunft und Abfahrt `REAL` (Befund #46) haben keine Zeile oder einen
+    Grund statt eines Werts.
+  - **(b) Klasse:** Von der Top 10 nach Zuwachs mit Referenzwert aus Notebook 12 sind genau die vier Halte mit einem
+    Mittel ab 0.25 min Verstärker: Zürich Hardbrücke, Zürich Flughafen, Dietikon Stoffelbach, Horgen Oberdorf. Die
+    übrigen sechs (Zürich HB, Zürich Stadelhofen, Dietikon, Winterthur, Dietlikon, Zürich Wiedikon) sind neutral.
+- **Was schon bekannt ist:** die Mittel und der Zuwachs der Top 10 aus Notebook 12 (Befund #46). Die Klasse hängt am
+  Tagesmittel und am Intervall, nicht am Mittel pro Fahrt; beide sind nicht angeschaut. Nicht angeschaut: jede Zahl
+  je Zeitfenster.
+- **Was die Prüfung kann:** (a) scheitert bei jedem Unterschied in Basis, Kappen, Klassen oder Referenzwert. (b)
+  scheitert, wenn Tagesmittel und Mittel pro Fahrt an einem Halt auseinanderliegen oder ein Intervall 0 einschliesst.
+- **Ohne Erwartung, beschreibend:** die Klassenzahlen je Fenster und der Anteil der Top 10 am positiven Zuwachs
+  (Bezugsgrösse nach #45).
+- *Folge bei Widerlegung:* (a) Der PR wird nicht gemergt, bevor der Unterschied erklärt ist; die Regeln werden nicht
+  an das Ergebnis angepasst. (b) Keine Änderung an den Regeln; der Befund nennt jeden Halt, dessen Klasse von der
+  Erwartung abweicht, mit Tagesmittel und Intervall.
